@@ -24,13 +24,19 @@ executable markkarpov.com
   hs-source-dirs:     app
   build-depends:      aeson
                     , base
+                    , blaze-html
+                    , containers
+                    , data-default-class
                     , megaparsec
+                    , mtl
                     , pandoc
                     , path
                     , path-io
                     , shake
                     , stache
                     , text
+                    , transformers
+                    , unordered-containers
                     , yaml
   ghc-options:        -O2 -Wall -threaded
   default-language:   Haskell2010

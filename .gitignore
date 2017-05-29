@@ -1,0 +1,17 @@
+*#
+*.chi
+*.chs.h
+*.hi
+*.o
+*~
+.cabal-sandbox/
+.hsenv
+.stack-work/
+.virtualenv
+TAGS
+_build/
+benchmarks.tix
+cabal-dev
+cabal.config
+cabal.sandbox.config
+dist/

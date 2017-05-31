@@ -48,7 +48,7 @@ postT    = "post"
 -- Build system
 
 main :: IO ()
-main = shakeArgs shakeOptions { shakeFiles = outdir } $ do
+main = shakeArgs shakeOptions $ do
 
   action $ do
     getDirFiles postsPattern >>= need . fmap postOut

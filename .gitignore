@@ -6,6 +6,7 @@
 *~
 .cabal-sandbox/
 .hsenv
+.shake/
 .stack-work/
 .virtualenv
 TAGS

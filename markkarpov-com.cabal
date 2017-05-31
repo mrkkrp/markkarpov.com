@@ -3,11 +3,9 @@ version:              0.1.0
 cabal-version:        >= 1.10
 tested-with:          GHC==8.0.2
 license:              AllRightsReserved
--- license-file:         LICENSE.md
 author:               Mark Karpov <markkarpov92@gmail.com>
 maintainer:           Mark Karpov <markkarpov92@gmail.com>
 homepage:             https://github.com/mrkkrp/markkarpov.com
--- bug-reports:          https://github.com/mrkkrp/markkarpov.com/issues
 category:             Web
 synopsis:             Mark Karpov's personal web site
 build-type:           Simple
@@ -18,20 +16,16 @@ source-repository head
   type:               git
   location:           https://github.com/mrkkrp/markkarpov.com.git
 
-executable markkarpov.com
+executable mk-com
   main-is:            Main.hs
-  -- other-modules:
   hs-source-dirs:     app
   build-depends:      aeson
                     , base
                     , blaze-html
                     , containers
                     , data-default-class
-                    , megaparsec
                     , mtl
                     , pandoc
-                    , path
-                    , path-io
                     , shake
                     , stache
                     , text

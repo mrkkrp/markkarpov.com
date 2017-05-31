@@ -25,10 +25,11 @@ import qualified Data.Yaml           as Y
 outdir :: FilePath
 outdir = "_build"
 
-postsPattern, cssPattern, jsPattern :: FilePattern
+postsPattern, cssPattern, jsPattern, templPattern :: FilePattern
 postsPattern = "post/*.md"
 cssPattern   = "static/css/*.css"
 jsPattern    = "static/js/*.js"
+templPattern = "templates/*.mustache"
 
 postOut, cssOut, jsOut :: FilePath -> FilePath
 postOut x = outdir </> x -<.> "html"
@@ -67,8 +68,9 @@ main = shakeArgs shakeOptions $ do
       Left  err   -> fail (Y.prettyPrintParseException err)
       Right value -> return value
 
-  templates <- newCache $ \() ->
-    liftIO (compileMustacheDir defaultT "templates")
+  templates <- newCache $ \() -> do
+    getDirFiles templPattern >>= need
+    liftIO (compileMustacheDir defaultT (takeDirectory templPattern))
 
   cssOut cssPattern %> \out ->
     copyFile' (cssIn out) out

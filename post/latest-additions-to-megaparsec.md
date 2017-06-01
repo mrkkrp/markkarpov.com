@@ -1,8 +1,9 @@
 ---
 title: Latest additions to Megaparsec
-author: Mark Karpov
 description: This blog post summarizes new features added to Megaparsec in the second half of 2016.
-published: November 24, 2016
+date:
+  published: November 24, 2016
+  updated:   June 1, 2017
 ---
 
 I think it's time for a little blog post summarizing progress of the
@@ -16,7 +17,9 @@ This is a new method in the `MonadParsec` type class (added in 5.1.0), which
 looks like this:
 
 ```haskell
-observing :: MonadParsec e s m => m a -> m (Either (ParseError (Token s) e) a)
+observing :: MonadParsec e s m
+  => m a
+  -> m (Either (ParseError (Token s) e) a)
 ```
 
 As you may have guessed from the signature alone, it allows to “observe”
@@ -87,14 +90,14 @@ with Megaparsec 5. Here I'll just explain how the labelling feature works.
 1. The `Pec` data type represents custom part of parse errors. By design it
    must be able to represent two things: message that was given to `fail`
    and typed data about indentation error. In each case we want to support a
-   stack of labels, so we start with `[String]` and add `Dec` — default
-   error component that comes with Megaparsec out-of-box. Finally, even if
-   we don't have anything custom (that `Dec` represents), we want a place
-   where to keep the stack anyway, so we need to allow `Dec` to be missing,
-   hence the `Maybe` wrapper.
+   stack of labels, so we start with `[String]` and add `Dec`—default error
+   component that comes with Megaparsec out-of-the-box. Finally, even if we
+   don't have anything custom (that `Dec` represents), we want a place where
+   to keep the stack anyway, so we need to allow `Dec` to be missing, hence
+   the `Maybe` wrapper.
 
 2. `representFail` and `representIndentation` are used by the library to
-   encode information when `fail` is used or indentation error occures. We
+   encode information when `fail` is used or indentation error occurs. We
    just reuse the `Dec` instance and wrap it with empty label stack.
 
 3. Here we have a chance to decide how to display the error component. We
@@ -123,8 +126,8 @@ expecting 'a'
 in foo, in bar
 ```
 
-This new sort of label (not to be confused with `label` and `(<?>)`) may be
-constructed dynamically, allowing tracking where exactly parse error
+This new sort of a label (not to be confused with `label` and `(<?>)`) may
+be constructed dynamically, allowing tracking where exactly parse error
 happened.
 
 Now we are fully equipped to write a Megaparsec JSON parser with nice error
@@ -173,16 +176,16 @@ used in Megaparsec's test suite: combinators for parse error construction.
 One advantage of Megaparsec over Parsec is its clear, typed, extensible, and
 comparable for equality parse errors. In Megaparsec test suite there are
 literally hundreds of tests that check exactly which parse errors we get in
-every case. On one hand `ParseError` record is really great as every
-possible existing value of type `ParseError` is a valid parse error that
-doesn't need any normalization. On the other hand, using `Set`s and
-`NonEmpty` lists in `ParseError` makes it a bit verbose to work with.
+every case. On one hand `ParseError` record is great as every possible
+existing value of type `ParseError` is a valid parse error that doesn't need
+any normalization. On the other hand, using `Set`s and `NonEmpty` lists in
+`ParseError` makes it a bit verbose to work with.
 
 The solution is now included in `hspec-megaparsec` in the form of a simple
 set of monoidal values to build reference `ParseError`s from, take a look:
 
 ```haskell
-context "when stream begins with '\\r', but it's not followed by '\\n'" $
+context "when stream begins with '\\r' but not followed by '\\n'" $
   it "signals correct parse error" $
     property $ \ch -> ch /= '\n' ==> do
       let s = ['\r',ch]
@@ -207,7 +210,8 @@ context "when stream is empty" $
 `err` takes position (`posI` means initial position) and a value that
 describes components of a parse error. `utoks` stands for “unexpected
 tokens”, `elabel` means “expecting thing with this label”, etc. See
-[the documentation](https://hackage.haskell.org/package/hspec-megaparsec-0.3.0/docs/Test-Hspec-Megaparsec.html#g:3) for full list of helpers.
+[the documentation](https://hackage.haskell.org/package/hspec-megaparsec-0.3.0/docs/Test-Hspec-Megaparsec.html#g:3) for
+the full list of helpers.
 
 Another testing-related addition in version 5.1 is that most types in
 Megaparsec now have `Arbitrary` instances, so you don't need to define
@@ -217,7 +221,7 @@ orphan instances again and again in your test suites.
 
 Debugging a Megaparsec parser can be frustrating. Even if you understand
 exactly how evaluation proceeds, mentally going through the parser is a lot
-of work. Megaparsec 5.1 adds `dbg` — a debugging helper. It's very useful!
+of work. Megaparsec 5.1 adds `dbg`—a debugging helper. It's very useful!
 
 Suppose you have a parser that behaves strangely:
 
@@ -325,11 +329,3 @@ There are more improvements, but these are the most important ones so far.
 See
 [the changelog](https://github.com/mrkkrp/megaparsec/blob/master/CHANGELOG.md) for
 full list of changes.
-
-Just in case you've never heard of this Megaparsec library before, here are
-the links:
-
-* [Megaparsec on Hackage](https://hackage.haskell.org/package/megaparsec)
-* [GitHub repo](https://github.com/mrkkrp/megaparsec)
-* [Site](https://mrkkrp.github.io/megaparsec/)
-* [Tutorials](https://mrkkrp.github.io/megaparsec/tutorials)

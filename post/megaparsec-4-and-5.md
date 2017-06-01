@@ -1,8 +1,9 @@
 ---
 title: Megaparsec 4 and 5
-author: Mark Karpov
 description: What we have achieved with version 4 of Megaparsec and what is planned in version 5.
-published: February 23, 2016
+date:
+  published: February 23, 2016
+  updated:   June 1, 2017
 ---
 
 This post is an attempt to summarize progress made by the Megaparsec project
@@ -31,8 +32,8 @@ Here are my answers:
 1. Megaparsec has a site now, where
    [several tutorials](https://mrkkrp.github.io/megaparsec/tutorials.html)
    are published. This, combined with documentation, which is quite good and
-   is kept up-to-date, should be enough to start with most parsing
-   tasks. The tutorials will be updated as Megaparsec gets more advanced in
+   is kept up-to-date, should be enough to start with most parsing tasks.
+   The tutorials will be updated as Megaparsec becomes more advanced in
    future versions.
 
 2. I dare to say that Megaparsec can be considered robust and reliable
@@ -128,7 +129,7 @@ are planned (it will grow and change, of course):
 * Above-mentioned line-folds will be implemented.
 
 * Functions to advance textual position for given token will be moved from
-  arguments of `token` and `tokens` to `Stream` type class.
+  arguments of `token` and `tokens` to the `Stream` type class.
 
 * These functions will be so flexible that users who wish to parse streams
   of tokens produced by `alex` or `happy` will have no trouble at all with

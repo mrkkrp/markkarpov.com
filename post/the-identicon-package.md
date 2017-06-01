@@ -1,8 +1,9 @@
 ---
 title: The Identicon package
-author: Mark Karpov
 description: My new Identicon package for identicon generation
-published: May 28, 2016
+date:
+  published: May 28, 2016
+  updated:   June 1, 2017
 ---
 
 I need to generate identicons for one of my projects so I wrote a package
@@ -35,8 +36,8 @@ returns some graphics is called *consumer*. Every consumer produces a
 *layer* in the end and it's just an image. All layers are computed
 independently and then mixed to produce the final result.
 
-First we should state how many bytes do we have total. This is done on type
-level:
+First we should state how many bytes do we have total. This is done at the
+type level:
 
 ```haskell
 type Icon = Identicon 12
@@ -89,8 +90,8 @@ thing.
 ## Writing layers
 
 `Implementation Icon` is always a bunch of functions that are kept together
-with help of `(:+)` data constructor (this one works on term level). Every
-function gets its bytes as discrete `Word8` arguments and produces a
+with help of the `(:+)` data constructor (this one works on term level).
+Every function gets its bytes as discrete `Word8` arguments and produces a
 `Layer`.
 
 In practice it means that `i` has the following type:
@@ -107,8 +108,8 @@ Cool, but how do we make a `Layer`?
 
 ### What is a `layer` anyway?
 
-`Layer` is an image in form of function. If you're familiar with Repa, it's
-something like “delayed array”. `Layer` is just a newtype wrapper:
+`Layer` is an image in the form of a function. If you're familiar with Repa,
+it's something like “delayed array”. `Layer` is just a newtype wrapper:
 
 ```haskell
 newtype Layer = Layer
@@ -161,7 +162,7 @@ Let's use `color` to put together first working version of `i`:
 
 Example output:
 
-![Our first identicon](/img/identicon-00.png)
+![Our first identicon](/static/img/identicon-00.png)
 
 Three colors are mixed. For different inputs we get different colors.
 Already an identicon of a sort but well… can we make something more
@@ -171,16 +172,16 @@ interesting?
 
 Apart from solid color option, there are various gradients:
 
-* `gradientLR` — color transition from left to right
+* `gradientLR`—color transition from left to right
 
-* `gradientTB` — color transition from top to bottom
+* `gradientTB`—color transition from top to bottom
 
-* `gradientTLBR` — color transition from top left corner to bottom right
+* `gradientTLBR`—color transition from top left corner to bottom right
   corner
 
-* `gradientTRBL` — the same, but with top right and bottom left corners
+* `gradientTRBL`—the same, but with top right and bottom left corners
 
-* `gradientXY` — one color is on edges and another in the middle
+* `gradientXY`—one color is on edges and another in the middle
 
 We can try them, let's “mute” all layers but one:
 
@@ -192,14 +193,14 @@ We can try them, let's “mute” all layers but one:
     a' _ _ _ _ = color black
 ```
 
-![Diagonal gradient](/img/identicon-01.png)
+![Diagonal gradient](/static/img/identicon-01.png)
 
 Attentive reader will notice the `id` argument. This is a function that can
 control color transition. It gets an argument that varies from 0 to 1 and it
 should return something in the same range. When it returns 0, we get pure
 first color and the second color for 1.
 
-A couple of helpers are available out-of-box:
+A couple of helpers are available out-of-the-box:
 
 ```haskell
 mid :: Float -> Float
@@ -211,7 +212,7 @@ edge x = x * x
 
 Replacing `id` with `edge . mid`:
 
-![Modified gradient](/img/identicon-02.png)
+![Modified gradient](/static/img/identicon-02.png)
 
 Ready for something more interesting?
 
@@ -224,7 +225,7 @@ Ready for something more interesting?
     a2 r g b _ = gradientXY (edge . mid) black (PixelRGB8 r g b)
 ```
 
-![Gradients](/img/identicon-03.png)
+![Gradients](/static/img/identicon-03.png)
 
 ### Shape, size, and position
 
@@ -244,11 +245,11 @@ visible. That's how `circle :: Layer -> Layer` combinator works:
     a2 r g b _ = gradientXY (edge . mid) black (PixelRGB8 r g b)
 ```
 
-![The circle combinator in action](/img/identicon-04.png)
+![The circle combinator in action](/static/img/identicon-04.png)
 
 Position is controlled by the `onGrid` combinator:
 
-```
+```haskell
 onGrid :: Integral a
   => Int               -- ^ Number of horizontal positions
   -> Int               -- ^ Number of vertical positions
@@ -268,7 +269,7 @@ Let's spacially separate our layers:
     a2 r g b _ = gradientXY (edge . mid) black (PixelRGB8 r g b)
 ```
 
-![Three figures](/img/identicon-05.png)
+![Three figures](/static/img/identicon-05.png)
 
 Black background doesn't look good, let's add a background with two-color
 gradient:
@@ -286,7 +287,7 @@ type Icon = Identicon 18 :+ Consumer 4 :+ Consumer 4 :+ Consumer 4 :+ Consumer 6
       gradientTLBR id (PixelRGB8 r0 g0 b0) (PixelRGB8 r1 g1 b1)
 ```
 
-![Three figures and background](/img/identicon-06.png)
+![Three figures and background](/static/img/identicon-06.png)
 
 Much better but still sort of boring.
 
@@ -298,13 +299,13 @@ motif repeated 4 times and every repetition is rotated by 90°. We have
 several combinators (all of them have `Layer -> Layer` type) including the
 one that can simulate Stack Overflow approach:
 
-* `hsym` — horizontal symmetry
+* `hsym`—horizontal symmetry
 
-* `vsym` — vertical symmetry
+* `vsym`—vertical symmetry
 
-* `hvsym` — horizontal and vertical symmetry
+* `hvsym`—horizontal and vertical symmetry
 
-* `rsym` — just like `hvsym` but with “rotation”
+* `rsym`—just like `hvsym` but with “rotation”
 
 Let's use it:
 
@@ -321,9 +322,9 @@ Let's use it:
       hvsym $ gradientTLBR id (PixelRGB8 r0 g0 b0) (PixelRGB8 r1 g1 b1)
 ```
 
-![With rotation, one](/img/identicon-07.png)
-![With rotation, two](/img/identicon-08.png)
-![With rotation, three](/img/identicon-09.png)
+![With rotation, one](/static/img/identicon-07.png)
+![With rotation, two](/static/img/identicon-08.png)
+![With rotation, three](/static/img/identicon-09.png)
 
 But hey, we have saved one byte (last argument of `a2`)! We can feed it into
 `oneof` combinator to make things a bit more varying.
@@ -345,9 +346,9 @@ But hey, we have saved one byte (last argument of `a2`)! We can feed it into
 
 ```
 
-![Varying center, one](/img/identicon-10.png)
-![Varying center, two](/img/identicon-11.png)
-![Varying center, three](/img/identicon-12.png)
+![Varying center, one](/static/img/identicon-10.png)
+![Varying center, two](/static/img/identicon-11.png)
+![Varying center, three](/static/img/identicon-12.png)
 
 ## Conclusion
 
@@ -355,8 +356,7 @@ Of course this is just a preview and the icons shown here are not the most
 interesting ones you can get. As always, everything is limited only by your
 imagination. Given such general definition of `Layer`, you can do whatever
 you want, even insert some existing pictures into identicons and manipulate
-them. I find performance satisfactory too, especially if you need small
-identicons, not 420 × 420 ones as shown here.
+them. I find performance quite satisfactory too.
 
 Hope it was interesting and beautiful!
 

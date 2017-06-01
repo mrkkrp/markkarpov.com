@@ -1,11 +1,12 @@
 ---
 title: Announcing Megaparsec 5
-author: Mark Karpov
-description: Finally Megaparsec 5 is out, what's new?
-published: May 15, 2016
+description: Finally Megaparsec 6 is out, what's new?
+date:
+  published: May 15, 2016
+  updated:   June 1, 2017
 ---
 
-I'm happy to announce new major release of Megaparsec.
+I'm happy to announce a new major release of Megaparsec.
 
 * [Megaparsec 5 on Hackage](https://hackage.haskell.org/package/megaparsec)
 * [GitHub repo](https://github.com/mrkkrp/megaparsec)
@@ -15,7 +16,7 @@ I'm happy to announce new major release of Megaparsec.
 ## Thanks
 
 It's hard not to see that Megaparsec is moving away from its granddaddy
-Parsec in every new release. In version five we re-thought some design
+Parsec with every new release. In the version 5 we re-thought some design
 decisions made in Parsec and the result is a library written in more
 flexible and modern Haskell.
 
@@ -25,10 +26,10 @@ so I would like to thank people who opened most important issues and
 feature-requests that made me think again about design of the library:
 
 * [Matteo Ferrando](https://github.com/chamini2), an active user who noticed
-  problem with non-flexible position-advancing mechanism.
+  the problem with non-flexible position-advancing mechanism.
 
 * [Herbert Valerio Riedel](https://github.com/hvr) who proposed to add
-  support for include files and move position-advancing functions into
+  support for include files and move position-advancing functions into the
   `Stream` type class.
 
 * [Wojciech Daniło](https://github.com/wdanilo) who opened issue about
@@ -67,19 +68,19 @@ data ErrorItem t
   deriving (Show, Read, Eq, Ord, Data, Typeable)
 ```
 
-Now error in Megaparsec is not just a bunch of strings, but something more
-comprehensible. I expect some people may not like the intensive use of
+Now an error in Megaparsec is not just a bunch of strings, but something
+more comprehensible. I expect some people may not like the intensive use of
 `NonEmpty`, but I tried to use types that are inhabited only by logically
 valid values.
 
-As you can see parse errors support *stack* of source positions. This has
+As you can see, parse errors support *stack* of source positions. This has
 corresonding helpers in `Text.Megaparsec.Prim` and can be used to work with
 include files. Pretty-printing function `parseErrorPretty` also knows how to
 display stacks of source positions and there are `pushPosition` and
 `popPosition` functions available as well.
 
 What about `errorCustom`? You can use your own type there and the whole
-library will work with that just fine. We have `Dec` out-of-box:
+library will work with that just fine. We have `Dec` out-of-the-box:
 
 ```haskell
 data Dec
@@ -107,7 +108,7 @@ class Ord e => ErrorComponent e where
   -- @since 5.0.0
 
   representIndentation
-    :: Ordering -- ^ Desired ordering between reference level and actual level
+    :: Ordering -- ^ Desired ordering between reference and actual level
     -> Pos             -- ^ Reference indentation level
     -> Pos             -- ^ Actual indentation level
     -> e
@@ -119,8 +120,8 @@ class Ord a => ShowErrorComponent a where
   showErrorComponent :: a -> String
 ```
 
-Then you build on top of `failure` primitive to report error messages with
-your data:
+Then you build on the top of `failure` primitive to report error messages
+with your data:
 
 ```haskell
 failure :: MonadParsec e s m
@@ -135,7 +136,7 @@ use of this:
 
 ```haskell
 incorrectIndent :: MonadParsec e s m
-  => Ordering  -- ^ Desired ordering between reference level and actual level
+  => Ordering  -- ^ Desired ordering between reference and actual level
   -> Pos               -- ^ Reference indentation level
   -> Pos               -- ^ Actual indentation level
   -> m a
@@ -161,7 +162,7 @@ Much better than simply “incorrect indentation”!
 
 ## The `Stream` type class
 
-The `Stream` type class now has associated type function `Token`:
+The `Stream` type class now has the associated type function `Token`:
 
 ```haskell
 class Ord (Token s) => Stream s where
@@ -185,24 +186,24 @@ newline = char '\n'
 
 We will talk about this more in the next section.
 
-Another addition to `Stream` type class is `updatePos` method. Its signature
-looks like this:
+Another addition to the `Stream` type class is the `updatePos` method. Its
+signature looks like this:
 
 ```haskell
 updatePos
-  :: Proxy s -- ^ Proxy clarifying stream type ('Token' is not injective)
+  :: Proxy s -- ^ Proxy clarifying stream type, 'Token' is not injective
   -> Pos             -- ^ Tab width
   -> SourcePos       -- ^ Current position
   -> Token s         -- ^ Current token
-  -> (SourcePos, SourcePos) -- ^ Actual position and incremented position
+  -> (SourcePos, SourcePos) -- ^ Actual position\/incremented position
 ```
 
 This improved support for streams of tokens where information about position
-of token is encoded in token itself, should be useful with Alex/Happy.
+of token is encoded in token itself.
 
 ## The `MonadParsec` type class
 
-Declaration of `MonadParsec` changed:
+Declaration of `MonadParsec` has been changed:
 
 ```haskell
 class (ErrorComponent e, Stream s, Alternative m, MonadPlus m)
@@ -210,7 +211,7 @@ class (ErrorComponent e, Stream s, Alternative m, MonadPlus m)
 ```
 
 We added type of custom error component `e` and removed type of token `t`
-because now it can be found from type of stream `s` via type function
+because now it can be found from type of stream `s` via the type function
 `Token`. This gives us signatures like this:
 
 ```haskell
@@ -218,9 +219,10 @@ token :: MonadParsec e s m
   => (Token s -> Either ( Set (ErrorItem (Token s))
                         , Set (ErrorItem (Token s))
                         , Set e ) a)
-     -- ^ Matching function for the token to parse, it allows to construct
-     -- arbitrary error message on failure as well; sets in three-tuple
-     -- are: unexpected items, expected items, and custom data pieces
+     -- ^ Matching function for the token to parse, it allows to
+     -- construct arbitrary error message on failure; sets in the
+     -- three-tuple are: unexpected items, expected items, and
+     -- custom data pieces.
   -> Maybe (Token s) -- ^ Token to report when input stream is empty
   -> m a
 
@@ -238,12 +240,13 @@ Finally support for line folds is here. It's not difficult to implement
 though:
 
 ```haskell
--- | Create a parser that supports line-folding. The first argument is used
--- to consume white space between components of line fold, thus it /must/
--- consume newlines in order to work properly. The second argument is a
--- callback that receives custom space-consuming parser as argument. This
--- parser should be used after separate components of line fold that can be
--- put on different lines.
+
+-- | Create a parser that supports line-folding. The first argument is
+-- used to consume white space between components of line fold, thus it
+-- /must/ consume newlines in order to work properly. The second
+-- argument is a callback that receives custom space-consuming parser
+-- as argument. This parser should be used after separate components of
+-- line fold that can be put on different lines.
 --
 -- An example should clarify the usage pattern:
 --
@@ -252,7 +255,8 @@ though:
 -- > myFold = L.lineFold sc $ \sc' -> do
 -- >   L.symbol sc' "foo"
 -- >   L.symbol sc' "bar"
--- >   L.symbol sc  "baz" -- for the last symbol we use normal space consumer
+-- >   L.symbol sc  "baz" -- for the last symbol we use a normal
+--                        -- space consumer
 --
 -- @since 5.0.0
 
@@ -264,7 +268,7 @@ lineFold sc action =
   sc >> indentLevel >>= action . void . indentGuard sc GT
 ```
 
-It's super simple and it works.
+It's simple and it works.
 
 ## Using of `scientific`
 
@@ -277,21 +281,24 @@ reliably represent integers too (it even has functions `isFloating`,
 `number` as:
 
 ```haskell
--- | Parse a number: either integer or floating point. The parser can handle
--- overlapping grammars graciously. Use functions like
--- 'Data.Scientific.floatingOrInteger' from "Data.Scientific" to test and
--- extract integer or real values.
+-- | Parse a number: either integer or floating point. The parser can
+-- handle overlapping grammars graciously. Use functions like
+-- 'Data.Scientific.floatingOrInteger' from "Data.Scientific" to test
+-- and extract integer or real values.
 
 number :: (MonadParsec e s m, Token s ~ Char) => m Scientific
 ```
 
 This is amazing, because you can get either floating point number or integer
-from it later and `signed` does not need ah-hoc `Signed` type class anymore
-to compose with other functions from the module (previously `number`
+from it later and `signed` does not need an ad-hoc `Signed` type class
+anymore to compose with other functions from the module (previously `number`
 returned `Either Integer Double`):
 
 ```haskell
-signed :: (MonadParsec e s m, Token s ~ Char, Num a) => m () -> m a -> m a
+signed :: (MonadParsec e s m, Token s ~ Char, Num a)
+  => m ()              -- ^ How to parse space after sign
+  -> m a               -- ^ Parser for unsigned number
+  -> m a               -- ^ Parser for signed number
 ```
 
 ## Performance
@@ -326,8 +333,8 @@ Benchmark (size 1000)                | Parsec 3.1.9 | Megaparsec 5.0.0
 
 `tokens` (that influences performance of `string`) is coded differently than
 in Parsec because I wanted to have a bit different error messages that show
-not just current mismatched token, but all sequence parsed up to first
-mismatch and all sequence that is expected. `tokens` also backtracks
+not just current mismatched token, but an entire sequence parsed up to first
+mismatch and an entire sequence that is expected. `tokens` also backtracks
 automatically in Megaparsec 4.3+ but this has no impact on performance.
 `choice` is not considerably faster because in Megaparsec it does a lot more
 than in Parsec since we need to be able to get parser state on errors for
@@ -344,11 +351,4 @@ about results.
 These are the most important but not all changes and improvements in
 Megaparsec 5, please see the
 [change log](https://github.com/mrkkrp/megaparsec/blob/master/CHANGELOG.md)
-for complete list. I will continue to maintain and improve the library
-actively, but do not expect radical changes to happen anytime soon. Now I
-would like to concentrate on fixing bugs (should they be discovered) in
-timely manner and answering questions. This is partly because I think
-Megaparsec 5 already covers pretty much everything I planned for this
-project and because I want to spend more time on my other personal pursuits
-that have little to do with programming. Your pull requests are still most
-welcome though!
+for the complete list.

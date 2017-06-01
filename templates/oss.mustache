@@ -1,0 +1,28 @@
+<h1>Open source software</h1>
+
+<p>
+  Here I list all currently active OSS projects I authored and/or maintain.
+  They are roughly in the order of usefulness to other people.
+</p>
+<p>
+  Use GitHub issues to contact me regarding these projects. I usually
+  provide support if you run into any issues using them.
+</p>
+
+{{# oss }}
+<h2>{{ section }}</h2>
+<table class="table table-striped">
+  <thead class="thead-default">
+    <tr>
+      <th>Repo</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  {{# items }}
+  <tr>
+    <td><a href="https://github.com/{{ repo }}">{{ name }}</a></td>
+    <td>{{ desc }}</td>
+  </tr>
+  {{/ items }}
+</table>
+{{/ oss }}

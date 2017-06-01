@@ -31,21 +31,21 @@ jsPattern    = "static/js/*.js"
 templPattern = "templates/*.mustache"
 imgPattern   = "static/img/*"
 
-postOut, cssOut, jsOut, imgOut :: FilePath -> FilePath
+ossFile :: FilePath
+ossFile = "oss.html"
+
+postOut, cmnOut :: FilePath -> FilePath
 postOut x = outdir </> x -<.> "html"
-cssOut  x = outdir </> x
-jsOut   x = outdir </> x
-imgOut  x = outdir </> x
+cmnOut  x = outdir </> x
 
-postIn, cssIn, jsIn, imgIn :: FilePath -> FilePath
+postIn, cmnIn :: FilePath -> FilePath
 postIn x = dropDirectory1 x -<.> "md"
-cssIn    = dropDirectory1
-jsIn     = dropDirectory1
-imgIn    = dropDirectory1
+cmnIn    = dropDirectory1
 
-defaultT, postT :: PName
+defaultT, postT, ossT :: PName
 defaultT = "default"
 postT    = "post"
+ossT     = "oss"
 
 ----------------------------------------------------------------------------
 -- Build system
@@ -55,9 +55,10 @@ main = shakeArgs shakeOptions $ do
 
   action $ do
     getDirFiles postsPattern >>= need . fmap postOut
-    getDirFiles cssPattern   >>= need . fmap cssOut
-    getDirFiles jsPattern    >>= need . fmap jsOut
-    getDirFiles imgPattern   >>= need . fmap imgOut
+    getDirFiles cssPattern   >>= need . fmap cmnOut
+    getDirFiles jsPattern    >>= need . fmap cmnOut
+    getDirFiles imgPattern   >>= need . fmap cmnOut
+    need [cmnOut ossFile]
 
   phony "clean" $ do
     putNormal ("Cleaning files in " ++ outdir)
@@ -75,14 +76,14 @@ main = shakeArgs shakeOptions $ do
     getDirFiles templPattern >>= need
     liftIO (compileMustacheDir defaultT (takeDirectory templPattern))
 
-  cssOut cssPattern %> \out ->
-    copyFile' (cssIn out) out
+  cmnOut cssPattern %> \out ->
+    copyFile' (cmnIn out) out
 
-  jsOut jsPattern %> \out ->
-    copyFile' (jsIn out) out
+  cmnOut jsPattern %> \out ->
+    copyFile' (cmnIn out) out
 
-  imgOut imgPattern %> \out ->
-    copyFile' (imgIn out) out
+  cmnOut imgPattern %> \out ->
+    copyFile' (cmnIn out) out
 
   postOut postsPattern %> \out -> do
     env <- commonEnv ()
@@ -96,6 +97,16 @@ main = shakeArgs shakeOptions $ do
     liftIO . TL.writeFile out $ renderMustache
       (selectTemplate defaultT ts)
       (mkContext env v post)
+
+  cmnOut ossFile %> \out -> do
+    env <- commonEnv ()
+    ts  <- templates ()
+    let post = renderMustache
+          (selectTemplate ossT ts)
+          (mkContext env (Object HM.empty) "")
+    liftIO . TL.writeFile out $ renderMustache
+      (selectTemplate defaultT ts)
+      (mkContext env (Object HM.empty) post)
 
 ----------------------------------------------------------------------------
 -- Helpers

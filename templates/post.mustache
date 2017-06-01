@@ -1,2 +1,7 @@
 <h1>{{ title }}</h1>
+{{# date }}
+  <em class="text-muted">
+    Published on {{ published }}{{# updated }}, last updated {{ . }}{{/ updated }}
+  </em>
+{{/ date }}
   {{& inner }}

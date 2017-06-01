@@ -11,7 +11,6 @@ import Text.Blaze.Html.Renderer.Text
 import Text.Mustache
 import Text.Pandoc hiding (Template)
 import qualified Data.HashMap.Strict as HM
-import qualified Data.Set            as S
 import qualified Data.Text           as T
 import qualified Data.Text.Encoding  as TE
 import qualified Data.Text.IO        as T
@@ -25,21 +24,24 @@ import qualified Data.Yaml           as Y
 outdir :: FilePath
 outdir = "_build"
 
-postsPattern, cssPattern, jsPattern, templPattern :: FilePattern
+postsPattern, cssPattern, jsPattern, templPattern, imgPattern :: FilePattern
 postsPattern = "post/*.md"
 cssPattern   = "static/css/*.css"
 jsPattern    = "static/js/*.js"
 templPattern = "templates/*.mustache"
+imgPattern   = "static/img/*"
 
-postOut, cssOut, jsOut :: FilePath -> FilePath
+postOut, cssOut, jsOut, imgOut :: FilePath -> FilePath
 postOut x = outdir </> x -<.> "html"
 cssOut  x = outdir </> x
 jsOut   x = outdir </> x
+imgOut  x = outdir </> x
 
-postIn, cssIn, jsIn :: FilePath -> FilePath
+postIn, cssIn, jsIn, imgIn :: FilePath -> FilePath
 postIn x = dropDirectory1 x -<.> "md"
 cssIn    = dropDirectory1
 jsIn     = dropDirectory1
+imgIn    = dropDirectory1
 
 defaultT, postT :: PName
 defaultT = "default"
@@ -55,6 +57,7 @@ main = shakeArgs shakeOptions $ do
     getDirFiles postsPattern >>= need . fmap postOut
     getDirFiles cssPattern   >>= need . fmap cssOut
     getDirFiles jsPattern    >>= need . fmap jsOut
+    getDirFiles imgPattern   >>= need . fmap imgOut
 
   phony "clean" $ do
     putNormal ("Cleaning files in " ++ outdir)
@@ -77,6 +80,9 @@ main = shakeArgs shakeOptions $ do
 
   jsOut jsPattern %> \out ->
     copyFile' (jsIn out) out
+
+  imgOut imgPattern %> \out ->
+    copyFile' (imgIn out) out
 
   postOut postsPattern %> \out -> do
     env <- commonEnv ()
@@ -102,27 +108,13 @@ selectTemplate name t = t { templateActual = name }
 
 pandocReaderOpts :: ReaderOptions
 pandocReaderOpts = def
-  { readerExtensions = S.fromList
-    [ Ext_angle_brackets_escapable
-    , Ext_ascii_identifiers
-    , Ext_auto_identifiers
-    , Ext_autolink_bare_uris
-    , Ext_backtick_code_blocks
-    , Ext_emoji
-    , Ext_fenced_code_blocks
-    , Ext_line_blocks
-    , Ext_intraword_underscores
-    , Ext_lists_without_preceding_blankline
-    , Ext_pipe_tables
-    , Ext_raw_html
-    , Ext_shortcut_reference_links
-    , Ext_strikeout ]
-  , readerSmart = True }
+  { readerSmart = True }
 
 pandocWriterOpts :: WriterOptions
 pandocWriterOpts = def
-  { writerHtml5     = True
-  , writerHighlight = True }
+  { writerHtml5          = True
+  , writerHighlight      = True
+  , writerHTMLMathMethod = MathJax "" }
 
 getPost :: MonadIO m => FilePath -> m (Value, TL.Text)
 getPost path = do

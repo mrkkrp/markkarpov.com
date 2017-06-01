@@ -5,32 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/static/css/source-code.css">
-    <base href="{{& host }}">
+    <link rel="stylesheet" href="https://opensource.keycdn.com/fontawesome/4.7.0/font-awesome.min.css" integrity="sha384-dNpIIXE8U05kAbPhy3G1cz+yZmTzA6CY8Vg/u2L9xRnHjJiAK76m2BIEaSEV+/aU" crossorigin="anonymous">
   </head>
   <body>
     <nav class="navbar navbar-toggleable-sm navbar-inverse bg-primary">
+      <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="fa fa-bars" aria-hidden="true"></span>
+      </button>
       <a class="navbar-brand" href="/" title="Mark Karpov">
         Mark Karpov
       </a>
-      <ul class="navbar-nav ml-auto">
-        {{# main_menu }}
-        <li class="nav-item">
-          <a class="nav-link" href="{{& link }}">{{ title }}</a>
-        </li>
-        {{/ main_menu }}
-      </ul>
+      <div class="collapse navbar-collapse" id="navbar">
+        <ul class="navbar-nav ml-auto">
+          {{# main_menu }}
+          <li class="nav-item">
+            <a class="nav-link" href="{{& link }}">{{ title }}</a>
+          </li>
+          {{/ main_menu }}
+        </ul>
+      </div>
     </nav>
     <div class="container-fluid">
       <div class="row-fluid">
         <div class="col-xs-12 col-sm-12 col-md-10 offset-md-1 col-lg-8 offset-lg-2 col-xl-6 offset-xl-3">
-          {{& inner }}
+          <div class="content">
+            {{& inner }}
+          </div>
         </div>
       </div>
     </div>
+    <footer class="footer">
+      <div class="container">
+        <div class="text-center text-muted">
+          {{ copyright }}
+        </div>
+      </div>
+    </footer>
     <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/3.1.0/anchor.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/3.2.1/anchor.min.js"></script>
     <script src="/static/js/put-anchors.js"></script>
   </body>
 </html>

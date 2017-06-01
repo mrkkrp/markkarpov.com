@@ -1,7 +1,8 @@
-// put anchors
-anchors.options = {
-    placement: 'left',
-    visible: 'always'
-};
-// anchors.options.visible = 'always';
-anchors.add('h2, h3, h4');
+document.addEventListener("DOMContentLoaded", function(event) {
+    anchors.options = {
+        placement: 'left',
+        visible: 'always',
+        class: 'anchor'
+    };
+    anchors.add('h2, h3, h4');
+});

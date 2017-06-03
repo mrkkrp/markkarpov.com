@@ -31,7 +31,8 @@ jsPattern    = "static/js/*.js"
 templPattern = "templates/*.mustache"
 imgPattern   = "static/img/*"
 
-ossFile, notFoundFile :: FilePath
+aboutFile, ossFile, notFoundFile :: FilePath
+aboutFile    = "about.html"
 ossFile      = "oss.html"
 notFoundFile = "404.html"
 
@@ -43,7 +44,8 @@ postIn, cmnIn :: FilePath -> FilePath
 postIn x = dropDirectory1 x -<.> "md"
 cmnIn    = dropDirectory1
 
-defaultT, postT, ossT, notFoundT :: PName
+aboutT, defaultT, postT, ossT, notFoundT :: PName
+aboutT    = "about"
 defaultT  = "default"
 postT     = "post"
 ossT      = "oss"
@@ -60,7 +62,7 @@ main = shakeArgs shakeOptions $ do
     getDirFiles cssPattern   >>= need . fmap cmnOut
     getDirFiles jsPattern    >>= need . fmap cmnOut
     getDirFiles imgPattern   >>= need . fmap cmnOut
-    need [cmnOut ossFile, cmnOut notFoundFile]
+    need (cmnOut <$> [aboutFile, ossFile, notFoundFile])
 
   phony "clean" $ do
     putNormal ("Cleaning files in " ++ outdir)
@@ -110,6 +112,7 @@ main = shakeArgs shakeOptions $ do
           (selectTemplate defaultT ts)
           (mkContext env (Object HM.empty) post)
 
+  cmnOut aboutFile    %> justFromTemplate aboutT
   cmnOut ossFile      %> justFromTemplate ossT
   cmnOut notFoundFile %> justFromTemplate notFoundT
 

@@ -31,8 +31,9 @@ jsPattern    = "static/js/*.js"
 templPattern = "templates/*.mustache"
 imgPattern   = "static/img/*"
 
-ossFile :: FilePath
-ossFile = "oss.html"
+ossFile, notFoundFile :: FilePath
+ossFile      = "oss.html"
+notFoundFile = "404.html"
 
 postOut, cmnOut :: FilePath -> FilePath
 postOut x = outdir </> x -<.> "html"
@@ -42,10 +43,11 @@ postIn, cmnIn :: FilePath -> FilePath
 postIn x = dropDirectory1 x -<.> "md"
 cmnIn    = dropDirectory1
 
-defaultT, postT, ossT :: PName
-defaultT = "default"
-postT    = "post"
-ossT     = "oss"
+defaultT, postT, ossT, notFoundT :: PName
+defaultT  = "default"
+postT     = "post"
+ossT      = "oss"
+notFoundT = "404"
 
 ----------------------------------------------------------------------------
 -- Build system
@@ -58,7 +60,7 @@ main = shakeArgs shakeOptions $ do
     getDirFiles cssPattern   >>= need . fmap cmnOut
     getDirFiles jsPattern    >>= need . fmap cmnOut
     getDirFiles imgPattern   >>= need . fmap cmnOut
-    need [cmnOut ossFile]
+    need [cmnOut ossFile, cmnOut notFoundFile]
 
   phony "clean" $ do
     putNormal ("Cleaning files in " ++ outdir)
@@ -98,15 +100,18 @@ main = shakeArgs shakeOptions $ do
       (selectTemplate defaultT ts)
       (mkContext env v post)
 
-  cmnOut ossFile %> \out -> do
-    env <- commonEnv ()
-    ts  <- templates ()
-    let post = renderMustache
-          (selectTemplate ossT ts)
-          (mkContext env (Object HM.empty) "")
-    liftIO . TL.writeFile out $ renderMustache
-      (selectTemplate defaultT ts)
-      (mkContext env (Object HM.empty) post)
+  let justFromTemplate template out = do
+        env <- commonEnv ()
+        ts  <- templates ()
+        let post = renderMustache
+              (selectTemplate template ts)
+              (mkContext env (Object HM.empty) "")
+        liftIO . TL.writeFile out $ renderMustache
+          (selectTemplate defaultT ts)
+          (mkContext env (Object HM.empty) post)
+
+  cmnOut ossFile      %> justFromTemplate ossT
+  cmnOut notFoundFile %> justFromTemplate notFoundT
 
 ----------------------------------------------------------------------------
 -- Helpers

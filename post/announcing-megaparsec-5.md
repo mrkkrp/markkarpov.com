@@ -270,7 +270,7 @@ lineFold sc action =
 
 It's simple and it works.
 
-## Using of `scientific`
+## Use of `scientific`
 
 Like Attoparsec, we switched to the
 [`scientific`](https://hackage.haskell.org/package/scientific) package for

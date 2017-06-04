@@ -31,10 +31,11 @@ jsPattern    = "static/js/*.js"
 templPattern = "templates/*.mustache"
 imgPattern   = "static/img/*"
 
-aboutFile, ossFile, notFoundFile :: FilePath
+aboutFile, ossFile, notFoundFile, learnFile :: FilePath
 aboutFile    = "about.html"
 ossFile      = "oss.html"
 notFoundFile = "404.html"
+learnFile    = "learn-haskell.html"
 
 postOut, cmnOut :: FilePath -> FilePath
 postOut x = outdir </> x -<.> "html"
@@ -44,12 +45,13 @@ postIn, cmnIn :: FilePath -> FilePath
 postIn x = dropDirectory1 x -<.> "md"
 cmnIn    = dropDirectory1
 
-aboutT, defaultT, postT, ossT, notFoundT :: PName
+aboutT, defaultT, postT, ossT, notFoundT, learnT :: PName
 aboutT    = "about"
 defaultT  = "default"
 postT     = "post"
 ossT      = "oss"
 notFoundT = "404"
+learnT    = "learn-haskell"
 
 ----------------------------------------------------------------------------
 -- Build system
@@ -62,7 +64,7 @@ main = shakeArgs shakeOptions $ do
     getDirFiles cssPattern   >>= need . fmap cmnOut
     getDirFiles jsPattern    >>= need . fmap cmnOut
     getDirFiles imgPattern   >>= need . fmap cmnOut
-    need (cmnOut <$> [aboutFile, ossFile, notFoundFile])
+    need (cmnOut <$> [aboutFile, ossFile, notFoundFile, learnFile])
 
   phony "clean" $ do
     putNormal ("Cleaning files in " ++ outdir)
@@ -112,8 +114,9 @@ main = shakeArgs shakeOptions $ do
           (selectTemplate defaultT ts)
           (mkContext env (Object HM.empty) post)
 
-  cmnOut aboutFile    %> justFromTemplate aboutT
+  cmnOut learnFile    %> justFromTemplate learnT
   cmnOut ossFile      %> justFromTemplate ossT
+  cmnOut aboutFile    %> justFromTemplate aboutT
   cmnOut notFoundFile %> justFromTemplate notFoundT
 
 ----------------------------------------------------------------------------

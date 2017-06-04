@@ -29,6 +29,7 @@ executable mk-com
                     , shake
                     , stache
                     , text
+                    , time
                     , transformers
                     , unordered-containers
                     , yaml

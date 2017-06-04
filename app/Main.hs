@@ -1,10 +1,16 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards   #-}
 
 module Main (main) where
 
+import Control.Monad
 import Control.Monad.IO.Class
 import Data.Aeson
 import Data.Default.Class
+import Data.List (sortBy, foldl1')
+import Data.Ord (comparing, Down (..))
+import Data.Text (Text)
+import Data.Time
 import Development.Shake
 import Development.Shake.FilePath
 import Text.Blaze.Html.Renderer.Text
@@ -31,11 +37,12 @@ jsPattern    = "static/js/*.js"
 templPattern = "templates/*.mustache"
 imgPattern   = "static/img/*"
 
-aboutFile, ossFile, notFoundFile, learnFile :: FilePath
+aboutFile, ossFile, notFoundFile, learnFile, postsFile :: FilePath
 aboutFile    = "about.html"
 ossFile      = "oss.html"
 notFoundFile = "404.html"
 learnFile    = "learn-haskell.html"
+postsFile    = "posts.html"
 
 postOut, cmnOut :: FilePath -> FilePath
 postOut x = outdir </> x -<.> "html"
@@ -45,13 +52,36 @@ postIn, cmnIn :: FilePath -> FilePath
 postIn x = dropDirectory1 x -<.> "md"
 cmnIn    = dropDirectory1
 
-aboutT, defaultT, postT, ossT, notFoundT, learnT :: PName
+aboutT, defaultT, postT, ossT, notFoundT, learnT, postsT :: PName
 aboutT    = "about"
 defaultT  = "default"
 postT     = "post"
 ossT      = "oss"
 notFoundT = "404"
 learnT    = "learn-haskell"
+postsT    = "posts"
+
+data PostInfo = PostInfo
+  { postTitle     :: Text
+  , postPublished :: Day
+  , postUpdated   :: Day
+  , postFile      :: FilePath
+  } deriving (Eq, Show)
+
+instance FromJSON PostInfo where
+  parseJSON = withObject "post metadata" $ \o -> do
+    postTitle     <- o .: "title"
+    postPublished <- (o .: "date") >>= (.: "published") >>= parseDay
+    postUpdated   <- (o .: "date") >>= (.: "updated")   >>= parseDay
+    let postFile = ""
+    return PostInfo {..}
+
+instance ToJSON PostInfo where
+  toJSON PostInfo {..} = object
+    [ "title"     .= postTitle
+    , "published" .= renderDay postPublished
+    , "updated"   .= renderDay postUpdated
+    , "file"      .= postFile ]
 
 ----------------------------------------------------------------------------
 -- Build system
@@ -64,7 +94,7 @@ main = shakeArgs shakeOptions $ do
     getDirFiles cssPattern   >>= need . fmap cmnOut
     getDirFiles jsPattern    >>= need . fmap cmnOut
     getDirFiles imgPattern   >>= need . fmap cmnOut
-    need (cmnOut <$> [aboutFile, ossFile, notFoundFile, learnFile])
+    need (cmnOut <$> [aboutFile, ossFile, notFoundFile, learnFile, postsFile])
 
   phony "clean" $ do
     putNormal ("Cleaning files in " ++ outdir)
@@ -97,22 +127,42 @@ main = shakeArgs shakeOptions $ do
     let src = postIn out
     need [src]
     (v, content) <- getPost src
-    let post = renderMustache
+    let context =
+          [ env
+          , v
+          , provideAs "location" (dropDirectory1 out) ]
+        post = renderMustache
           (selectTemplate postT ts)
-          (mkContext env v content)
+          (mkContext (provideAs "inner" content : context))
     liftIO . TL.writeFile out $ renderMustache
       (selectTemplate defaultT ts)
-      (mkContext env v post)
+      (mkContext (provideAs "inner" post : context))
+
+  cmnOut postsFile %> \out -> do
+    env <- commonEnv ()
+    ts  <- templates ()
+    ps' <- getDirFiles postsPattern
+    ps  <- fmap (sortBy (comparing (Down . postPublished))) . forM ps' $ \post -> do
+      need [post]
+      v <- fst <$> getPost post
+      return v { postFile = dropDirectory1 (postOut post) }
+    let postList = provideAs "posts" ps
+        posts = renderMustache
+          (selectTemplate postsT ts)
+          (mkContext [env, postList])
+    liftIO . TL.writeFile out $ renderMustache
+      (selectTemplate defaultT ts)
+      (mkContext [env, postList, provideAs "inner" posts] )
 
   let justFromTemplate template out = do
         env <- commonEnv ()
         ts  <- templates ()
         let post = renderMustache
               (selectTemplate template ts)
-              (mkContext env (Object HM.empty) "")
+              (mkContext [env])
         liftIO . TL.writeFile out $ renderMustache
           (selectTemplate defaultT ts)
-          (mkContext env (Object HM.empty) post)
+          (mkContext [env, provideAs "inner" post])
 
   cmnOut learnFile    %> justFromTemplate learnT
   cmnOut ossFile      %> justFromTemplate ossT
@@ -138,7 +188,7 @@ pandocWriterOpts = def
   , writerHighlight      = True
   , writerHTMLMathMethod = MathJax "" }
 
-getPost :: MonadIO m => FilePath -> m (Value, TL.Text)
+getPost :: (MonadIO m, FromJSON v) => FilePath -> m (v, TL.Text)
 getPost path = do
   (yaml', doc') <- T.breakOn "\n---\n" <$> liftIO (T.readFile path)
   yaml <-
@@ -149,9 +199,17 @@ getPost path = do
         readMarkdown pandocReaderOpts (T.unpack (T.drop 5 doc'))
   return (yaml, renderHtml r)
 
-mkContext :: Value -> Value -> TL.Text -> Value
-mkContext (Object m0) (Object m1) content =
-  let m = HM.union m0 m1
-      r = String (TL.toStrict content)
-  in Object (HM.insert "inner" r m)
-mkContext _ _ _ = error "context merge failed"
+mkContext :: [Value] -> Value
+mkContext = foldl1' f
+  where
+    f (Object m0) (Object m1) = Object (HM.union m0 m1)
+    f _ _                     = error "context merge failed"
+
+provideAs :: ToJSON v => Text -> v -> Value
+provideAs k v = Object (HM.singleton k (toJSON v))
+
+parseDay :: Monad m => Text -> m Day
+parseDay = parseTimeM True defaultTimeLocale "%B %e, %Y" . T.unpack
+
+renderDay :: Day -> String
+renderDay = formatTime defaultTimeLocale "%B %e, %Y"

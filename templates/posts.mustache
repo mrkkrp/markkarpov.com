@@ -1,0 +1,16 @@
+<h1>Posts</h1>
+
+<table class="table table-stripped">
+  <thead>
+    <tr>
+      <th>Published</th>
+      <th>Title</th>
+    </tr>
+  </thead>
+  {{# posts }}
+  <tr>
+    <td>{{ published }}</td>
+    <td><a href="{{ file }}">{{ title }}</a></td>
+  </tr>
+  {{/ posts }}
+</table>

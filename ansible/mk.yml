@@ -1,0 +1,55 @@
+---
+- hosts: prod
+  user: "{{ deploy_user }}"
+  vars_files:
+    - vars/vars.yml
+  become: yes
+
+  tasks:
+
+    - name: Set host name
+      hostname:
+        name: "{{ host_name }}"
+
+    - name: Set time zone
+      timezone:
+        name: "{{ time_zone }}"
+
+    - name: Ensure the necessary packages are installed
+      apt:
+        name: "{{ item }}"
+        state: latest
+      with_items: "{{ packages }}"
+
+    - name: Generate locale
+      locale_gen:
+        name: en_US.UTF-8
+        state: present
+    - name: Set locale
+      command: "localectl set-locale LANG=en_US.UTF-8"
+
+    - name: Install ntp
+      apt:
+        name: ntp
+        state: latest
+    - name: Enable and start the ntp service
+      service:
+        name: ntp
+        state: started
+        enabled: yes
+
+    - name: Install unattended upgrades package
+      apt:
+        name: unattended-upgrades
+        state: present
+
+    - name: Copy unattended upgrades configuration files in place
+      template:
+        src: "templates/{{ item }}"
+        dest: "/etc/apt/apt.conf.d/{{ item }}"
+        owner: root
+        group: root
+        mode: 0644
+      with_items:
+        - 10periodic
+        - 50unattended-upgrades

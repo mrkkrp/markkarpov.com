@@ -1,0 +1,7 @@
+---
+host_name: mk-com
+time_zone: UTC
+deploy_user: admin
+ssh_keys_url: https://github.com/mrkkrp.keys
+packages:
+  - nginx

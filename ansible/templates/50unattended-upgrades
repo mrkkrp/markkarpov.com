@@ -1,0 +1,5 @@
+Unattended-Upgrade::Automatic-Reboot "false";
+
+Unattended-Upgrade::Allowed-Origins {
+  "Ubuntu lucid-security";
+};

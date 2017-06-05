@@ -71,3 +71,23 @@
       with_items:
         - { direction: outgoing, policy: allow }
         - { direction: incoming, policy: deny  }
+
+    - name: Start and enable the Nginx service
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+
+    - name: Configure Nginx
+      template:
+        src: "templates/nginx.conf"
+        dest: "/etc/nginx/nginx.conf"
+        owner: root
+        group: root
+        mode: 0644
+      notify: Reload Nginx config
+
+  handlers:
+
+    - name: Reload Nginx config
+      command: "nginx -s reload"

@@ -1,0 +1,18 @@
+---
+- hosts: prod
+  user: "{{ deploy_user }}"
+  vars_files:
+    - vars/vars.yml
+
+  tasks:
+
+    - name: Ensure the target directory exists
+      file:
+        path: "/home/{{ deploy_user }}/{{ deploy_dir }}"
+        state: directory
+    - name: Copy static files to the server
+      copy:
+        src: "../_build/"
+        dest: "/home/{{ deploy_user }}/{{ deploy_dir }}/"
+        owner: "{{ deploy_user }}"
+        mode: 0644

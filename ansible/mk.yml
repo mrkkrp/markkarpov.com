@@ -53,3 +53,21 @@
       with_items:
         - 10periodic
         - 50unattended-upgrades
+
+    - name: Configure open ports with ufw
+      ufw:
+        rule: "{{ item.rule }}"
+        port: "{{ item.port }}"
+        proto: "{{ item.proto }}"
+      with_items:
+        - { rule: 'allow', port: "{{ use_ssh_port }}", proto: 'tcp' }
+        - { rule: 'allow', port: 80,                   proto: 'tcp' }
+        - { rule: 'allow', port: 123,                  proto: 'udp' }
+    - name: Configure default incoming/outgoing rules with ufw
+      ufw:
+        direction: "{{ item.direction }}"
+        policy: "{{ item.policy }}"
+        state: enabled
+      with_items:
+        - { direction: outgoing, policy: allow }
+        - { direction: incoming, policy: deny  }

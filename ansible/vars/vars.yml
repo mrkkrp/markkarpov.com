@@ -3,5 +3,6 @@ host_name: mk-com
 time_zone: UTC
 deploy_user: admin
 ssh_keys_url: https://github.com/mrkkrp.keys
+use_ssh_port: 2555
 packages:
   - nginx

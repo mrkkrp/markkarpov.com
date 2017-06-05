@@ -32,7 +32,7 @@
       with_items:
         - { regexp: "^PasswordAuthentication", line: "PasswordAuthentication no" }
         - { regexp: "^PermitRootLogin",        line: "PermitRootLogin no" }
-        - { regexp: "^Port",                   line: "Port 2555" }
+        - { regexp: "^Port",                   line: "Port {{ use_ssh_port }}" }
         - { regexp: "^AllowUsers",             line: "AllowUsers {{ deploy_user }}" }
       notify: Restart SSH
 

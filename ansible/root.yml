@@ -10,6 +10,7 @@
       user:
         name: "{{ deploy_user }}"
         state: present
+        shell: "/bin/bash"
 
     - name: Make the user a sudoer
       lineinfile:

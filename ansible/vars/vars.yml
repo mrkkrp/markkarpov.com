@@ -6,5 +6,7 @@ deploy_dir: markkarpov.com
 server_name: markkarpov.com
 ssh_keys_url: https://github.com/mrkkrp.keys
 use_ssh_port: 2555
+cert_email: markkarpov92@gmail.com
 packages:
   - nginx
+  - software-properties-common

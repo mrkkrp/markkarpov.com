@@ -62,6 +62,7 @@
       with_items:
         - { rule: 'allow', port: "{{ use_ssh_port }}", proto: 'tcp' }
         - { rule: 'allow', port: 80,                   proto: 'tcp' }
+        - { rule: 'allow', port: 443,                  proto: 'tcp' }
         - { rule: 'allow', port: 123,                  proto: 'udp' }
     - name: Configure default incoming/outgoing rules with ufw
       ufw:
@@ -86,6 +87,25 @@
         group: root
         mode: 0644
       notify: Reload Nginx config
+
+    - name: Add Certbot repo to apt
+      apt_repository:
+        repo: 'ppa:certbot/certbot'
+
+    - name: Install the Certbot package
+      apt:
+        name: python-certbot-nginx
+        state: present
+        update_cache: yes
+
+    # - name: Obtain and install certificate # not sure about this
+    #   command: "certbot --nginx -m {{ cert_email }} -d {{ server_name }} certonly"
+
+    - name: Setup a cronjob to renew certificate automatically
+      cron:
+        name: Renew certificates
+        job:  "certbot renew"
+        special_time: monthly
 
   handlers:
 

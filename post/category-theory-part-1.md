@@ -1,6 +1,6 @@
 ---
 title: Category Theory Basics, Part I
-description: Category theory notions in simple to understand (I hope), but concise form, part I.
+desc: Category theory notions in simple to understand (I hope), but concise form, part I.
 date:
   published: September 18, 2016
   updated:   June 1, 2017

@@ -1,6 +1,6 @@
 ---
 title: Megaparsec 4 and 5
-description: What we have achieved with version 4 of Megaparsec and what is planned in version 5.
+desc: What we have achieved with version 4 of Megaparsec and what is planned in version 5.
 date:
   published: February 23, 2016
   updated:   June 1, 2017

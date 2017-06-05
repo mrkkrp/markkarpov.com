@@ -1,6 +1,6 @@
 ---
 title: Lisp and Haskell
-description: How I finally decided what is better (for me), Lisp or Haskell?
+desc: How I finally decided what is better (for me), Lisp or Haskell?
 date:
   published: October 23, 2015
   updated: June 1, 2017

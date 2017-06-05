@@ -1,6 +1,6 @@
 ---
 title: Latest additions to Megaparsec
-description: This blog post summarizes new features added to Megaparsec in the second half of 2016.
+desc: This blog post summarizes new features added to Megaparsec in the second half of 2016.
 date:
   published: November 24, 2016
   updated:   June 1, 2017

@@ -8,6 +8,7 @@ import Control.Monad.IO.Class
 import Data.Aeson
 import Data.Default.Class
 import Data.List (sortBy, foldl1')
+import Data.Maybe (fromMaybe)
 import Data.Ord (comparing, Down (..))
 import Data.Text (Text)
 import Data.Time
@@ -37,12 +38,13 @@ jsPattern    = "static/js/*.js"
 templPattern = "templates/*.mustache"
 imgPattern   = "static/img/*"
 
-aboutFile, ossFile, notFoundFile, learnFile, postsFile :: FilePath
+aboutFile, ossFile, notFoundFile, learnFile, postsFile, atomFile :: FilePath
 aboutFile    = "about.html"
 ossFile      = "oss.html"
 notFoundFile = "404.html"
 learnFile    = "learn-haskell.html"
 postsFile    = "posts.html"
+atomFile     = "feed.atom"
 
 postOut, cmnOut :: FilePath -> FilePath
 postOut x = outdir </> x -<.> "html"
@@ -52,7 +54,7 @@ postIn, cmnIn :: FilePath -> FilePath
 postIn x = dropDirectory1 x -<.> "md"
 cmnIn    = dropDirectory1
 
-aboutT, defaultT, postT, ossT, notFoundT, learnT, postsT :: PName
+aboutT, defaultT, postT, ossT, notFoundT, learnT, postsT, atomT :: PName
 aboutT    = "about"
 defaultT  = "default"
 postT     = "post"
@@ -60,11 +62,13 @@ ossT      = "oss"
 notFoundT = "404"
 learnT    = "learn-haskell"
 postsT    = "posts"
+atomT     = "atom-feed"
 
 data PostInfo = PostInfo
   { postTitle     :: Text
   , postPublished :: Day
-  , postUpdated   :: Day
+  , postUpdated   :: Maybe Day
+  , postDesc      :: Text
   , postFile      :: FilePath
   } deriving (Eq, Show)
 
@@ -72,16 +76,21 @@ instance FromJSON PostInfo where
   parseJSON = withObject "post metadata" $ \o -> do
     postTitle     <- o .: "title"
     postPublished <- (o .: "date") >>= (.: "published") >>= parseDay
-    postUpdated   <- (o .: "date") >>= (.: "updated")   >>= parseDay
+    postUpdated   <- (o .: "date") >>= (.:? "updated")  >>=
+      maybe (pure Nothing) (fmap Just . parseDay)
+    postDesc      <- o .: "desc"
     let postFile = ""
     return PostInfo {..}
 
 instance ToJSON PostInfo where
-  toJSON PostInfo {..} = object
-    [ "title"     .= postTitle
-    , "published" .= renderDay postPublished
-    , "updated"   .= renderDay postUpdated
-    , "file"      .= postFile ]
+  toJSON info@PostInfo {..} = object
+    [ "title"             .= postTitle
+    , "published"         .= renderDay postPublished
+    , "published_iso8601" .= renderIso8601 postPublished
+    , "updated"           .= fmap renderDay postUpdated
+    , "updated_iso8601"   .= renderIso8601 (normalizedUpdated info)
+    , "desc"              .= postDesc
+    , "file"              .= postFile ]
 
 ----------------------------------------------------------------------------
 -- Build system
@@ -94,7 +103,8 @@ main = shakeArgs shakeOptions $ do
     getDirFiles cssPattern   >>= need . fmap cmnOut
     getDirFiles jsPattern    >>= need . fmap cmnOut
     getDirFiles imgPattern   >>= need . fmap cmnOut
-    need (cmnOut <$> [aboutFile, ossFile, notFoundFile, learnFile, postsFile])
+    need (cmnOut <$>
+          [aboutFile, ossFile, notFoundFile, learnFile, postsFile, atomFile])
 
   phony "clean" $ do
     putNormal ("Cleaning files in " ++ outdir)
@@ -146,13 +156,29 @@ main = shakeArgs shakeOptions $ do
       need [post]
       v <- fst <$> getPost post
       return v { postFile = dropDirectory1 (postOut post) }
-    let postList = provideAs "posts" ps
+    let postList = provideAs "post" ps
         posts = renderMustache
           (selectTemplate postsT ts)
           (mkContext [env, postList])
     liftIO . TL.writeFile out $ renderMustache
       (selectTemplate defaultT ts)
       (mkContext [env, postList, provideAs "inner" posts] )
+
+  cmnOut atomFile %> \out -> do
+    env <- commonEnv ()
+    ts  <- templates ()
+    ps' <- getDirFiles postsPattern
+    ps  <- fmap (sortBy (comparing (Down . postPublished))) . forM ps' $ \post -> do
+      need [post]
+      v <- fst <$> getPost post
+      return v { postFile = dropDirectory1 (postOut post) }
+    let feedUpdated = renderIso8601 $ maximum (normalizedUpdated <$> ps)
+    liftIO . TL.writeFile out $ renderMustache
+      (selectTemplate atomT ts)
+      (mkContext [ env
+                 , provideAs "entry" ps
+                 , provideAs "feed_file" (dropDirectory1 out)
+                 , provideAs "feed_updated" feedUpdated])
 
   let justFromTemplate template out = do
         env <- commonEnv ()
@@ -211,5 +237,13 @@ provideAs k v = Object (HM.singleton k (toJSON v))
 parseDay :: Monad m => Text -> m Day
 parseDay = parseTimeM True defaultTimeLocale "%B %e, %Y" . T.unpack
 
+normalizedUpdated :: PostInfo -> Day
+normalizedUpdated PostInfo {..} = fromMaybe postPublished postUpdated
+
 renderDay :: Day -> String
 renderDay = formatTime defaultTimeLocale "%B %e, %Y"
+
+renderIso8601 :: Day -> String
+renderIso8601 = formatTime defaultTimeLocale fmt
+  where
+    fmt = iso8601DateFormat (Just "00:00:00Z")

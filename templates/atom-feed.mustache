@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Mark Karpov's Site</title>
+  <link href="{{ host }}{{ feed_file }}" rel="self"/>
+  <link href="{{ host }}"/>
+  <id>{{ host }}{{ feed_file }}</id>
+  <author>
+    <name>{{ feed.author_name }}</name>
+    <email>{{ feed.author_email }}</email>
+  </author>
+  <updated>{{ feed_updated }}</updated>
+  {{# entry }}
+  <entry>
+    <title>{{ title }}</title>
+    <link href="{{ host }}{{ file }}" />
+    <id>{{ host }}{{ file }}</id>
+    <published>{{ published_iso8601 }}</published>
+    <updated>{{ updated_iso8601 }}</updated>
+    <summary type="html"><![CDATA[{{ desc }}]]></summary>
+  </entry>
+  {{/ entry }}
+</feed>

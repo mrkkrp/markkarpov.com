@@ -1,6 +1,6 @@
 ---
 title: Announcing Megaparsec 5
-description: Finally Megaparsec 6 is out, what's new?
+desc: Finally Megaparsec 6 is out, what's new?
 date:
   published: May 15, 2016
   updated:   June 1, 2017

@@ -73,6 +73,11 @@
         - { direction: outgoing, policy: allow }
         - { direction: incoming, policy: deny  }
 
+    - name: Ensure the directory for static files exists
+      file:
+        path: "/home/{{ deploy_user }}/{{ deploy_dir }}"
+        state: directory
+
     - name: Start and enable the Nginx service
       service:
         name: nginx

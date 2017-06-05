@@ -6,10 +6,6 @@
 
   tasks:
 
-    - name: Ensure the target directory exists
-      file:
-        path: "/home/{{ deploy_user }}/{{ deploy_dir }}"
-        state: directory
     - name: Copy static files to the server
       copy:
         src: "../_build/"

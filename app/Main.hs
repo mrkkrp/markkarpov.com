@@ -31,12 +31,13 @@ import qualified Data.Yaml           as Y
 outdir :: FilePath
 outdir = "_build"
 
-postsPattern, cssPattern, jsPattern, templPattern, imgPattern :: FilePattern
+postsPattern, cssPattern, jsPattern, templPattern, imgPattern, rawPattern :: FilePattern
 postsPattern = "post/*.md"
 cssPattern   = "static/css/*.css"
 jsPattern    = "static/js/*.js"
 templPattern = "templates/*.mustache"
 imgPattern   = "static/img/*"
+rawPattern   = "raw/*"
 
 aboutFile, ossFile, notFoundFile, learnFile, postsFile, atomFile :: FilePath
 aboutFile    = "about.html"
@@ -46,13 +47,15 @@ learnFile    = "learn-haskell.html"
 postsFile    = "posts.html"
 atomFile     = "feed.atom"
 
-postOut, cmnOut :: FilePath -> FilePath
+postOut, cmnOut, rawOut :: FilePath -> FilePath
 postOut x = outdir </> x -<.> "html"
 cmnOut  x = outdir </> x
+rawOut  x = outdir </> dropDirectory1 x
 
-postIn, cmnIn :: FilePath -> FilePath
+postIn, cmnIn, rawIn :: FilePath -> FilePath
 postIn x = dropDirectory1 x -<.> "md"
 cmnIn    = dropDirectory1
+rawIn  x = "raw" </> dropDirectory1 x
 
 aboutT, defaultT, postT, ossT, notFoundT, learnT, postsT, atomT :: PName
 aboutT    = "about"
@@ -103,6 +106,7 @@ main = shakeArgs shakeOptions $ do
     getDirFiles cssPattern   >>= need . fmap cmnOut
     getDirFiles jsPattern    >>= need . fmap cmnOut
     getDirFiles imgPattern   >>= need . fmap cmnOut
+    getDirFiles rawPattern   >>= need . fmap rawOut
     need (cmnOut <$>
           [aboutFile, ossFile, notFoundFile, learnFile, postsFile, atomFile])
 
@@ -130,6 +134,9 @@ main = shakeArgs shakeOptions $ do
 
   cmnOut imgPattern %> \out ->
     copyFile' (cmnIn out) out
+
+  rawOut rawPattern %> \out ->
+    copyFile' (rawIn out) out
 
   postOut postsPattern %> \out -> do
     env <- commonEnv ()

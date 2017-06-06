@@ -169,7 +169,10 @@ main = shakeArgs shakeOptions $ do
           (mkContext [env, postList])
     liftIO . TL.writeFile out $ renderMustache
       (selectTemplate defaultT ts)
-      (mkContext [env, postList, provideAs "inner" posts] )
+      (mkContext [ env
+                 , postList
+                 , provideAs "title" ("Posts" :: Text)
+                 , provideAs "inner" posts ] )
 
   cmnOut atomFile %> \out -> do
     env <- commonEnv ()
@@ -187,7 +190,8 @@ main = shakeArgs shakeOptions $ do
                  , provideAs "feed_file" (dropDirectory1 out)
                  , provideAs "feed_updated" feedUpdated])
 
-  let justFromTemplate template out = do
+  let justFromTemplate :: Text -> PName -> FilePath -> Action ()
+      justFromTemplate title template out = do
         env <- commonEnv ()
         ts  <- templates ()
         let post = renderMustache
@@ -195,12 +199,14 @@ main = shakeArgs shakeOptions $ do
               (mkContext [env])
         liftIO . TL.writeFile out $ renderMustache
           (selectTemplate defaultT ts)
-          (mkContext [env, provideAs "inner" post])
+          (mkContext [ env
+                     , provideAs "inner" post
+                     , provideAs "title" title ])
 
-  cmnOut learnFile    %> justFromTemplate learnT
-  cmnOut ossFile      %> justFromTemplate ossT
-  cmnOut aboutFile    %> justFromTemplate aboutT
-  cmnOut notFoundFile %> justFromTemplate notFoundT
+  cmnOut learnFile    %> justFromTemplate "Learn Haskell" learnT
+  cmnOut ossFile      %> justFromTemplate "Open Source"   ossT
+  cmnOut aboutFile    %> justFromTemplate "About me"      aboutT
+  cmnOut notFoundFile %> justFromTemplate "404 Not Found" notFoundT
 
 ----------------------------------------------------------------------------
 -- Helpers

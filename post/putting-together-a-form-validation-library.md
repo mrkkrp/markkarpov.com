@@ -3,7 +3,7 @@ title: Putting together a form validation library
 desc: A write-up about motivation and design of the forma library
 date:
   published: May 2, 2017
-  updated:   June 1, 2017
+  updated:   June 6, 2017
 ---
 
 This time I want to talk about something as boring as parsing and validating
@@ -160,7 +160,7 @@ Just think what such a parser should be? It should take a `Value` and return
 result, which is already modelled by `BranchState`, so we just wrap that
 function, call it `FormParser` and let the types guide us.
 
-An important thing to note that with the short-circuiting behavior of
+An important thing to note is that with the short-circuiting behavior of
 `ParsingFailed`, we can define a meaningful `Alternative`, which means we
 will be able to use `optional` and `(<|>)` in our parsers instead of what
 `digestive-functors` do (they have `text` and then `optionalText`, and so
@@ -323,7 +323,7 @@ use of `mkFieldError` makes sure it's in the set of field names `names`.
 Note the `myChecker` thing of the type `s -> ExceptT e m a`. `s` is the type
 of thing that we parse from `Value` initially, then we can transform it and
 validate within the `EitherT` monad transformer, which may contain any monad
-`m`, such as a monad that allows you to lookup things in the database or
+`m`, such as a monad that allows you to lookup things in a database or
 anything else. Since I'd often like to transform the `s` value to other
 type, resulting value has a different type `a`. Finally as long as `e` is
 convert-able to JSON (note the `ToJSON e` constraint), we're OK with

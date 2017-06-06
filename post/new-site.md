@@ -16,14 +16,14 @@ So far I have migrated my old posts (located at https://mrkkrp.github.io),
 You may certainly expect some posts related to optimization of my existing
 projects, such as [`text-metrics`](https://github.com/mrkkrp/text-metrics),
 which I'm migrating to pure Haskell right now. Also, in case you do not know
-yet, Megaparsec 6 is coming this summer, so there will be posts about that
-the related development as well.
+yet, Megaparsec 6 is coming this summer, so there will be posts about the
+related development as well.
 
 Megaparsec tutorials will be probably moved to this site soon, so I can
 manage all my tutorials through one system. After all, I'm still the sole
 contributor to Megaparsec's official tutorials, so it makes sense to move
 the tutorials to my site. Since the tutorials is the only useful content on
-Megaparsec's site it will be shut down after the migration and the tutorial
+Megaparsec's site, it will be shut down after the migration and the tutorial
 links will redirect to new locations on this site.
 
 In case you're interested how this site is built, I'll tell you ;-) This

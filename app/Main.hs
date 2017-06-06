@@ -18,6 +18,7 @@ import Text.Blaze.Html.Renderer.Text
 import Text.Mustache
 import Text.Pandoc hiding (Template)
 import qualified Data.HashMap.Strict as HM
+import qualified Data.Set            as S
 import qualified Data.Text           as T
 import qualified Data.Text.Encoding  as TE
 import qualified Data.Text.IO        as T
@@ -219,7 +220,10 @@ selectTemplate name t = t { templateActual = name }
 
 pandocReaderOpts :: ReaderOptions
 pandocReaderOpts = def
-  { readerSmart = True }
+  { readerExtensions = S.union pandocExtensions $ S.fromList
+    [ Ext_autolink_bare_uris
+    , Ext_lists_without_preceding_blankline ]
+  ,  readerSmart = True }
 
 pandocWriterOpts :: WriterOptions
 pandocWriterOpts = def

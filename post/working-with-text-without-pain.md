@@ -67,8 +67,8 @@ follows that “a better keyboard” should:
   <kbd>⎇ Alt</kbd>) in symmetric positions for each hand, to help divide
   work load evenly between the hands.
 
-* It should be mechanical, since it just feels better and hopefully, lasts
-  longer.
+* It should be mechanical, since mechanical keyboards feel better and
+  hopefully, last longer.
 
 To solve the problem once and for all, I decided that I'd buy a keyboard
 that satisfies those criteria no matter the price. After some research I

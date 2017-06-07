@@ -65,8 +65,8 @@ follows that “a better keyboard” should:
 * Should have straight layout of keys for each hand so they form a “matrix”.
 
 * Should have all modifier keys (<kbd>⇧ Shift</kbd>, <kbd>⎈ Ctrl</kbd>, and
-  <kbd>⎇ Alt</kbd>) in symmetric positions for each hand, to eliminate
-  excessive work load for fingers of one particular hand.
+  <kbd>⎇ Alt</kbd>) in symmetric positions for each hand, to help divide
+  work load evenly between the hands.
 
 * It should be mechanical, since it just feels better and hopefully, lasts
   longer.
@@ -100,20 +100,19 @@ To make typing as easy and comfortable as possible, it makes sense to avoid
 key chords and prefer sequences of keys. This follows from the simple fact
 that typing several keys in sequence is easier (and safer in long term) than
 holding several keys. Many Emacs users suffer RSI because default Emacs
-shortcuts are brain-damaged.
+shortcuts are quite brain-damaged in this regard.
 
-I have personally replaced most shortcuts in Emacs with key sequences
-starting with an “introducing key”. We can choose a single key, whose seul
-rôle will be starting key sequences. How long should every such a key
-sequence be? Of course, we want it to be as short as possible, but we cannot
-use only one key after the introducing key, because the total number of
-combinations won't be satisfactory. But we can use two keys after the
-introducing key (<kbd>Page Down</kbd> in my case, see the picture my
-keyboard above), then we get 26 × 26 = 676 combinations! (In practice, we
-get even more because of punctuation and numbers.) Not bad at all. There are
-enough combinations for us to prefer those that have some mnemonic value.
-For example, when I need to invoke `grep` from Emacs I just type <kbd>Page
-Down</kbd> <kbd>g</kbd> <kbd>r</kbd>.
+I have replaced most shortcuts in Emacs with key sequences starting with an
+“introducing key”. We can choose a single key, whose seul rôle will be
+starting key sequences. How long should every such a key sequence be? Of
+course, we want it to be as short as possible, but we cannot use only one
+key after the introducing key, because the total number of combinations
+won't be satisfactory. But we can use two keys after the introducing key
+(<kbd>Page Down</kbd> in my case), then we get 26 × 26 = 676 combinations!
+(In practice, we get even more because of punctuation and numbers.) Not bad
+at all. There are enough combinations for us to prefer those that have some
+mnemonic value. For example, when I need to invoke `grep` from Emacs I just
+type <kbd>Page Down</kbd> <kbd>g</kbd> <kbd>r</kbd>.
 
 ## Sticky keys
 
@@ -140,14 +139,32 @@ try!
 
 ## Modal editing
 
-Even with “sticky keys” and sequential key bindings for most tasks, common
-commands like “go to beginning of the line” (<kbd>⎈ Ctrl</kbd>+<kbd>a</kbd>)
-still require holding a modifier key. Typing <kbd>⎈ Ctrl</kbd> and then
-<kbd>a</kbd> after that is not exactly fast for such a common command as
-moving to beginning of the current line.
+Even with “sticky keys” and sequential key bindings for most tasks, common,
+intensive editing commands like “go to beginning of the line” (<kbd>⎈
+Ctrl</kbd>+<kbd>a</kbd> by default in Emacs) still require holding a
+modifier key. “Sticky keys” is not exactly a win in this case, as
+combinations like <kbd>⎈ Ctrl</kbd>+<kbd>n</kbd> may need to be pressed
+several times in a row. The fact that the number of keys located in
+convenient positions is limited suggests that we must use different “layers”
+for editing: one layer would input keys as usual while another layer would
+run various common editing commands using the same keys.
+
+The idea is nothing new, of course, this is how Vi works. The technique is
+called *modal editing* because we sort of have (at least) two modes of
+operation: *insert mode* and *normal mode* (if we choose to follow the Vi
+terminology). This allows to avoid ever holding any modifier keys.
+
+Vi users already edit modally, while in the Emacs world there are several
+ways to do that. Please
+read
+[this article](https://github.com/mrkkrp/modalka/blob/master/README.md),
+which is actually the `README.md` file for the package I've written and use
+personally—Modalka. The `README.md` compares all packages in existence for
+modal editing in Emacs and describes why you might want to try Modalka.
 
 That's it, currently I *never* hold modifier keys, or any keys at all. All
-my editing happens through typing sequences of keys.
+my editing happens through typing sequences of keys—that is, normal typing
+experience.
 
 ## Keyboard layout
 
@@ -160,11 +177,13 @@ However, Dvorak will make typing more comfortable. I can confirm this as a
 person [who switched a year ago](/post/dvorak-rocks.html). I still remember
 the difference. If you don't want to take my word for it, here
 is [this article](http://infohost.nmt.edu/~shipman/ergo/parkinson.html)
-which explains why Drorak is objectively better for typing English.
+which explains why Dvorak is objectively better for typing English.
 
 ## Conclusion
 
 Applying all these recommendations in practice does take will power and may
-be inconvenient at first. Nevertheless I'm quite convinced that it's this
-combination of hardware and settings allows me to be an efficient keyboard
-user and avoid any discomfort now and later.
+be inconvenient at first. Nevertheless I'm quite convinced that it is this
+combination of hardware and settings that allows me to be an efficient
+keyboard user and avoid any discomfort now and later. Hearing stories about
+pains in hands from others, I usually try to convince them to at least buy
+an ergonomic keyboard. Now I have the whole article to send them to!

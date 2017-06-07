@@ -72,14 +72,10 @@ follows that “a better keyboard” should:
   longer.
 
 To solve the problem once and for all, I decided that I'd buy a keyboard
-that satisfies those criteria no matter the price. So here it is, my first
-**Kinesis Advantage**:
-
-```
-```
-
-At the time I bought it they did not come up with the later model, **Kinesis
-Advantage 2 QD** ([hi-res image](https://www.kinesis-ergo.com/wp-content/uploads/2016/07/kb600qd-oh-1977x1024.png)):
+that satisfies those criteria no matter the price. After some research I
+bought **Kinesis Advantage**, which is now discontinued because Kinesis came
+up with the later model, **Kinesis Advantage 2 QD**
+([hi-res image](https://www.kinesis-ergo.com/wp-content/uploads/2016/07/kb600qd-oh-1977x1024.png)):
 
 ![Kinesis Advantage 2 QD](/static/img/kinesis-advantage-2-qd.png)
 
@@ -108,7 +104,26 @@ without any issues for 10 years straight, so it's a nice investment too.
 
 ## Sticky keys
 
-## Editor
+As a continuation of the previous point about key sequences being better
+than key chords, here comes the “sticky keys” feature. This feature is
+provided by all major operating systems and desktop environments and allows
+to type modifier keys like <kbd>⇧ Shift</kbd> and <kbd>⎈ Ctrl</kbd> *before*
+the key you want to add them to. So to type a capital “A” I hit <kbd>⇧
+Shift</kbd> without holding it I then type “a” and here we go—an easier,
+better typing experience. Another benefit is *increased accuracy*, as it's
+virtually impossible to “apply” <kbd>⇧ Shift</kbd> to more key strokes than
+intended.
+
+I started to use this technique in 2015 and now if it's disabled for some
+reason I just don't bother to type capital letters at all because it
+requires holding shift, which is an unnatural movement for me now.
+
+The common complaint from people who do not use this is that they don't want
+to have “state” in their typing. I can only say that after a while it
+becomes very, very rare to leave a “hanging” modifier so that it gets
+applied to a keystroke you don't want to apply it to. On the other hand,
+typing with “sticky keys” is a lot easier and feels more natural. Give it a
+try!
 
 ## Conclusion
 

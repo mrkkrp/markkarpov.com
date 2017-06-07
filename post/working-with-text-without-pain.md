@@ -30,12 +30,11 @@ dangerous for health. In retrospect, I can name the following flaws:
   press the spacebar. One might argue that remapping could be used to
   alleviate the problem, but in my experience it is not true, as the
   important, non-alphabetic keys are all placed in positions that can be
-  reached by no other fingers but pinkies. There is nothing in the middle of
-  the keyboard that could be comfortably operated by thumbs: only the
-  spacebar.
+  reached only by pinkies. There is nothing in the middle of the keyboard
+  that could be comfortably operated by thumbs: only the spacebar.
 
 * The keys are staggered so one has to stretch his/her fingers in weird ways
-  to reach keys that are not in the home row. Why do that completely
+  to reach keys that are not in the home row. Why do those completely
   unnatural movements? This decreases accuracy too.
 
 * As an Emacs user, I had to use the <kbd>⎈ Ctrl</kbd> key a lot and so I

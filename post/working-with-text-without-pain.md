@@ -34,9 +34,9 @@ dangerous for health. In retrospect, I can name the following flaws:
   the keyboard that could be comfortably operated by thumbs: only the
   spacebar.
 
-* The keys are staggered so one has to stretch his fingers in weird ways to
-  reach keys that are not in the home row. Why do that completely unnatural
-  movements? This decreases accuracy too.
+* The keys are staggered so one has to stretch his/her fingers in weird ways
+  to reach keys that are not in the home row. Why do that completely
+  unnatural movements? This decreases accuracy too.
 
 * As an Emacs user, I had to use the <kbd>⎈ Ctrl</kbd> key a lot and so I
   followed the popular advice to make <kbd>⇪ Caps Lock</kbd> to function as
@@ -74,7 +74,7 @@ follows that “a better keyboard” should:
 To solve the problem once and for all, I decided that I'd buy a keyboard
 that satisfies those criteria no matter the price. After some research I
 bought **Kinesis Advantage**, which is now discontinued because Kinesis came
-up with the later model, **Kinesis Advantage 2 QD**
+up with a newer model, **Kinesis Advantage 2 QD**
 ([hi-res image](https://www.kinesis-ergo.com/wp-content/uploads/2016/07/kb600qd-oh-1977x1024.png)):
 
 ![Kinesis Advantage 2 QD](/static/img/kinesis-advantage-2-qd.png)
@@ -99,7 +99,7 @@ without any issues for 10 years straight, so it's a nice investment too.
 To make typing as easy and comfortable as possible, it makes sense to avoid
 key chords and prefer sequences of keys. This follows from the simple fact
 that typing several keys in sequence is easier (and safer in long term) than
-holding several keys. Many Emacs users suffer RSI because default Emacs
+holding several keys. Many Emacs users suffer RSI because the default Emacs
 shortcuts are quite brain-damaged in this regard.
 
 I have replaced most shortcuts in Emacs with key sequences starting with an
@@ -152,26 +152,24 @@ run various common editing commands using the same keys.
 The idea is nothing new, of course, this is how Vi works. The technique is
 called *modal editing* because we sort of have (at least) two modes of
 operation: *insert mode* and *normal mode* (if we choose to follow the Vi
-terminology). This allows to avoid ever holding any modifier keys.
+terminology). This allows to avoid holding any modifier keys.
 
 Vi users already edit modally, while in the Emacs world there are several
-ways to do that. Please
-read
+ways to do that. For more information on the topic I suggest reading
 [this article](https://github.com/mrkkrp/modalka/blob/master/README.md),
 which is actually the `README.md` file for the package I've written and use
 personally—Modalka. The `README.md` compares all packages in existence for
 modal editing in Emacs and describes why you might want to try Modalka.
 
-That's it, currently I *never* hold modifier keys, or any keys at all. All
-my editing happens through typing sequences of keys—that is, normal typing
-experience.
+That's it, currently I *never* hold modifier keys, or any keys at all for
+that matter. All my editing happens through typing sequences of keys—that
+is, normal typing experience.
 
 ## Keyboard layout
 
-QWERTY is terrible, but switching to an alternative keyboard layout such as
-Dvorak is still optional in my opinion, provided you have a good keyboard
-and all your editing happens through normal typing experience (you do not
-ever hold any keys).
+QWERTY is a terrible historical accident, but switching to an alternative
+keyboard layout such as Dvorak is still optional in my opinion, provided you
+have a good keyboard and do not ever hold any keys/use key chords.
 
 However, Dvorak will make typing more comfortable. I can confirm this as a
 person [who switched a year ago](/post/dvorak-rocks.html). I still remember

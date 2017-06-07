@@ -138,14 +138,29 @@ applied to a keystroke you don't want to apply it to. On the other hand,
 typing with “sticky keys” is a lot easier and feels more natural. Give it a
 try!
 
+## Modal editing
+
+Even with “sticky keys” and sequential key bindings for most tasks, common
+commands like “go to beginning of the line” (<kbd>⎈ Ctrl</kbd>+<kbd>a</kbd>)
+still require holding a modifier key. Typing <kbd>⎈ Ctrl</kbd> and then
+<kbd>a</kbd> after that is not exactly fast for such a common command as
+moving to beginning of the current line.
+
+That's it, currently I *never* hold modifier keys, or any keys at all. All
+my editing happens through typing sequences of keys.
+
 ## Keyboard layout
 
-[This article](http://infohost.nmt.edu/~shipman/ergo/parkinson.html)
+QWERTY is terrible, but switching to an alternative keyboard layout such as
+Dvorak is still optional in my opinion, provided you have a good keyboard
+and all your editing happens through normal typing experience (you do not
+ever hold any keys).
 
-A proper keyboard alone should resolve the problem of pain and prevent RSI,
-but anotheng
-
-## Modal editing
+However, Dvorak will make typing more comfortable. I can confirm this as a
+person [who switched a year ago](/post/dvorak-rocks.html). I still remember
+the difference. If you don't want to take my word for it, here
+is [this article](http://infohost.nmt.edu/~shipman/ergo/parkinson.html)
+which explains why Drorak is objectively better for typing English.
 
 ## Conclusion
 

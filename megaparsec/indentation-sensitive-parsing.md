@@ -172,7 +172,7 @@ pItem = lexeme $ some (alphaNumChar <|> char '-')
 
 Now, load the code into GHCi and try it with help of `parseTest` built-in:
 
-```haskell
+```
 λ> parseTest parser ""
 1:1:
 unexpected end of input
@@ -195,7 +195,7 @@ noise to all messages), so this error message is perfectly reasonable.
 
 Let's continue:
 
-```haskell
+```
 λ> parseTest parser "something\n  one\n    two\n  three"
 3:5:
 incorrect indentation (got 5, should be equal to 3)
@@ -221,7 +221,7 @@ pItemList = L.nonIndented scn (L.indentBlock scn p)
 
 Now:
 
-```haskell
+```
 λ> parseTest parser "something\n"
 2:1:
 incorrect indentation (got 1, should be greater than 1)

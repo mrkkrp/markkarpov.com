@@ -162,7 +162,7 @@ We just wrote fairly complete parser for expressions in our language! If
 you're new to all this stuff I suggest you load the code into GHCi and play
 with it a bit. Use `parseTest` function to feed input into the parser:
 
-```haskell
+```
 λ> parseTest expr "5"
 Value 5.0
 λ> parseTest expr "5 + foo"

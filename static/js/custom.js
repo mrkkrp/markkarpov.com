@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 $(document).ready(function () {
     $("table").addClass("table table-striped");
     $("thead").addClass("thead-default");
+    $(".content img").addClass("img-fluid");
     $(".protected-email").each(function (i,v) {
         var item = $(this);
         var email = item.data('email');

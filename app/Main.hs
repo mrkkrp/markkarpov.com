@@ -16,7 +16,7 @@ import Development.Shake
 import Development.Shake.FilePath
 import Text.Blaze.Html.Renderer.Text
 import Text.Mustache
-import Text.Pandoc hiding (Template)
+import Text.Pandoc hiding (Template, Null)
 import qualified Data.HashMap.Strict as HM
 import qualified Data.Set            as S
 import qualified Data.Text           as T
@@ -157,7 +157,9 @@ main = shakeArgs shakeOptions $ do
     let context =
           [ env
           , v
-          , provideAs "location" (dropDirectory1 out) ]
+          , provideAs "location" (dropDirectory1 out)
+          , provideAs "attachment" Null -- FIXME when Stache is fixed
+          ]
         post = renderMustache
           (selectTemplate postT ts)
           (mkContext (provideAs "inner" content : context))
@@ -209,7 +211,9 @@ main = shakeArgs shakeOptions $ do
     let context =
           [ env
           , v
-          , provideAs "location" (dropDirectory1 out) ]
+          , provideAs "location" (dropDirectory1 out)
+          , provideAs "attachment" Null -- FIXME when Stache is fixed
+          ]
         tutorial = renderMustache
           (selectTemplate postT ts)
           (mkContext (provideAs "inner" content : context))

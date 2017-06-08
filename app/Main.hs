@@ -32,13 +32,15 @@ import qualified Data.Yaml           as Y
 outdir :: FilePath
 outdir = "_build"
 
-postsPattern, cssPattern, jsPattern, templPattern, imgPattern, rawPattern :: FilePattern
-postsPattern = "post/*.md"
-cssPattern   = "static/css/*.css"
-jsPattern    = "static/js/*.js"
-templPattern = "templates/*.mustache"
-imgPattern   = "static/img/*"
-rawPattern   = "raw/*"
+postsP, cssP, jsP, templateP, imgP, rawP, attachmentP, mtutorialP :: FilePattern
+postsP      = "post/*.md"
+cssP        = "static/css/*.css"
+jsP         = "static/js/*.js"
+templateP   = "templates/*.mustache"
+imgP        = "static/img/*"
+rawP        = "raw/*"
+attachmentP = "attachment/*"
+mtutorialP  = "megaparsec/*.md"
 
 aboutFile, ossFile, notFoundFile, learnFile, postsFile, atomFile :: FilePath
 aboutFile    = "about.html"
@@ -73,6 +75,7 @@ data PostInfo = PostInfo
   , postPublished :: Day
   , postUpdated   :: Maybe Day
   , postDesc      :: Text
+  , postDifficulty :: Maybe Int
   , postFile      :: FilePath
   } deriving (Eq, Show)
 
@@ -83,6 +86,7 @@ instance FromJSON PostInfo where
     postUpdated   <- (o .: "date") >>= (.:? "updated")  >>=
       maybe (pure Nothing) (fmap Just . parseDay)
     postDesc      <- o .: "desc"
+    postDifficulty <- o .:? "difficulty"
     let postFile = ""
     return PostInfo {..}
 
@@ -103,11 +107,13 @@ main :: IO ()
 main = shakeArgs shakeOptions $ do
 
   action $ do
-    getDirFiles postsPattern >>= need . fmap postOut
-    getDirFiles cssPattern   >>= need . fmap cmnOut
-    getDirFiles jsPattern    >>= need . fmap cmnOut
-    getDirFiles imgPattern   >>= need . fmap cmnOut
-    getDirFiles rawPattern   >>= need . fmap rawOut
+    getDirFiles postsP      >>= need . fmap postOut
+    getDirFiles cssP        >>= need . fmap cmnOut
+    getDirFiles jsP         >>= need . fmap cmnOut
+    getDirFiles imgP        >>= need . fmap cmnOut
+    getDirFiles rawP        >>= need . fmap rawOut
+    getDirFiles attachmentP >>= need . fmap cmnOut
+    getDirFiles mtutorialP  >>= need . fmap postOut
     need (cmnOut <$>
           [aboutFile, ossFile, notFoundFile, learnFile, postsFile, atomFile])
 
@@ -124,22 +130,25 @@ main = shakeArgs shakeOptions $ do
       Right value -> return value
 
   templates <- newCache $ \() -> do
-    getDirFiles templPattern >>= need
-    liftIO (compileMustacheDir defaultT (takeDirectory templPattern))
+    getDirFiles templateP >>= need
+    liftIO (compileMustacheDir defaultT (takeDirectory templateP))
 
-  cmnOut cssPattern %> \out ->
+  cmnOut cssP %> \out ->
     copyFile' (cmnIn out) out
 
-  cmnOut jsPattern %> \out ->
+  cmnOut jsP %> \out ->
     copyFile' (cmnIn out) out
 
-  cmnOut imgPattern %> \out ->
+  cmnOut imgP %> \out ->
     copyFile' (cmnIn out) out
 
-  rawOut rawPattern %> \out ->
+  rawOut rawP %> \out ->
     copyFile' (rawIn out) out
 
-  postOut postsPattern %> \out -> do
+  cmnOut attachmentP %> \out ->
+    copyFile' (cmnIn out) out
+
+  postOut postsP %> \out -> do
     env <- commonEnv ()
     ts  <- templates ()
     let src = postIn out
@@ -159,7 +168,7 @@ main = shakeArgs shakeOptions $ do
   cmnOut postsFile %> \out -> do
     env <- commonEnv ()
     ts  <- templates ()
-    ps' <- getDirFiles postsPattern
+    ps' <- getDirFiles postsP
     ps  <- fmap (sortBy (comparing (Down . postPublished))) . forM ps' $ \post -> do
       need [post]
       v <- fst <$> getPost post
@@ -178,7 +187,7 @@ main = shakeArgs shakeOptions $ do
   cmnOut atomFile %> \out -> do
     env <- commonEnv ()
     ts  <- templates ()
-    ps' <- getDirFiles postsPattern
+    ps' <- getDirFiles postsP
     ps  <- fmap (sortBy (comparing (Down . postPublished))) . forM ps' $ \post -> do
       need [post]
       v <- fst <$> getPost post
@@ -190,6 +199,23 @@ main = shakeArgs shakeOptions $ do
                  , provideAs "entry" ps
                  , provideAs "feed_file" (dropDirectory1 out)
                  , provideAs "feed_updated" feedUpdated])
+
+  postOut mtutorialP %> \out -> do
+    env <- commonEnv ()
+    ts  <- templates ()
+    let src = postIn out
+    need [src]
+    (v, content) <- getPost src
+    let context =
+          [ env
+          , v
+          , provideAs "location" (dropDirectory1 out) ]
+        tutorial = renderMustache
+          (selectTemplate postT ts)
+          (mkContext (provideAs "inner" content : context))
+    liftIO . TL.writeFile out $ renderMustache
+      (selectTemplate defaultT ts)
+      (mkContext (provideAs "inner" tutorial : context))
 
   let justFromTemplate :: Text -> PName -> FilePath -> Action ()
       justFromTemplate title template out = do

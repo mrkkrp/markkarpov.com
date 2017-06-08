@@ -10,7 +10,7 @@ I'm happy to announce a new major release of Megaparsec.
 
 * [Megaparsec 5 on Hackage](https://hackage.haskell.org/package/megaparsec)
 * [GitHub repo](https://github.com/mrkkrp/megaparsec)
-* [Site](https://mrkkrp.github.io/megaparsec/)
+* [Tutorials](/learn-haskell.html#megaparsec-tutorials)
 * [Changelog](https://github.com/mrkkrp/megaparsec/blob/master/CHANGELOG.md)
 
 ## Thanks
@@ -145,7 +145,7 @@ incorrectIndent ord ref actual = failure E.empty E.empty (E.singleton x)
 ```
 
 Which produces error messages like this (taken from
-[this tutorial](https://mrkkrp.github.io/megaparsec/tutorials/indentation-sensitive-parsing.html)):
+[this tutorial](/megaparsec/indentation-sensitive-parsing.html)):
 
 ```
 λ> parseTest parser "something\n  one\n    two\n  three"

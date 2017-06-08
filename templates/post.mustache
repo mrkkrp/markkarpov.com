@@ -1,9 +1,24 @@
 <h1>{{ title }}</h1>
 {{# date }}
+<p>
   <em class="text-muted">
     Published on {{ published }}{{# updated }}, last updated {{ . }}{{/ updated }}
   </em>
+</p>
 {{/ date }}
+
+{{# attachment }}
+<div class="card">
+    <div class="card-header">
+      Attachments to this article
+    </div>
+    <div class="card-block">
+      <span class="fa fa-file-text-o"></span>
+      <a href="/attachment/{{ . }}">{{ . }}</a>
+    </div>
+  </div>
+{{/ attachment }}
+
   {{& inner }}
 
   <div id="disqus_thread"></div>

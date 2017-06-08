@@ -83,9 +83,10 @@ main :: IO ()
 main = parseTest foo "b"
 ```
 
-If the code is puzzling to you, start with [this tutorial](https://mrkkrp.github.io/megaparsec/tutorials/custom-error-messages.html) I
-have written by popular request to explain how to do custom error messages
-with Megaparsec 5. Here I'll just explain how the labelling feature works.
+If the code is puzzling to you, start
+with [this tutorial](/megaparsec/custom-error-messages.html) I have written
+by popular request to explain how to do custom error messages with
+Megaparsec 5. Here I'll just explain how the labelling feature works.
 
 1. The `Pec` data type represents custom part of parse errors. By design it
    must be able to represent two things: message that was given to `fail`

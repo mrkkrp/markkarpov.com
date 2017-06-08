@@ -1,8 +1,8 @@
 <h1>Let's learn Haskell together</h1>
 
-<h2>Tutorials</h2>
+<h2>Generic tutorials</h2>
 <table class="table table-striped">
-  {{# tutorials.for_former_employers }}
+  {{# tutorials_for_former_employers }}
   <tr>
     <td>{{ published }}</td>
     <td>
@@ -10,7 +10,7 @@
       <span class="fa fa-external-link"></span>
     </td>
   </tr>
-  {{/ tutorials.for_former_employers }}
+  {{/ tutorials_for_former_employers }}
 </table>
 
 <p>
@@ -19,3 +19,13 @@
   to the fact that the content was created as part of my paid job for an
   employer.
 </p>
+
+<h2>Megaparsec tutorials</h2>
+<table class="table table-stripped">
+  {{# megaparsec_tutorials }}
+  <tr>
+    <td>{{ published }}</td>
+    <td><a href="{{ file }}">{{ title }}</a></td>
+  </tr>
+  {{/ megaparsec_tutorials }}
+</table>

@@ -4,7 +4,8 @@ desc: Native, composable solution to identation-sensitivy parsing.
 attachment: IndentationSensitiveParsing.hs
 difficulty: 3
 date:
-  published: May 25, 2017
+  published: January 12, 2016
+  updated: June 8, 2017
 ---
 
 Megaparsec 4.3.0 introduces new combinators that should be of some use when

@@ -4,7 +4,8 @@ desc: Based on an original Parsec tutorial.
 attachment: ParsingWhile.hs
 difficulty: 2
 date:
-  published: May 25, 2017
+  published: October 13, 2015
+  updated: June 8, 2017
 ---
 
 This tutorial will present how to parse a subset of a simple imperative

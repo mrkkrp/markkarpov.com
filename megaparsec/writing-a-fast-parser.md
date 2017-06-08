@@ -3,7 +3,8 @@ title: Writing a fast parser
 desc: Practical recommendations that should help you write a fast parser.
 difficulty: 4
 date:
-  published: May 25, 2017
+  published: September 11, 2016
+  updated: June 8, 2017
 ---
 
 If performance of your Megaparsec parser is worse that you hoped, there may

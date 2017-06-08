@@ -4,7 +4,8 @@ desc: Learn how to skip errors and report multiple errors at once.
 attachment: RecoveryFeature.hs
 difficulty: 3
 date:
-  published: May 25, 2017
+  published: February 19, 2016
+  updated: June 8, 2017
 ---
 
 Megaparsec 4.4.0 is a major improvement of the library. Among other things,

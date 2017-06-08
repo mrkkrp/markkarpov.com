@@ -1,6 +1,6 @@
 ---
 title: Switch from Parsec to Megaparsec
-subtitle: Practical recommendations for people who decide to switch from Parsec to Megaparsec.
+desc: Practical recommendations for people who decide to switch from Parsec to Megaparsec.
 difficulty: 4
 date:
   published: May 25, 2017

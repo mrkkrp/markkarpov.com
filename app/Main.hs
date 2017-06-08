@@ -221,6 +221,25 @@ main = shakeArgs shakeOptions $ do
       (selectTemplate defaultT ts)
       (mkContext (provideAs "inner" tutorial : context))
 
+  cmnOut learnFile %> \out -> do
+    env <- commonEnv ()
+    ts  <- templates ()
+    mt' <- getDirFiles mtutorialP
+    mt  <- fmap (sortBy (comparing postDifficulty)) . forM mt' $ \post -> do
+      need [post]
+      v <- fst <$> getPost post
+      return v { postFile = dropDirectory1 (postOut post) }
+    let mtutorialList = provideAs "megaparsec_tutorials" mt
+        post = renderMustache
+          (selectTemplate learnT ts)
+          (mkContext [env, mtutorialList])
+    liftIO . TL.writeFile out $ renderMustache
+      (selectTemplate defaultT ts)
+      (mkContext [ env
+                 , provideAs "inner" post
+                 , mtutorialList
+                 , provideAs "title" ("Learn Haskell" :: Text) ])
+
   let justFromTemplate :: Text -> PName -> FilePath -> Action ()
       justFromTemplate title template out = do
         env <- commonEnv ()
@@ -234,7 +253,6 @@ main = shakeArgs shakeOptions $ do
                      , provideAs "inner" post
                      , provideAs "title" title ])
 
-  cmnOut learnFile    %> justFromTemplate "Learn Haskell" learnT
   cmnOut ossFile      %> justFromTemplate "Open Source"   ossT
   cmnOut aboutFile    %> justFromTemplate "About me"      aboutT
   cmnOut notFoundFile %> justFromTemplate "404 Not Found" notFoundT

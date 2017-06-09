@@ -1,3 +1,7 @@
 resolver: lts-8.15
 packages:
 - '.'
+- location:
+    git: https://github.com/stackbuilders/stache.git
+    commit: 7cb3a40fcc75fa113c71de72a30addc22a16e49c
+  extra-dep: true

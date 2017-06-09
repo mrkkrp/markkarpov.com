@@ -2,6 +2,12 @@
 
 <h2>Generic tutorials</h2>
 <table class="table table-striped">
+  {{# generic_tutorials }}
+  <tr>
+    <td>{{ published }}</td>
+    <td><a href="{{ file }}">{{ title }}</a></td>
+  </tr>
+  {{/ generic_tutorials }}
   {{# tutorials_for_former_employers }}
   <tr>
     <td>{{ published }}</td>

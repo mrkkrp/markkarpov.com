@@ -15,6 +15,7 @@ dependencies:
 test:
   override:
     - stack test
+    - stack exec mk-com
 
 deployment:
   production:

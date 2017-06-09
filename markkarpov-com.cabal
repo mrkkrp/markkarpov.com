@@ -28,6 +28,7 @@ executable mk-com
                     , pandoc
                     , shake
                     , stache
+                    , tagged
                     , text
                     , time
                     , transformers

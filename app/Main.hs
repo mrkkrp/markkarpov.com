@@ -1,5 +1,11 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards   #-}
+{-# LANGUAGE DataKinds           #-}
+{-# LANGUAGE KindSignatures      #-}
+{-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE PolyKinds           #-}
+{-# LANGUAGE RankNTypes          #-}
+{-# LANGUAGE RecordWildCards     #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications    #-}
 
 module Main (main) where
 
@@ -10,6 +16,8 @@ import Data.Default.Class
 import Data.List (sortBy, foldl1')
 import Data.Maybe (fromMaybe)
 import Data.Ord (comparing, Down (..))
+import Data.Proxy
+import Data.Tagged
 import Data.Text (Text)
 import Data.Time
 import Development.Shake
@@ -32,15 +40,78 @@ import qualified Data.Yaml           as Y
 outdir :: FilePath
 outdir = "_build"
 
-postsP, cssP, jsP, templateP, imgP, rawP, attachmentP, mtutorialP :: FilePattern
-postsP      = "post/*.md"
-cssP        = "static/css/*.css"
-jsP         = "static/js/*.js"
-templateP   = "templates/*.mustache"
-imgP        = "static/img/*"
-rawP        = "raw/*"
-attachmentP = "attachment/*"
-mtutorialP  = "megaparsec/*.md"
+----------------------------------------------------------------------------
+-- Routing
+
+-- | Pattern for a 'Route'.
+
+newtype Pat r = Pat { unPat :: FilePattern }
+
+class Route (r :: Routes) where
+
+  -- | Pattern for source files.
+  pat :: Pat r
+
+  -- | How to get input file name given output file name.
+  mapIn :: Tagged r (FilePath -> FilePath)
+  mapIn = Tagged dropDirectory1
+
+  -- | How to get output file name given input file name.
+  mapOut :: Tagged r (FilePath -> FilePath)
+  mapOut = Tagged (\x -> outdir </> x)
+
+-- | Input pattern, aka 'pat' mapped to output.
+
+outPattern :: forall r. Route r => Pat r
+outPattern = (Pat . f . unPat) (pat @r)
+  where
+    f = unTagged (mapOut @r)
+
+-- | Defined rotues.
+
+data Routes
+  = PostR
+  | CssR
+  | JsR
+  | ImgR
+  | RawR
+  | AttachmentR
+  | MTutorialR
+  | TutorialR
+
+instance Route 'PostR where
+  pat    = Pat "post/*.md"
+  mapIn  = Tagged (\x -> dropDirectory1 x -<.> "md")
+  mapOut = Tagged (\x -> outdir </> x -<.> "html")
+
+instance Route 'CssR where
+  pat    = Pat "static/css/*.css"
+
+instance Route 'JsR where
+  pat    = Pat "static/js/*.js"
+
+instance Route 'ImgR where
+  pat    = Pat "static/img/*"
+
+instance Route 'RawR where
+  pat    = Pat "raw/*"
+  mapIn  = Tagged (\x -> "raw" </> dropDirectory1 x)
+  mapOut = Tagged (\x -> outdir </> dropDirectory1 x)
+
+instance Route 'AttachmentR where
+  pat    = Pat "attachment/*"
+
+instance Route 'MTutorialR where
+  pat    = Pat "megaparsec/*.md"
+  mapIn  = Tagged (\x -> dropDirectory1 x -<.> "md")
+  mapOut = Tagged (\x -> outdir </> x -<.> "html")
+
+instance Route 'TutorialR where
+  pat    = Pat "tutorial/*.md"
+  mapIn  = Tagged (\x -> dropDirectory1 x -<.> "md")
+  mapOut = Tagged (\x -> outdir </> x -<.> "html")
+
+-- | TODO Find a way to abstract working with these files.
 
 aboutFile, ossFile, notFoundFile, learnFile, postsFile, atomFile :: FilePath
 aboutFile    = "about.html"
@@ -50,33 +121,160 @@ learnFile    = "learn-haskell.html"
 postsFile    = "posts.html"
 atomFile     = "feed.atom"
 
-postOut, cmnOut, rawOut :: FilePath -> FilePath
-postOut x = outdir </> x -<.> "html"
-cmnOut  x = outdir </> x
-rawOut  x = outdir </> dropDirectory1 x
+cmnOut :: FilePath -> FilePath
+cmnOut x = outdir </> x
 
-postIn, cmnIn, rawIn :: FilePath -> FilePath
-postIn x = dropDirectory1 x -<.> "md"
-cmnIn    = dropDirectory1
-rawIn  x = "raw" </> dropDirectory1 x
+----------------------------------------------------------------------------
+-- Build system
 
-aboutT, defaultT, postT, ossT, notFoundT, learnT, postsT, atomT :: PName
-aboutT    = "about"
-defaultT  = "default"
-postT     = "post"
-ossT      = "oss"
-notFoundT = "404"
-learnT    = "learn-haskell"
-postsT    = "posts"
-atomT     = "atom-feed"
+main :: IO ()
+main = shakeArgs shakeOptions $ do
+
+  action $ do
+    let r :: forall r. Route r => Proxy r -> Action ()
+        r Proxy = getDirFiles (pat @r) >>= need . fmap (unTagged $ mapOut @r)
+    r @'PostR Proxy
+    r @'CssR Proxy
+    r @'JsR Proxy
+    r @'ImgR Proxy
+    r @'RawR Proxy
+    r @'AttachmentR Proxy
+    r @'MTutorialR Proxy
+
+    need $ cmnOut <$>
+      [aboutFile, ossFile, notFoundFile, learnFile, postsFile, atomFile]
+
+  phony "clean" $ do
+    putNormal ("Cleaning files in " ++ outdir)
+    removeFilesAfter outdir ["//*"]
+
+  commonEnv <- newCache $ \() -> do
+    let commonEnvFile = "config/env.yaml"
+    need [commonEnvFile]
+    r <- liftIO (Y.decodeFileEither commonEnvFile)
+    case r of
+      Left  err   -> fail (Y.prettyPrintParseException err)
+      Right value -> return value
+
+  templates <- newCache $ \() -> do
+    let templateP = "templates/*.mustache"
+    getDirFiles (Pat templateP) >>= need
+    liftIO (compileMustacheDir "default" (takeDirectory templateP))
+
+  unPat (outPattern @'CssR) %> \out ->
+    copyFile' (unTagged (mapIn @'CssR) out) out
+
+  unPat (outPattern @'JsR) %> \out ->
+    copyFile' (unTagged (mapIn @'JsR) out) out
+
+  unPat (outPattern @'ImgR) %> \out ->
+    copyFile' (unTagged (mapIn @'ImgR) out) out
+
+  unPat (outPattern @'RawR) %> \out ->
+    copyFile' (unTagged (mapIn @'RawR) out) out
+
+  unPat (outPattern @'AttachmentR) %> \out ->
+    copyFile' (unTagged (mapIn @'AttachmentR) out) out
+
+  unPat (outPattern @'PostR) %> \out -> do
+    env <- commonEnv ()
+    ts  <- templates ()
+    let src = unTagged (mapIn @'PostR) out
+    need [src]
+    (v, content) <- getPost src
+    let context =
+          [ env
+          , v
+          , provideAs "location" (dropDirectory1 out) ]
+        post = renderMustache
+          (selectTemplate "post" ts)
+          (mkContext (provideAs "inner" content : context))
+    liftIO . TL.writeFile out $ renderMustache
+      (selectTemplate "default" ts)
+      (mkContext (provideAs "inner" post : context))
+
+  cmnOut postsFile %> \out -> do
+    env <- commonEnv ()
+    ts  <- templates ()
+    ps  <- gatherPostInfo @'PostR Proxy (Down . postPublished)
+    liftIO . TL.writeFile out $ renderMustache
+      (selectTemplate "default" ts)
+      (mkContext [ env
+                 , provideAs "title" ("Posts" :: Text)
+                 , provideAs "inner"
+                   (renderMustache
+                     (selectTemplate "posts" ts)
+                     (mkContext [env, provideAs "post" ps])) ] )
+
+  cmnOut atomFile %> \out -> do
+    env <- commonEnv ()
+    ts  <- templates ()
+    ps  <- gatherPostInfo @'PostR Proxy (Down . postPublished)
+    let feedUpdated = renderIso8601 $ maximum (normalizedUpdated <$> ps)
+    liftIO . TL.writeFile out $ renderMustache
+      (selectTemplate "atom-feed" ts)
+      (mkContext [ env
+                 , provideAs "entry" ps
+                 , provideAs "feed_file" (dropDirectory1 out)
+                 , provideAs "feed_updated" feedUpdated])
+
+  unPat (outPattern @'MTutorialR) %> \out -> do
+    env <- commonEnv ()
+    ts  <- templates ()
+    let src = unTagged (mapIn @'MTutorialR) out
+    need [src]
+    (v, content) <- getPost src
+    let context =
+          [ env
+          , v
+          , provideAs "location" (dropDirectory1 out) ]
+        tutorial = renderMustache
+          (selectTemplate "post" ts)
+          (mkContext (provideAs "inner" content : context))
+    liftIO . TL.writeFile out $ renderMustache
+      (selectTemplate "default" ts)
+      (mkContext (provideAs "inner" tutorial : context))
+
+  cmnOut learnFile %> \out -> do
+    env <- commonEnv ()
+    ts  <- templates ()
+    mts <- gatherPostInfo @'MTutorialR Proxy postDifficulty
+    let post = renderMustache
+          (selectTemplate "learn-haskell" ts)
+          (mkContext [env, provideAs "megaparsec_tutorials" mts])
+    liftIO . TL.writeFile out $ renderMustache
+      (selectTemplate "default" ts)
+      (mkContext [ env
+                 , provideAs "inner" post
+                 , provideAs "title" ("Learn Haskell" :: Text) ])
+
+  let justFromTemplate :: Text -> PName -> FilePath -> Action ()
+      justFromTemplate title template out = do
+        env <- commonEnv ()
+        ts  <- templates ()
+        let post = renderMustache
+              (selectTemplate template ts)
+              (mkContext [env])
+        liftIO . TL.writeFile out $ renderMustache
+          (selectTemplate "default" ts)
+          (mkContext [ env
+                     , provideAs "inner" post
+                     , provideAs "title" title ])
+
+  cmnOut ossFile      %> justFromTemplate "Open Source"   "oss"
+  cmnOut aboutFile    %> justFromTemplate "About me"      "about"
+  cmnOut notFoundFile %> justFromTemplate "404 Not Found" "404"
+
+----------------------------------------------------------------------------
+-- Post info
 
 data PostInfo = PostInfo
-  { postTitle     :: Text
-  , postPublished :: Day
-  , postUpdated   :: Maybe Day
-  , postDesc      :: Text
+  { postTitle      :: Text
+  , postPublished  :: Day
+  , postUpdated    :: Maybe Day
+  , postDesc       :: Text
   , postDifficulty :: Maybe Int
-  , postFile      :: FilePath
+  , postFile       :: FilePath
   } deriving (Eq, Show)
 
 instance FromJSON PostInfo where
@@ -101,167 +299,10 @@ instance ToJSON PostInfo where
     , "file"              .= postFile ]
 
 ----------------------------------------------------------------------------
--- Build system
-
-main :: IO ()
-main = shakeArgs shakeOptions $ do
-
-  action $ do
-    getDirFiles postsP      >>= need . fmap postOut
-    getDirFiles cssP        >>= need . fmap cmnOut
-    getDirFiles jsP         >>= need . fmap cmnOut
-    getDirFiles imgP        >>= need . fmap cmnOut
-    getDirFiles rawP        >>= need . fmap rawOut
-    getDirFiles attachmentP >>= need . fmap cmnOut
-    getDirFiles mtutorialP  >>= need . fmap postOut
-    need (cmnOut <$>
-          [aboutFile, ossFile, notFoundFile, learnFile, postsFile, atomFile])
-
-  phony "clean" $ do
-    putNormal ("Cleaning files in " ++ outdir)
-    removeFilesAfter outdir ["//*"]
-
-  commonEnv <- newCache $ \() -> do
-    let commonEnvFile = "config/env.yaml"
-    need [commonEnvFile]
-    r <- liftIO (Y.decodeFileEither commonEnvFile)
-    case r of
-      Left  err   -> fail (Y.prettyPrintParseException err)
-      Right value -> return value
-
-  templates <- newCache $ \() -> do
-    getDirFiles templateP >>= need
-    liftIO (compileMustacheDir defaultT (takeDirectory templateP))
-
-  cmnOut cssP %> \out ->
-    copyFile' (cmnIn out) out
-
-  cmnOut jsP %> \out ->
-    copyFile' (cmnIn out) out
-
-  cmnOut imgP %> \out ->
-    copyFile' (cmnIn out) out
-
-  rawOut rawP %> \out ->
-    copyFile' (rawIn out) out
-
-  cmnOut attachmentP %> \out ->
-    copyFile' (cmnIn out) out
-
-  postOut postsP %> \out -> do
-    env <- commonEnv ()
-    ts  <- templates ()
-    let src = postIn out
-    need [src]
-    (v, content) <- getPost src
-    let context =
-          [ env
-          , v
-          , provideAs "location" (dropDirectory1 out)
-          , provideAs "attachment" Null -- FIXME when Stache is fixed
-          ]
-        post = renderMustache
-          (selectTemplate postT ts)
-          (mkContext (provideAs "inner" content : context))
-    liftIO . TL.writeFile out $ renderMustache
-      (selectTemplate defaultT ts)
-      (mkContext (provideAs "inner" post : context))
-
-  cmnOut postsFile %> \out -> do
-    env <- commonEnv ()
-    ts  <- templates ()
-    ps' <- getDirFiles postsP
-    ps  <- fmap (sortBy (comparing (Down . postPublished))) . forM ps' $ \post -> do
-      need [post]
-      v <- fst <$> getPost post
-      return v { postFile = dropDirectory1 (postOut post) }
-    let postList = provideAs "post" ps
-        posts = renderMustache
-          (selectTemplate postsT ts)
-          (mkContext [env, postList])
-    liftIO . TL.writeFile out $ renderMustache
-      (selectTemplate defaultT ts)
-      (mkContext [ env
-                 , postList
-                 , provideAs "title" ("Posts" :: Text)
-                 , provideAs "inner" posts ] )
-
-  cmnOut atomFile %> \out -> do
-    env <- commonEnv ()
-    ts  <- templates ()
-    ps' <- getDirFiles postsP
-    ps  <- fmap (sortBy (comparing (Down . postPublished))) . forM ps' $ \post -> do
-      need [post]
-      v <- fst <$> getPost post
-      return v { postFile = dropDirectory1 (postOut post) }
-    let feedUpdated = renderIso8601 $ maximum (normalizedUpdated <$> ps)
-    liftIO . TL.writeFile out $ renderMustache
-      (selectTemplate atomT ts)
-      (mkContext [ env
-                 , provideAs "entry" ps
-                 , provideAs "feed_file" (dropDirectory1 out)
-                 , provideAs "feed_updated" feedUpdated])
-
-  postOut mtutorialP %> \out -> do
-    env <- commonEnv ()
-    ts  <- templates ()
-    let src = postIn out
-    need [src]
-    (v, content) <- getPost src
-    let context =
-          [ env
-          , v
-          , provideAs "location" (dropDirectory1 out)
-          , provideAs "attachment" Null -- FIXME when Stache is fixed
-          ]
-        tutorial = renderMustache
-          (selectTemplate postT ts)
-          (mkContext (provideAs "inner" content : context))
-    liftIO . TL.writeFile out $ renderMustache
-      (selectTemplate defaultT ts)
-      (mkContext (provideAs "inner" tutorial : context))
-
-  cmnOut learnFile %> \out -> do
-    env <- commonEnv ()
-    ts  <- templates ()
-    mt' <- getDirFiles mtutorialP
-    mt  <- fmap (sortBy (comparing postDifficulty)) . forM mt' $ \post -> do
-      need [post]
-      v <- fst <$> getPost post
-      return v { postFile = dropDirectory1 (postOut post) }
-    let mtutorialList = provideAs "megaparsec_tutorials" mt
-        post = renderMustache
-          (selectTemplate learnT ts)
-          (mkContext [env, mtutorialList])
-    liftIO . TL.writeFile out $ renderMustache
-      (selectTemplate defaultT ts)
-      (mkContext [ env
-                 , provideAs "inner" post
-                 , mtutorialList
-                 , provideAs "title" ("Learn Haskell" :: Text) ])
-
-  let justFromTemplate :: Text -> PName -> FilePath -> Action ()
-      justFromTemplate title template out = do
-        env <- commonEnv ()
-        ts  <- templates ()
-        let post = renderMustache
-              (selectTemplate template ts)
-              (mkContext [env])
-        liftIO . TL.writeFile out $ renderMustache
-          (selectTemplate defaultT ts)
-          (mkContext [ env
-                     , provideAs "inner" post
-                     , provideAs "title" title ])
-
-  cmnOut ossFile      %> justFromTemplate "Open Source"   ossT
-  cmnOut aboutFile    %> justFromTemplate "About me"      aboutT
-  cmnOut notFoundFile %> justFromTemplate "404 Not Found" notFoundT
-
-----------------------------------------------------------------------------
 -- Helpers
 
-getDirFiles :: FilePattern -> Action [FilePath]
-getDirFiles = getDirectoryFiles "" . pure
+getDirFiles :: Pat r -> Action [FilePath]
+getDirFiles = getDirectoryFiles "" . pure . unPat
 
 selectTemplate :: PName -> Template -> Template
 selectTemplate name t = t { templateActual = name }
@@ -298,6 +339,17 @@ mkContext = foldl1' f
 
 provideAs :: ToJSON v => Text -> v -> Value
 provideAs k v = Object (HM.singleton k (toJSON v))
+
+gatherPostInfo :: forall r a. (Route r, Ord a)
+  => Proxy r
+  -> (PostInfo -> a)
+  -> Action [PostInfo]
+gatherPostInfo Proxy f = do
+  ps' <- getDirFiles (pat @r)
+  fmap (sortBy (comparing f)) . forM ps' $ \post -> do
+    need [post]
+    v <- fst <$> getPost post
+    return v { postFile = dropDirectory1 (unTagged (mapOut @r) post) }
 
 parseDay :: Monad m => Text -> m Day
 parseDay = parseTimeM True defaultTimeLocale "%B %e, %Y" . T.unpack

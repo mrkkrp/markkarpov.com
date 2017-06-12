@@ -100,8 +100,8 @@ hamming a b =
     else Nothing
   where
     go !na !nb !r =
-      let TU.Iter cha da = TU.iter a na
-          TU.Iter chb db = TU.iter b nb
+      let !(TU.Iter cha da) = TU.iter a na
+          !(TU.Iter chb db) = TU.iter b nb
       in if | na  == len -> r
             | cha /= chb -> go (na + da) (nb + db) (r + 1)
             | otherwise  -> go (na + da) (nb + db) r
@@ -184,7 +184,7 @@ jaro a b =
       v <- VUM.replicate lenb (0 :: Int) -- (3)
       r <- VUM.replicate 3 (0 :: Int) -- tj, m, t (4)
       let goi !i !na !fromb = do -- (5)
-            let TU.Iter ai da = TU.iter a na
+            let !(TU.Iter ai da) = TU.iter a na
                 (from, fromb') =
                   if i >= d
                     then (i - d, fromb + TU.iter_ b fromb)
@@ -192,7 +192,7 @@ jaro a b =
                 to = min (i + d + 1) lenb
                 goj !j !nb =
                   when (j < to) $ do
-                    let TU.Iter bj db = TU.iter b nb
+                    let !(TU.Iter bj db) = TU.iter b nb
                     used <- (== 1) <$> VUM.unsafeRead v j
                     if not used && ai == bj
                       then do
@@ -367,10 +367,10 @@ levenshtein_ a b
               VUM.unsafeWrite v i i
               gov (i + 1)
           goi !i !na !v0 !v1 = do
-            let TU.Iter ai da = TU.iter a na
+            let !(TU.Iter ai da) = TU.iter a na
                 goj !j !nb =
                   when (j < lenb) $ do
-                    let TU.Iter bj db = TU.iter b nb
+                    let !(TU.Iter bj db) = TU.iter b nb
                         cost = if ai == bj then 0 else 1
                     x <- (+ 1) <$> VUM.unsafeRead v (v1 + j)
                     y <- (+ 1) <$> VUM.unsafeRead v (v0 + j + 1)

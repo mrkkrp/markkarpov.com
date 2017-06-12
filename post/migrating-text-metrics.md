@@ -19,19 +19,22 @@ to go back to `text-metrics` and rewrite it in pure Haskell. The benefits
 are:
 
 * Things like GHCJS will be able to use the package.
+
 * Pure Haskell is hopefully more cross-platform. Can't really tell whether
   there are any issues with compiling packages with C bits on Windows
   nowadays, because I have not had access to a Windows machine for 3 years.
+
 * The C implementation does not work correctly when the inputs contain
   characters from a tiny subset of Unicode that is represented by more than
   one `Word16` value per character. This subset includes historic scripts,
   emoji, and less-used Chinese ideographs. It would be good to make the
   functions work correctly with those characters as well.
+
 * One more proof that Haskell can be quite fast when it is necessary.
 
 ## Hamming distance
 
-I decided to start with the simplest algorithm in `text-metrics`: *Hamming
+I decided to start with the simplest algorithm in `text-metrics`: *hamming
 distance*. This distance is only defined for inputs of equal length, so the
 signature looks like this:
 
@@ -40,8 +43,9 @@ hamming :: Text -> Text -> Maybe Natural
 ```
 
 Well, at least it did. I decided to replace `Natural` with `Int`, because
-all the API we are going to use take and return `Int`s, so it's no use to
-try to use proper types like `Natural`, which is also slower to work with.
+all the functions we are going to use take and return `Int`s, so it's no use
+to try to push proper types like `Natural`, which is also slower to work
+with.
 
 Hamming distance is just the number of characters at the same indices that
 are different. So C implementation was:
@@ -58,12 +62,13 @@ unsigned int tmetrics_hamming (unsigned int len, uint16_t *a, uint16_t *b)
 }
 ```
 
-How to do the same in Haskell? Well, first of all we need an efficient way
-to traverse `Text` values character by character. We should remember that
-`Text` is a lot like a list of `Word16` values internally. As I mentioned,
-some characters are represented as two consecutive `Word16` values, and most
-characters are just one `Word16`. So we don't know which is which, and that
-essentially makes it [impossible to have indexing](https://hackage.haskell.org/package/text/docs/Data-Text.html#v:index) in *O(1)*.
+Looks dead-simple, but how to do the same in Haskell efficiently? Well,
+first of all we need an efficient way to traverse `Text` values character by
+character. We should remember that `Text` is a lot like a list of `Word16`
+values internally. As I mentioned, some characters are represented as two
+consecutive `Word16` values, and most characters are just one `Word16`. So
+we don't know which is which, and that essentially makes
+it [impossible to have indexing](https://hackage.haskell.org/package/text/docs/Data-Text.html#v:index) in *O(1)*.
 
 So we can't access a character at a certain offset (as in `*(a + i)`), we
 should perform something like synchronous unconsing on both `Text` values
@@ -106,10 +111,13 @@ hamming a b =
 First we have to confirm that the input values are of the same length. Due
 to the reasons mentioned earlier, we have to traverse each of them to
 compute their lengths. If the lengths are equal we can start counting
-characters at the same positions that are different. `go` is a
-tail-recursive helper that steps through the `Text` values using `iter`.
-Strictness annotations were optional in this case as GHC was able to figure
-out strictness itself, but I decided to keep them there, just in case.
+characters that are located at the same positions but are different. `go` is
+a tail-recursive helper that steps through the `Text` values using `iter`.
+`na` and `nb` are the indices we use to iterate over internal arrays of
+`Word16` values, we increment them by `da` and `db` respectively. The result
+is accumulated in `r`. The strictness annotations in the form of bang
+patterns were optional in this case as GHC was able to figure out strictness
+itself, but I decided to keep them there, just in case.
 
 Let's see if we are close to the C implementation with this:
 
@@ -135,8 +143,8 @@ And here is a Criterion benchmark:
 
 This shows that the new pure Haskell implementation is not slower. In fact,
 it's even a bit faster for short strings. The result can be explained by the
-fact that to pass `Text` to C it has to be copied, and that also takes some
-cycles.
+fact that to pass `Text` to C it has to be copied, with pure Haskell
+implementation we avoid the copying.
 
 ## Jaro distance
 
@@ -164,18 +172,18 @@ The implementation is considerably more verbose for this one:
 ```haskell
 jaro :: Text -> Text -> Ratio Int
 jaro a b =
-  if T.null a || T.null b
+  if T.null a || T.null b -- (1)
     then 0 % 1
-    else runST $ do
+    else runST $ do -- (2)
       let lena = T.length a
           lenb = T.length b
           d =
             if lena >= 2 && lenb >= 2
               then max lena lenb `quot` 2 - 1
               else 0
-      v <- VUM.replicate lenb (0 :: Word8)
-      r <- VUM.replicate 3 (0 :: Int) -- tj, m, t
-      let goi !i !na !fromb = do
+      v <- VUM.replicate lenb (0 :: Int) -- (3)
+      r <- VUM.replicate 3 (0 :: Int) -- tj, m, t (4)
+      let goi !i !na !fromb = do -- (5)
             let TU.Iter ai da = TU.iter a na
                 (from, fromb') =
                   if i >= d
@@ -208,3 +216,213 @@ jaro a b =
                 (m % lenb) +
                 ((m - t) % m)) / 3
 ```
+
+Inability to lookup characters at given index in *O(1)* was especially
+painful with this one.
+
+Some observations:
+
+1. The `null` function is *O(1)* just like with linked list, we use it to
+   detect the corner case when an input is the empty string. In that case we
+   return zero, as it's not clear how to apply the algorithm in that case.
+
+2. The algorithm requires keeping track of a lot more things, not just
+   indices in the internal arrays of `Word16` values. So we need to use
+   mutable unboxed vectors here. For that we need the `ST` monad which we
+   enter here.
+
+3. The `v` vector is conceptually a vector of `Bool` values, but using
+   primitive `Int` values here instead of `Bool`s gives some speed up,
+   especially with longer input values. I'm not entirely sure why this is
+   so. Looking at the code of `Data.Vector.Unboxed.Base`, unboxed `Bool` is
+   represented as `Word8` values (which makes sense because `Word8` has a
+   primitive type inside, while `Bool` is just a normal sum type). Maybe the
+   conversion to and from `Word8` takes some time?
+
+4. The `r` vector holds all other auxiliary variables that we want to
+   mutate. The thing here is that normal mutable references created with
+   `STRef` are not particularly fast, so we have to cheat like this. The
+   variables that are stored in `r` are not modified particularly
+   intensively, but still keeping them in an unboxed mutable vector gives a
+   little speedup. The pattern is abstracted in
+   the [`mutable-contanters`](https://hackage.haskell.org/package/mutable-containers) package which allows you to work with
+   mutable unboxed vector of length 1 as with a special sort of efficient
+   mutable variables. `mutable-containers` depends on `mono-traversable`
+   though, which is completely unnecessary for `text-metrics`, so I've
+   chosen to work with bare mutable vectors here, which is ugly, but still
+   not that hard.
+
+5. In this case GHC was not able to figure out strictness, so these bang
+   patterns actually make a lot of difference (especially visible for longer
+   inputs, where the algorithm is about ×10 slower without the strictness
+   annotations).
+
+Case                  | Allocated | GCs |   Max
+----------------------|-----------|-----|------
+jaro (C)/5            |     4,592 |  0  |   400
+jaro (C)/10           |     5,640 |  0  |   688
+jaro (C)/20           |     7,288 |  0  | 1,096
+jaro (C)/40           |     9,288 |  0  | 1,368
+jaro (C)/80           |    11,736 |  0  | 1,464
+jaro (C)/160          |    16,616 |  0  | 1,656
+jaro (Haskell)/5      |     5,680 |  0  |   400
+jaro (Haskell)/10     |     7,480 |  0  |   688
+jaro (Haskell)/20     |    10,696 |  0  | 1,096
+jaro (Haskell)/40     |    15,832 |  0  | 1,368
+jaro (Haskell)/80     |    24,560 |  0  | 1,464
+jaro (Haskell)/160    |    42,000 |  0  | 1,656
+
+Memory consumption looks OK. Our Haskell implementation allocates more but
+residency is the same as with C version (you can track max residency with
+`weigh-0.0.4` and later, I requested this feature some time ago and Chris
+Done was [kind enough to add it](https://github.com/fpco/weigh/issues/8)).
+
+![Jaro distance Criterion report](/static/img/text-metrics-jaro.png)
+
+We are slower than C here, but for short strings there is almost no
+difference, so I guess it's OK as the package is mainly about working with
+relatively short inputs. Do not forget that we're also more correct because
+we iterate properly, taking into account characters that occupy two `Word16`
+cells in `Text`'s internal array.
+
+There is also a function for Jaro-Winkler distance but it's mostly the same,
+so let's skip it.
+
+## Levenshtein distance
+
+Finally, probably the most popular function is `levenshtein`, which
+calculates the [Levenshtein distance](https://en.wikipedia.org/wiki/Levenshtein_distance). The C implementation looks like
+this:
+
+```c
+unsigned int tmetrics_levenshtein (unsigned int la, uint16_t *a, unsigned int lb, uint16_t *b)
+{
+  if (la == 0) return lb;
+  if (lb == 0) return la;
+
+  unsigned int v_len = lb + 1, *v0, *v1, i, j;
+
+  if (v_len > VLEN_MAX)
+    {
+      v0 = malloc(sizeof(unsigned int) * v_len);
+      v1 = malloc(sizeof(unsigned int) * v_len);
+    }
+  else
+    {
+      v0 = alloca(sizeof(unsigned int) * v_len);
+      v1 = alloca(sizeof(unsigned int) * v_len);
+    }
+
+  for (i = 0; i < v_len; i++)
+    v0[i] = i;
+
+  for (i = 0; i < la; i++)
+    {
+      v1[0] = i + 1;
+
+      for (j = 0; j < lb; j++)
+        {
+          unsigned int cost = *(a + i) == *(b + j) ? 0 : 1;
+          unsigned int x = *(v1 + j) + 1;
+          unsigned int y = *(v0 + j + 1) + 1;
+          unsigned int z = *(v0 + j) + cost;
+          *(v1 + j + 1) = MIN(x, MIN(y, z));
+        }
+
+      unsigned int *ptr = v0;
+      v0 = v1;
+      v1 = ptr;
+    }
+
+  unsigned int result = *(v0 + lb);
+
+  if (v_len > VLEN_MAX)
+    {
+      free(v0);
+      free(v1);
+    }
+
+  return result;
+}
+```
+
+Some buzz here is about choosing between `malloc` and `alloca`. `alloca`
+allocates on the stack, while `malloc` allocates on the heap, so the latter
+is slower. This is not particularly important though. What I like about this
+implementation is that we can swap `v0` and `v1` by just swapping their
+pointers, how to translate that into Haskell?
+
+I've come up with this solution:
+
+```haskell
+levenshtein_ :: Text -> Text -> Int
+levenshtein_ a b
+  | T.null a = lenb
+  | T.null b = lena
+  | otherwise = runST $ do
+      let v_len = lenb + 1
+      v <- VUM.unsafeNew (v_len * 2)
+      let gov !i =
+            when (i < v_len) $ do
+              VUM.unsafeWrite v i i
+              gov (i + 1)
+          goi !i !na !v0 !v1 = do
+            let TU.Iter ai da = TU.iter a na
+                goj !j !nb =
+                  when (j < lenb) $ do
+                    let TU.Iter bj db = TU.iter b nb
+                        cost = if ai == bj then 0 else 1
+                    x <- (+ 1) <$> VUM.unsafeRead v (v1 + j)
+                    y <- (+ 1) <$> VUM.unsafeRead v (v0 + j + 1)
+                    z <- (+ cost) <$> VUM.unsafeRead v (v0 + j)
+                    VUM.unsafeWrite v (v1 + j + 1) (min x (min y z))
+                    goj (j + 1) (nb + db)
+            when (i < lena) $ do
+              VUM.unsafeWrite v v1 (i + 1)
+              goj 0 0
+              goi (i + 1) (na + da) v1 v0
+      gov 0
+      goi 0 0 0 v_len
+      VUM.unsafeRead v (lenb + if even lena then 0 else v_len)
+  where
+    lena = T.length a
+    lenb = T.length b
+```
+
+It uses all the familiar tricks and most observations from the `jaro`
+examples apply to `levenshtein` as well. Note that `v0` and `v1` are merged
+into one vector `v`. So I just add offset equal to length of a single vector
+to switch to `v1`, which is as efficient as swapping pointers.
+
+Case                      | Allocated | GCs |   Max
+--------------------------|-----------|-----|------
+levenshtein (C)/5         |     1,208 |  0  |   400
+levenshtein (C)/10        |     2,256 |  0  |   688
+levenshtein (C)/20        |     3,904 |  0  | 1,096
+levenshtein (C)/40        |     5,904 |  0  | 1,368
+levenshtein (C)/80        |     8,352 |  0  | 1,464
+levenshtein (C)/160       |    13,232 |  0  | 1,656
+levenshtein (Haskell)/5   |     2,208 |  0  |   400
+levenshtein (Haskell)/10  |     4,096 |  0  |   688
+levenshtein (Haskell)/20  |     7,424 |  0  | 1,096
+levenshtein (Haskell)/40  |    12,784 |  0  | 1,368
+levenshtein (Haskell)/80  |    21,952 |  0  | 1,464
+levenshtein (Haskell)/160 |    40,272 |  0  | 1,656
+
+Similarly to `jaro`, Haskell version allocates more but the max residency
+stays the same for both C and Haskell implementations.
+
+![Levenshtein distance Criterion report](/static/img/text-metrics-levenshtein.png)
+
+And that's a win, we are only just a little bit slower than C.
+
+There is also Damerau-Levenshtein distance, but it's similar so again, let's
+skip it in this post.
+
+## Conclusion
+
+[`text-metrics-0.3.0`](https://hackage.haskell.org/package/text-metrics-0.3.0) is written in pure Haskell, almost as fast as the
+previous versions (especially for not very long inputs), and is more correct
+(we now iterate properly over inputs). I have also added more algorithms
+which I do not mention here because they were implemented in Haskell right
+away. Check the changelog if you're interested.

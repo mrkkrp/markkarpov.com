@@ -137,3 +137,74 @@ This shows that the new pure Haskell implementation is not slower. In fact,
 it's even a bit faster for short strings. The result can be explained by the
 fact that to pass `Text` to C it has to be copied, and that also takes some
 cycles.
+
+## Jaro distance
+
+The Jaro distance $d_\text{j}$ of two given strings $s_\text{1}$ and
+$s_\text{2}$ is
+
+$$ d_\text{j} = \begin{cases} 0 & \quad \text{if } m = 0 \\ \frac{1}{3} \left(\frac{m}{|s_\text{1}|} + \frac{m}{|s_\text{2}|} + \frac{m-t}{m}\right) & \quad \text{otherwise} \\ \end{cases}$$
+
+Where
+
+* $s_\text{i}$ means the length of the string $s_\text{i}$;
+* $m$ is the number of matching characters;
+* $t$ is half the number of transpositions.
+
+Two characters from $s_\text{1}$ and $s_\text{2}$ respectively are
+considered matching only if they are the same and not farther than
+$\left\lfloor\frac{max(|s_\text{1}|,|s_\text{2}|)}{2}\right\rfloor - 1$.
+
+A matching pair is counted as a transposition also if the characters are
+close enough but in the opposite order. See more about this
+in [the Wikipedia article](https://en.wikipedia.org/wiki/Jaro%E2%80%93Winkler_distance).
+
+The implementation is considerably more verbose for this one:
+
+```haskell
+jaro :: Text -> Text -> Ratio Int
+jaro a b =
+  if T.null a || T.null b
+    then 0 % 1
+    else runST $ do
+      let lena = T.length a
+          lenb = T.length b
+          d =
+            if lena >= 2 && lenb >= 2
+              then max lena lenb `quot` 2 - 1
+              else 0
+      v <- VUM.replicate lenb (0 :: Word8)
+      r <- VUM.replicate 3 (0 :: Int) -- tj, m, t
+      let goi !i !na !fromb = do
+            let TU.Iter ai da = TU.iter a na
+                (from, fromb') =
+                  if i >= d
+                    then (i - d, fromb + TU.iter_ b fromb)
+                    else (0, 0)
+                to = min (i + d + 1) lenb
+                goj !j !nb =
+                  when (j < to) $ do
+                    let TU.Iter bj db = TU.iter b nb
+                    used <- (== 1) <$> VUM.unsafeRead v j
+                    if not used && ai == bj
+                      then do
+                        tj <- VUM.unsafeRead r 0
+                        if j < tj
+                          then VUM.unsafeModify r (+ 1) 2
+                          else VUM.unsafeWrite  r 0 j
+                        VUM.unsafeWrite v j 1
+                        VUM.unsafeModify r (+ 1) 1
+                      else goj (j + 1) (nb + db)
+            when (i < lena) $ do
+              goj from fromb
+              goi (i + 1) (na + da) fromb'
+      goi 0 0 0
+      m <- VUM.unsafeRead r 1
+      t <- VUM.unsafeRead r 2
+      return $
+        if m == 0
+          then 0 % 1
+          else ((m % lena) +
+                (m % lenb) +
+                ((m - t) % m)) / 3
+```

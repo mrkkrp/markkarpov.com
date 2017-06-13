@@ -247,7 +247,7 @@ Some observations:
    still keeping them in an unboxed mutable vector gives a little speedup.
    The pattern is abstracted in the [`mutable-contanters`](https://hackage.haskell.org/package/mutable-containers) package which
    allows you to work with mutable unboxed vector of length 1 as with a
-   special sort of efficient mutable variables. `mutable-containers` depends
+   special sort of efficient mutable variable. `mutable-containers` depends
    on `mono-traversable` though, which is completely unnecessary for
    `text-metrics`, so I've chosen to work with bare mutable vectors here,
    which is ugly, but still not that hard.
@@ -433,7 +433,7 @@ package:
 
 ![Text metrics vs edit distance](/static/img/text-metrics-edit-distance.png)
 
-To make the benchmark fair, I feed `Text` values into `text-metrics`
+To make the benchmark fair, I fed `Text` values into `text-metrics`
 functions and `String`s into `levenshteinDistance`. What can we see here?
 Clearly, it looks like `edit-distance` uses two different algorithms. We
 beat it in the case of long inputs, with short strings performance is

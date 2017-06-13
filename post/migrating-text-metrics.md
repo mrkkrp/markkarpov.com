@@ -6,10 +6,11 @@ date:
 ---
 
 It's been a while since I first published the [`text-metrics`](https://github.com/mrkkrp/text-metrics) package,
-which allows to calculate various string metrics between `Text` values.
-Originally the package was written primarily in C with wrappers in Haskell.
-At the time I needed maximal speed and did not care whether the algorithms
-themselves are coded is C or Haskell, as long as they work, and work fast.
+which allows to calculate various string metrics using `Text` values as
+inputs. Originally the package was written primarily in C with wrappers in
+Haskell. At the time I needed maximal speed and did not care whether the
+algorithms themselves are coded is C or Haskell, as long as they work, and
+work fast.
 
 However, recently there were quite inspiring blog posts about Haskell
 competing with C in terms of speed and memory consumption. One such a blog
@@ -44,11 +45,11 @@ hamming :: Text -> Text -> Maybe Natural
 
 Well, at least it did. I decided to replace `Natural` with `Int`, because
 all the functions we are going to use take and return `Int`s, so it's no use
-to try to push proper types like `Natural`, which is also slower to work
-with.
+trying to push proper types like `Natural` (which is also slower to work
+with).
 
 Hamming distance is just the number of characters at the same indices that
-are different. So C implementation was:
+are different. So the C implementation was:
 
 ```c
 unsigned int tmetrics_hamming (unsigned int len, uint16_t *a, uint16_t *b)
@@ -83,12 +84,12 @@ The `Char` value is an “unconsed” character and `Int` is the length of the
 character as a number of `Word16` values (1 or 2). We will use three
 functions:
 
-* `iter :: Text -> Int -> Iter`—*O(1)* Iterate (unsafely) one step forwards
+* `iter :: Text -> Int -> Iter`—*O(1)* iterate (unsafely) one step forwards
   through a UTF-16 array, returning the current character and the delta to
   add to give the next offset to iterate at.
-* `iter_ :: Text -> Int -> Int`—*O(1)* Iterate one step through a UTF-16
+* `iter_ :: Text -> Int -> Int`—*O(1)* iterate one step through a UTF-16
   array, returning the delta to add to give the next offset to iterate at.
-* `lengthWord16`—*O(1)* Return the length of a `Text` in units of `Word16`.
+* `lengthWord16`—*O(1)* return the length of a `Text` in units of `Word16`.
 
 That said, here is a Haskell implementation of Hamming distance:
 
@@ -155,7 +156,7 @@ $$ d_\text{j} = \begin{cases} 0 & \quad \text{if } m = 0 \\ \frac{1}{3} \left(\f
 
 Where
 
-* $s_\text{i}$ means the length of the string $s_\text{i}$;
+* $|s_\text{i}|$ means the length of the string $s_\text{i}$;
 * $m$ is the number of matching characters;
 * $t$ is half the number of transpositions.
 
@@ -218,13 +219,13 @@ jaro a b =
 ```
 
 Inability to lookup characters at given index in *O(1)* was especially
-painful with this one.
+painful with this algorithm.
 
 Some observations:
 
 1. The `null` function is *O(1)* just like with linked list, we use it to
    detect the corner case when an input is the empty string. In that case we
-   return zero, as it's not clear how to apply the algorithm in that case.
+   return zero, as it's not clear how to apply the algorithm.
 
 2. The algorithm requires keeping track of a lot more things, not just
    indices in the internal arrays of `Word16` values. So we need to use
@@ -242,15 +243,14 @@ Some observations:
 4. The `r` vector holds all other auxiliary variables that we want to
    mutate. The thing here is that normal mutable references created with
    `STRef` are not particularly fast, so we have to cheat like this. The
-   variables that are stored in `r` are not modified particularly
-   intensively, but still keeping them in an unboxed mutable vector gives a
-   little speedup. The pattern is abstracted in
-   the [`mutable-contanters`](https://hackage.haskell.org/package/mutable-containers) package which allows you to work with
-   mutable unboxed vector of length 1 as with a special sort of efficient
-   mutable variables. `mutable-containers` depends on `mono-traversable`
-   though, which is completely unnecessary for `text-metrics`, so I've
-   chosen to work with bare mutable vectors here, which is ugly, but still
-   not that hard.
+   variables that are stored in `r` are not modified very intensively, but
+   still keeping them in an unboxed mutable vector gives a little speedup.
+   The pattern is abstracted in the [`mutable-contanters`](https://hackage.haskell.org/package/mutable-containers) package which
+   allows you to work with mutable unboxed vector of length 1 as with a
+   special sort of efficient mutable variables. `mutable-containers` depends
+   on `mono-traversable` though, which is completely unnecessary for
+   `text-metrics`, so I've chosen to work with bare mutable vectors here,
+   which is ugly, but still not that hard.
 
 5. In this case GHC was not able to figure out strictness, so these bang
    patterns actually make a lot of difference (especially visible for longer
@@ -285,9 +285,10 @@ Done was [kind enough to add it](https://github.com/fpco/weigh/issues/8)).
 
 We are slower than C here, but for short strings there is almost no
 difference, so I guess it's OK as the package is mainly about working with
-relatively short inputs. Do not forget that we're also more correct because
-we iterate properly, taking into account characters that occupy two `Word16`
-cells in `Text`'s internal array.
+relatively short inputs. Do not forget that we're also more correct with
+this Haskell implementation because we iterate properly, taking into account
+existence of characters that may take two `Word16` cells in `Text`'s
+internal array.
 
 There is also a function for Jaro-Winkler distance but it's mostly the same,
 so let's skip it.
@@ -394,7 +395,7 @@ levenshtein_ a b
 ```
 
 It uses all the familiar tricks and most observations from the `jaro`
-examples apply to `levenshtein` as well. Note that `v0` and `v1` are merged
+example apply to `levenshtein` as well. Note that `v0` and `v1` are merged
 into one vector `v`. So I just add offset equal to length of a single vector
 to switch to `v1`, which is as efficient as swapping pointers.
 
@@ -420,8 +421,8 @@ stays the same for both C and Haskell implementations.
 
 And that's a win, we are only just a little bit slower than C.
 
-There is also Damerau-Levenshtein distance, but it's similar so again, let's
-skip it in this post.
+There is also Damerau-Levenshtein distance, but it's similar (and yet
+less-readable), so again, let's skip it in this post.
 
 ## What's next?
 
@@ -430,7 +431,7 @@ I compared performance of `levenshtein` and `damerauLevenshtein` from
 “levenshtein (ed)” in the report) from the well-known `edit-distance`
 package:
 
-![Vs edit distance](/static/img/text-metrics-edit-distance.png)
+![Text metrics vs edit distance](/static/img/text-metrics-edit-distance.png)
 
 To make the benchmark fair, I feed `Text` values into `text-metrics`
 functions and `String`s into `levenshteinDistance`. What can we see here?
@@ -455,16 +456,15 @@ levenshteinDistance costs str1 str2
 ```
 
 It turns out that for the inputs under 64 characters `edit-distance` uses
-the algorithm form [this paper](https://pdfs.semanticscholar.org/813e/26d8920d17c2afac6bf5a15c537b067a128a.pdf). (I hope that I have identified the
-algorithm correctly because the links in the code are long-dead and source
-code of `edit-distance` is generally unreadable.) So in the next version of
-`text-metrics` it makes sense to try to use that bit vector algorithm in a
-similar fashion and see if it makes things faster.
+the algorithm form [this paper](https://pdfs.semanticscholar.org/813e/26d8920d17c2afac6bf5a15c537b067a128a.pdf). So in the next version of `text-metrics`
+it makes sense to try to use that bit vector algorithm in a similar fashion
+and see if it makes things faster.
 
 ## Conclusion
 
 [`text-metrics-0.3.0`](https://hackage.haskell.org/package/text-metrics-0.3.0) is written in pure Haskell, almost as fast as the
 previous versions (especially for not very long inputs), and is more correct
-(we now iterate properly over inputs). I have also added more algorithms
-which I do not mention here because they were implemented in Haskell right
-away. Check [the changelog](https://github.com/mrkkrp/text-metrics/blob/master/CHANGELOG.md) if you're interested.
+(we handle characters represented as two `Word16` values properly). I have
+also added more algorithms which I do not mention here because they were
+implemented in Haskell right away. Check [the changelog](https://github.com/mrkkrp/text-metrics/blob/master/CHANGELOG.md) if you're
+interested.

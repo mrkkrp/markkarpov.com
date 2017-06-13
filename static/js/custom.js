@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function(event) {
     anchors.options = {
-        placement: 'left',
+        placement: 'right',
         visible: 'always',
         class: 'anchor'
     };

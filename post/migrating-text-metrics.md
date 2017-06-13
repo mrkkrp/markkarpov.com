@@ -184,7 +184,7 @@ jaro a b =
       v <- VUM.replicate lenb (0 :: Int) -- (3)
       r <- VUM.replicate 3 (0 :: Int) -- tj, m, t (4)
       let goi !i !na !fromb = do -- (5)
-            let !(TU.Iter ai da) = TU.iter a na
+            let !(TU.Iter ai da) = TU.iter a na -- (6)
                 (from, fromb') =
                   if i >= d
                     then (i - d, fromb + TU.iter_ b fromb)
@@ -256,6 +256,10 @@ Some observations:
    patterns actually make a lot of difference (especially visible for longer
    inputs, where the algorithm is about ×10 slower without the strictness
    annotations).
+
+6. Strictness annotations on pattern-matching on `Iter` help quite a bit.
+   Even though the inner `Char` and `Int` in `Iter` are unboxed, the `Iter`
+   itself is a box, so forcing it proved to be a good thing.
 
 Case                  | Allocated | GCs |   Max
 ----------------------|-----------|-----|------
@@ -419,10 +423,48 @@ And that's a win, we are only just a little bit slower than C.
 There is also Damerau-Levenshtein distance, but it's similar so again, let's
 skip it in this post.
 
+## What's next?
+
+I compared performance of `levenshtein` and `damerauLevenshtein` from
+`text-metrics` with `levenshteinDistance defaultEditCosts` (marked
+“levenshtein (ed)” in the report) from the well-known `edit-distance`
+package:
+
+![Vs edit distance](/static/img/text-metrics-edit-distance.png)
+
+To make the benchmark fair, I feed `Text` values into `text-metrics`
+functions and `String`s into `levenshteinDistance`. What can we see here?
+Clearly, it looks like `edit-distance` uses two different algorithms. We
+beat it in the case of long inputs, with short strings performance is
+roughly the same, but for input lengths from 20 to 64 `edit-metrics`
+performs better!
+
+Let's see the source code:
+
+```haskell
+levenshteinDistance :: EditCosts -> String -> String -> Int
+levenshteinDistance costs str1 str2
+  | isDefaultEditCosts costs
+  , (str1_len <= 64) == (str2_len <= 64)
+  = Bits.levenshteinDistanceWithLengths str1_len str2_len str1 str2
+  | otherwise
+  = SquareSTUArray.levenshteinDistanceWithLengths costs str1_len str2_len str1 str2
+  where
+    str1_len = length str1
+    str2_len = length str2
+```
+
+It turns out that for the inputs under 64 characters `edit-distance` uses
+the algorithm form [this paper](https://pdfs.semanticscholar.org/813e/26d8920d17c2afac6bf5a15c537b067a128a.pdf). (I hope that I have identified the
+algorithm correctly because the links in the code are long-dead and source
+code of `edit-distance` is generally unreadable.) So in the next version of
+`text-metrics` it makes sense to try to use that bit vector algorithm in a
+similar fashion and see if it makes things faster.
+
 ## Conclusion
 
 [`text-metrics-0.3.0`](https://hackage.haskell.org/package/text-metrics-0.3.0) is written in pure Haskell, almost as fast as the
 previous versions (especially for not very long inputs), and is more correct
 (we now iterate properly over inputs). I have also added more algorithms
 which I do not mention here because they were implemented in Haskell right
-away. Check the changelog if you're interested.
+away. Check [the changelog](https://github.com/mrkkrp/text-metrics/blob/master/CHANGELOG.md) if you're interested.

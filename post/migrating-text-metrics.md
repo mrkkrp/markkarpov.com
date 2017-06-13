@@ -360,8 +360,8 @@ pointers, how to translate that into Haskell?
 I've come up with this solution:
 
 ```haskell
-levenshtein_ :: Text -> Text -> Int
-levenshtein_ a b
+levenshtein :: Text -> Text -> Int
+levenshtein a b
   | T.null a = lenb
   | T.null b = lena
   | otherwise = runST $ do

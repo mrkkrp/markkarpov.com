@@ -22,7 +22,7 @@ level.
 The main type is `Path b t` where
 
 * `b`—“the base location” of the path: absolute `Abs` or relative `Rel`.
-* `t`—“type”, file or directory.
+* `t`—“type”, file `File` or directory `Dir`.
 
 When your paths are indexed by phantom types like this, it becomes much
 harder to shoot yourself in the foot. For example, here are some types of
@@ -36,8 +36,7 @@ common functions for working with paths:
   path)`—make a path absolute (`AbsPath` is a type function that maps type
   of a path to its absolute version, this is also from `path-io`).
 
-You probably see now that developing with typed paths is a lot less
-error-prone, this sort of safety is what Haskell is about, isn't it?
+You probably see now that developing with typed paths is less error-prone.
 
 Who uses the packages? `path` and `path-io` are used in Stack—Haskell's most
 popular solution for project management. If that's not
@@ -50,9 +49,9 @@ this [original announcement](http://chrisdone.com/posts/path-package) by Chris D
 
 After Chris (the author of `path` and its primary
 maintainer) [requested to help him maintain some of his packages](https://mail.haskell.org/pipermail/haskell-cafe/2017-February/126401.html), we
-(Simon Jakobi, Wojciech Daniło, Joe Hillenbrand, and me) started to work
-towards a new major version that would close some holes in the package and
-make it better at handling some edge cases.
+(Simon Jakobi, Wojciech Daniło, Joe Hillenbrand, Tom Sydney Kerckhove, and
+me) started to work towards a new major version that would close some holes
+in the package and make it better at handling some edge cases.
 
 Several changes are related to maintainability and are not really visible to
 users. I'm going to talk about the changes which are visible to end users
@@ -62,7 +61,7 @@ The main change is that we now have `"."` as a valid relative directory
 path. This allows to close this hole:
 
 ```
-λ> dir <- parseAbsDir  "/"
+λ> dir <- parseAbsDir "/"
 λ> dirname dir
 "/"
 λ> :t dirname dir
@@ -113,8 +112,8 @@ well:
 
 So `"."` acts as a relative dual to the absolute root `"/"`.
 
-The old behavior also led an inconsistency, which I'm going to demonstrate
-here:
+The old behavior also led to an inconsistency, which I'm going to
+demonstrate here:
 
 ```
 λ> isParentOf $(mkAbsDir "/") $(mkAbsDir "/")

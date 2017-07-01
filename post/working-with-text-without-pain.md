@@ -98,8 +98,8 @@ without any issues for 10 years straight, so it's a nice investment too.
 To make typing as easy and comfortable as possible, it makes sense to avoid
 key chords and prefer sequences of keys. This follows from the simple fact
 that typing several keys in sequence is easier (and safer in long term) than
-holding several keys. Many Emacs users suffer RSI because the default Emacs
-shortcuts are quite brain-damaged in this regard.
+holding several keys. Many Emacs users suffer from RSI because the default
+Emacs shortcuts are quite brain-damaged in this regard.
 
 I have replaced most shortcuts in Emacs with key sequences starting with an
 “introducing key”. We can choose a single key, whose seul rôle will be

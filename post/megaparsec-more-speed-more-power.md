@@ -6,9 +6,9 @@ date:
 ---
 
 It looks like comparing Haskell's performance with C (even just FFI) causes
-too much disturbance in the force for some reason, so this time I'll be
-comparing Haskell with Haskell, namely Megaparsec 6 (still in making) with
-the gold standard of fast parsing in the Haskell world—Attoparsec.
+too much disturbance in the force, so this time I'll be comparing Haskell
+with Haskell, namely Megaparsec 6 (still in making) with the gold standard
+of fast parsing in the Haskell world—Attoparsec.
 
 The post is about a modification to Megaparsec extending its `Stream` type
 class to achieve four goals:
@@ -29,8 +29,8 @@ class to achieve four goals:
 4. Make code simpler by moving the complex position-updating logic that we
    keep for custom streams of tokens into the methods of the `Stream` type
    class. This way if you have a custom stream of tokens, you'll have to
-   write the correct position updating code. While default streams
-   (`String`, `Text`, `ByteString`) will enjoy simplified, faster
+   write the correct position updating code. At the same time, default
+   streams (`String`, `Text`, `ByteString`) will enjoy simplified, faster
    processing.
 
 ## Benchmarks
@@ -80,7 +80,7 @@ just slice and compare a “chunk” of stream directly and efficiently.
 There are several possible implementations that would require different
 methods to be added to `Stream`. I went with extracting a chunk of fixed
 length equal to the length of the chunk we want to match against, then
-comparing it with user-supplied predicate to figure out if what we've
+comparing it using user-supplied function to figure out if what we've
 fetched is a match.
 
 The implementation currently looks like this:
@@ -244,7 +244,7 @@ class (Ord (Token s), Ord (Tokens s)) => Stream s where
 ```
 
 `positionAt1` and `positionAtN` set position at single token and given chunk
-of stream respectively. For all the built-in stream it's enough to just
+of stream respectively. For all the built-in streams it's enough to just
 return the given source position:
 
 ```haskell
@@ -252,7 +252,7 @@ defaultPositionAt :: SourcePos -> a -> SourcePos
 defaultPositionAt pos _ = pos
 ```
 
-Because in input like `aaab` if we have matched all `a`s, we are
+Because in input like `aaab`, if we have matched all `a`s, we are
 automatically at `b`'s position—that's it. The methods are more useful for
 streams of tokens where every token contains its position in original input,
 for example:
@@ -267,7 +267,6 @@ data Span = Span
 instance Stream [Span] where
   type Token [Span] = Span
   type Tokens [Span] = [Span]
-  chunkToTokens Proxy = id
   positionAt1 Proxy _ (Span start _ _) = start
   positionAtN Proxy pos [] = pos
   positionAtN Proxy _ (Span start _ _:_) = start
@@ -275,6 +274,7 @@ instance Stream [Span] where
   advanceN Proxy _ pos [] = pos
   advanceN Proxy _ _ ts =
     let Span _ end _ = last ts in end
+  chunkLength Proxy = length
   take1_ [] = Nothing
   take1_ (t:ts) = Just (t, ts)
   takeN_ n s
@@ -287,8 +287,8 @@ instance Stream [Span] where
 For built-in streams `advanceN` is just defined via `advance1` and a strict
 left fold over given chunk.
 
-`chunkLength` should be obvious—without it wouldn't be able to keep track of
-the total number of processed tokens.
+`chunkLength` should be obvious—without it we wouldn't be able to keep track
+of the total number of processed tokens.
 
 ### Isomorphism between `[Token s]` and `Tokens s`
 
@@ -598,7 +598,7 @@ instance Stream T.Text where
 -- etc.
 ```
 
-`takeWhile1P` will only parse at least one token:
+`takeWhile1P` requires at least one matching token:
 
 ```haskell
   -- | Similar to 'takeWhileP', but fails if it can't parse at least one
@@ -638,12 +638,12 @@ And `takeP` accepts precise number of tokens to consume as an argument:
     -> m (Tokens s)    -- ^ A chunk of matching tokens
 ```
 
-We won't look at the implementations (which may be not totally obvious)
-because they do not introduce anything new.
+We won't look at the implementations (which also may be not totally obvious)
+because they do not introduce anything of interest.
 
 ## When `String` is a more efficient type than `Text`
 
-People often say that `Text` is more efficient than `String` and “serious”
+People often claim that `Text` is more efficient than `String` and “serious”
 code should prefer `Text` and `ByteString`, because `String` is for suckers.
 Well, it depends.
 
@@ -690,7 +690,7 @@ manyTill (byte string)/1000 |   328,536  |  0  |    104
 manyTill (byte string)/2000 |   659,136  |  1  |    104
 manyTill (byte string)/4000 | 1,320,600  |  2  |  4,136
 
-Note how even thought max residency with `String` is higher, it allocates
+Note how even though max residency with `String` is higher, it allocates
 less than `Text`.
 
 So, has Attoparsec gone wrong by not supporting `String`? How do we save
@@ -706,7 +706,8 @@ Efficient operations are typically those that produce `Text` from `Text` and
 `ByteString` from `ByteString`. In other words the primitives that return
 `Tokens s` instead of `Token s` are fast.
 
-Attoparsec does not make secrets where the source of its speed lies (quoting
+Attoparsec does not make a secret as to where the source of its speed lies
+(quoting
 [the docs](https://hackage.haskell.org/package/attoparsec/docs/Data-Attoparsec-Text.html)):
 
 > Use the `Text`-oriented parsers whenever possible, e.g. `takeWhile1`
@@ -770,8 +771,8 @@ take advantage of the new combinators to improve the speed.
 [Here is a PR](https://github.com/stackbuilders/stache/pull/22), I won't
 quote the diffs here, but I'll list results of the switch:
 
-* I wanted `string` to return strict `Text`, so switching to strict `Text`
-  as input type was necessary. Not a big deal.
+* I wanted `string` to return strict `Text`, so changing input type to
+  strict `Text` was necessary. Not a big deal.
 
 * The new design forces the user to be more consistent with data types
   he/she is using. Previously I had a mix of `String` and `Text`. Now
@@ -779,10 +780,11 @@ quote the diffs here, but I'll list results of the switch:
 
 * Performance: judging by “comprehensive template” benchmark, the new parser
   is 43% faster than the old one. You can clone the repo and run the
-  benchmark yourself for more info.
+  benchmark yourself for more info (the `master` branch can be used to see
+  performance before the switch).
 
-If you do a mechanical switch to Megaparsec 6, you still may get better
-performance (provided you don't switch from `String` to `Text` without
+If you do a mechanical switch to Megaparsec 6, you still may get performance
+improvements (provided you don't switch from `String` to `Text` without
 knowing what you are doing):
 
 * If you happen to use `string` a lot, you'll see an improvement.
@@ -798,33 +800,50 @@ new combinators.
 
 Ah yeah, I've almost forgotten, we're “competing” with Attoparsec here.
 
-About avoiding `oneOf` and `noneOf`…
+To update the code to Megaparsec 6 I put `takeWhileP` and `takeWhile1P` in a
+couple of places, added inline pragmas that I initially forgot for the same
+functions as in Attoparsec's JSON parser. I also followed the good advice
+from Attoparsec's docs:
 
-The switch on its own does not make the situation much better because, as we
-have learned, our parsers are still `token`-dominated and thus slow (both
-Attoparsec and Megaparsec). However, in CSV parser there is a place where we
-can use `takeWhileP`—show it and show the effect of switching.
+> For very simple character-testing predicates, write them by hand instead
+> of using `inClass` or `notInClass`.
 
-Similarly discuss and show JSON parser.
+(“By hand” means with `satisfy`. `inClass` in called `oneOf` in Megaparsec
+and `notInClass`—`noneOf`.)
 
-## Numeric parsers can be a bottleneck
+Then I profiled the parsers and found out that numeric helpers like
+`decimal` can be a nasty bottleneck. I'll save your time and won't show
+details. Right now I'm working on a PR that should heavily optimize all
+numeric parsers in Megaparsec (let's say “no” to `read`-based
+implementations!). At the time of writing it's not ready yet, but I've put
+faster implementations of `decimal` and `scientific` (borrowed mostly from
+Attoparsec source) right into the `parsers-bench` repo. We'll have something
+as efficient in Megaparsec once I finish with that PR.
 
-Use the log parsers as an example of parser where a numeric parser
-(`decimal`) in our case can be a bottleneck. Improve performance of this
-sort of parsers and show how we're getting closer to Attoparsec's speed with
-this.
+I've got the following results:
+
+![Megaparsec vs Attoparsec (after optimizations)](/static/img/megaatto-final.png)
+
+I'm quite embarrassed about the JSON parser. I'm not sure why on the earth
+it's even faster than Attoparsec. I tried it by hand and it looks that it
+produces valid results, i.e. it works. The style is not most natural, but
+that's the style Attoparsec uses so it's only fair to preserve it (we
+compare libraries, not styles). It may be some sort of mistake on my part,
+and I hope someone clever will point out what it is as soon as I publish the
+post. Again, all the code is here: https://github.com/mrkkrp/parsers-bench,
+so please be my guest.
 
 ## Conclusion
 
-I think Megaparsec in version 6 has acquired some appeal that was unique to
-Attoparsec before. Now we have a collection of parsers that are 100–150×
-faster than standard approaches using traditional combinators like `many`
-and `token`-based parsers. We also avoid repacking results of `token`-based
-parsers as list of tokens (e.g. `String`) if we parse things like `Text`.
-Megaparsec has to do more bookkeeping to provide better error messages, but
-if these fast combinators are put into use like it's the case with
-Attoparsec parsers, the difference with Attoparsec is not that dramatic is
-it's usually thought.
+Megaparsec in version 6 has acquired (or will acquire, upon release) some
+appeal that was unique to Attoparsec before. Now we have a collection of
+parsers that are 100–150× faster than standard approaches using traditional
+combinators like `many` and `token`-based parsers. We also avoid repacking
+results of `token`-based parsers as list of tokens (e.g. `String`) if we
+parse things like `Text`. Megaparsec has to do more bookkeeping to provide
+better error messages, but if these fast combinators are put into use like
+it's the case with Attoparsec parsers, the difference with Attoparsec is not
+that dramatic is it's usually thought.
 
 Attoparsec still has its uses though: it's still faster and supports
 incremental parsing properly. That said, with Megaparsec 6 released I'll be

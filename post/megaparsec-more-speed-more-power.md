@@ -796,7 +796,9 @@ new combinators.
 
 ## Back to Megaparsec vs Attoparsec
 
-Ah yeah, I've almost forgot, we're “competing” with Attoparsec here.
+Ah yeah, I've almost forgotten, we're “competing” with Attoparsec here.
+
+About avoiding `oneOf` and `noneOf`…
 
 The switch on its own does not make the situation much better because, as we
 have learned, our parsers are still `token`-dominated and thus slow (both
@@ -824,19 +826,17 @@ if these fast combinators are put into use like it's the case with
 Attoparsec parsers, the difference with Attoparsec is not that dramatic is
 it's usually thought.
 
-I'd say the difference not big enough to reach for Attoparsec at all once
-Megaparsec 6 is released. There is nothing selfish in this statement. I'm
-saying it not because I'm behind Megaparsec's development, but because it's
-easier to use one library for everything instead of having to choose between
-(or switch between) speed and everything else (flexibility, nice error
-messages).
+Attoparsec still has its uses though: it's still faster and supports
+incremental parsing properly. That said, with Megaparsec 6 released I'll be
+more hesitant to use Attoparsec because it's easier to use one library for
+everything, especially if it's more powerful and not much slower.
 
 The version 6 thus will aim to be not just a parser for human-readable texts
 and source code, but “one size fits all” general solution to parsing in
 Haskell, including low-level binary parsing.
 
-If you want to play with version 6 (it probably won't be released for a
-month more at least), add the following to your `stack.yaml` file:
+If you want to play with version 6 (it probably won't be released for
+another month), use something like this `stack.yaml` file:
 
 ```yaml
 resolver: lts-8.20
@@ -844,7 +844,7 @@ packages:
 - '.'
 - location:
     git: https://github.com/mrkkrp/megaparsec.git
-    commit: f657dd08f8d81799a6ddb09213d0969026aa74b5
+    commit: 9a38f8318e5e06ccf861d0efb6f92031a9db0c49
   extra-dep: true
 extra-deps:
 - parser-combinators-0.1.0

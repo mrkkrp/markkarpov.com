@@ -643,39 +643,160 @@ because they do not introduce anything new.
 
 ## When `String` is a more efficient type than `Text`
 
-TODO: show that due to the nature of parsing `String` is a more efficient
-type than `Text` because
+People often say that `Text` is more efficient than `String` and “serious”
+code should prefer `Text` and `ByteString`, because `String` is for suckers.
+Well, it depends.
 
-1. `Char`s that we need to extract are already in the string and unconsing
-   is very cheap, while with `Text` we have to allocate `Char`s every time
-   we “uncons” because the internal rep has no chars in it.
+To judge capabilities of our new code, we must understand which operations
+are efficient with `ByteString` and `Text` and which are not, and how to use
+the efficient ones to maximum benefit . There is no magic to make things
+faster just because we started to parse `Text` instead of `String`.
 
-2. Still, probably 90% of parsers is composed from `token`-based parsers, so
-   unconsing is everywhere.
+The terrifying truth: if your parser (Megaparsec or Parsec) parses `String`
+and you just switch to `Text`, chances are the performance will degrade.
 
-Prove the points by showing older `String`-based bencmarks compared to the
-newer `Text`-based bencmarks.
+Surprised? Here are the facts:
 
-## But there is hope…
+* Unconsing is the most common operation that is performed on input stream.
+  This is because most of the time we need fine-grained control that forces
+  us to consume and analyze one token at a time.
 
-Introduce uber-fast combinators as the main “muscle” of `Text` and
-`ByteString`-based parsers. Note that Attoparsec is fast exactly because of
-these combinators (quote its documentation). Shows some benchmarks and
-allocations.
+* `String` is a list of characters `[Char]`, the characters are already
+  there. No need to allocate a `Char` every time and `uncons` is a very
+  efficient operation for lists.
 
-Also mention which default things is Megaparsec have received faster
-implementation in terms of the new combinators.
+* `Text` is `Data Text = Text Array Int Int` (omitting unboxing pragmas). No
+  `Char`s here. Every time we uncons we need to do a lot more work and
+  allocate new `Char`. It's slower.
 
-Now that Megaparsec has grown the same sort of “muscle”, is it going to get
-closer to Attoparsec's performance?
+And here are the benchmarks (made with current Megaparsec master):
+
+![When String is an efficient type](/static/img/megaatto-fast-string.png)
+
+Memory:
+
+Case                        | Allocated  | GCs |   Max
+----------------------------|------------|-----|-------
+manyTill (string)/500       |   160,312  |  0  | 12,024
+manyTill (string)/1000      |   320,312  |  0  | 24,024
+manyTill (string)/2000      |   640,312  |  1  | 48,024
+manyTill (string)/4000      | 1,280,312  |  2  | 96,024
+manyTill (text)/500         |   233,832  |  0  |  1,192
+manyTill (text)/1000        |   466,832  |  0  |  2,192
+manyTill (text)/2000        |   932,832  |  1  |  4,192
+manyTill (text)/4000        | 1,864,832  |  3  |  8,192
+manyTill (byte string)/500  |   164,536  |  0  |    104
+manyTill (byte string)/1000 |   328,536  |  0  |    104
+manyTill (byte string)/2000 |   659,136  |  1  |    104
+manyTill (byte string)/4000 | 1,320,600  |  2  |  4,136
+
+Note how even thought max residency with `String` is higher, it allocates
+less than `Text`.
+
+So, has Attoparsec gone wrong by not supporting `String`? How do we save
+prestige of `Text` and `ByteString`?
+
+## There is hope…
+
+It's true that unconsing is slow, but there are other operations that are
+fast. Good news is that we have just wrapped some of them as `takeN_` and
+`takeWhile_`.
+
+Efficient operations are typically those that produce `Text` from `Text` and
+`ByteString` from `ByteString`. In other words the primitives that return
+`Tokens s` instead of `Token s` are fast.
+
+Attoparsec does not make secrets where the source of its speed lies (quoting
+[the docs](https://hackage.haskell.org/package/attoparsec/docs/Data-Attoparsec-Text.html)):
+
+> Use the `Text`-oriented parsers whenever possible, e.g. `takeWhile1`
+> instead of `many1 anyChar`. There is about a factor of 100 difference in
+> performance between the two kinds of parser.
+
+*This is important.* Let me show you a picture:
+
+![Performance of some parsers with text](/static/img/megaatto-text-parsers.png)
+
+And allocations:
+
+Case             | Allocated | GCs |   Max
+-----------------|-----------|-----|------
+string/500       |    21,760 |   0 | 1,072
+string/1000      |    42,744 |   0 | 2,072
+string/2000      |    84,744 |   0 | 4,072
+string/4000      |   168,744 |   0 | 8,072
+string'/500      |   127,856 |   0 | 1,072
+string'/1000     |   254,840 |   0 | 2,072
+string'/2000     |   508,840 |   0 | 4,072
+string'/4000     | 1,016,840 |   1 | 8,072
+many/500         |   201,928 |   0 | 1,120
+many/1000        |   402,912 |   0 | 2,120
+many/2000        |   804,912 |   1 | 4,120
+many/4000        | 1,608,912 |   3 | 8,120
+some/500         |   221,856 |   0 | 1,120
+some/1000        |   442,840 |   0 | 2,120
+some/2000        |   884,840 |   1 | 4,120
+some/4000        | 1,768,840 |   3 | 8,120
+manyTill/500     |   246,096 |   0 | 1,184
+manyTill/1000    |   491,080 |   0 | 2,184
+manyTill/2000    |   981,080 |   1 | 4,184
+manyTill/4000    | 1,961,080 |   3 | 8,184
+someTill/500     |   337,648 |   0 | 1,184
+someTill/1000    |   674,632 |   1 | 2,184
+someTill/2000    | 1,348,632 |   2 | 4,184
+someTill/4000    | 2,696,632 |   5 | 8,184
+takeWhileP/500   |    21,696 |   0 | 1,072
+takeWhileP/1000  |    42,680 |   0 | 2,072
+takeWhileP/2000  |    84,680 |   0 | 4,072
+takeWhileP/4000  |   168,680 |   0 | 8,072
+takeWhile1P/500  |    21,696 |   0 | 1,072
+takeWhile1P/1000 |    42,680 |   0 | 2,072
+takeWhile1P/2000 |    84,680 |   0 | 4,072
+takeWhile1P/4000 |   168,680 |   0 | 8,072
+takeP/500        |    21,728 |   0 | 1,072
+takeP/1000       |    42,712 |   0 | 2,072
+takeP/2000       |    84,712 |   0 | 4,072
+takeP/4000       |   168,712 |   0 | 8,072
+
+Now that Megaparsec has grown the same sort of “muscle” as Attoparsec, will
+it make a difference?
 
 ## Case study: Stache parser
 
-Show the process of upgrading to Megaparsec 6 (what needed to be
-re-written). Show benchmarks. State that in this particular case the parser
-has become 43% faster plus we are using `Text` everywhere consistently.
+While writing the post, I decided to compare a real-world Megaparsec 5
+parser with its upgraded version. The switch wasn't mechanic, I needed to
+take advantage of the new combinators to improve the speed.
+
+[Here is a PR](https://github.com/stackbuilders/stache/pull/22), I won't
+quote the diffs here, but I'll list results of the switch:
+
+* I wanted `string` to return strict `Text`, so switching to strict `Text`
+  as input type was necessary. Not a big deal.
+
+* The new design forces the user to be more consistent with data types
+  he/she is using. Previously I had a mix of `String` and `Text`. Now
+  everything is strict `Text`. Which is a good thing.
+
+* Performance: judging by “comprehensive template” benchmark, the new parser
+  is 43% faster than the old one. You can clone the repo and run the
+  benchmark yourself for more info.
+
+If you do a mechanical switch to Megaparsec 6, you still may get better
+performance (provided you don't switch from `String` to `Text` without
+knowing what you are doing):
+
+* If you happen to use `string` a lot, you'll see an improvement.
+
+* If you use combinators like `space` from `Text.Megaparsec.Char` and
+  `skipLineComment` from `Text.Megaparsec.Char.Lexer`, you'll find that they
+  are faster now because they were re-implemented in terms of `takeWhileP`.
+
+Still, most of the time manual tuning is necessary to get the most of the
+new combinators.
 
 ## Back to Megaparsec vs Attoparsec
+
+Ah yeah, I've almost forgot, we're “competing” with Attoparsec here.
 
 The switch on its own does not make the situation much better because, as we
 have learned, our parsers are still `token`-dominated and thus slow (both

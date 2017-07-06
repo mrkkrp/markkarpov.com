@@ -35,8 +35,8 @@ class to achieve four goals:
 
 ## Benchmarks
 
-We're going to need some benchmarks. I have made the repo with code I used
-for comparison public, it can be found here:
+We're going to need some benchmarks. I have made the repo with the code I
+used for comparison public, it can be found here:
 https://github.com/mrkkrp/parsers-bench.
 
 It contains 3 pairs of parsers:
@@ -147,11 +147,11 @@ class (Ord (Token s), Ord (Tokens s)) => Stream s where
   takeN_ :: Int -> s -> Maybe (Tokens s, s)
 ```
 
-As you can see `takeN_` returns `Tokens s` thing, where `Tokens` is a new
-associated type function of the `Stream` type class. It's the same as stream
-type for built-in streams (`String`, strict and lazy `Text` and
-`ByteString`), but it may be desirable to have something that differs from
-the stream type `s` when working with custom streams.
+As you can see, `takeN_` returns `Tokens s` thing, where `Tokens` is a new
+associated type of the `Stream` type class. It's the same as stream type for
+built-in streams (`String`, strict and lazy `Text` and `ByteString`), but it
+may be desirable to have something that differs from the stream type `s`
+when working with custom streams.
 
 `take1_` is our old workhorse `uncons` under different name—truly the most
 common operation in parsing (basis of the `token` primitive), but we'll talk
@@ -441,11 +441,10 @@ expecting end of input or white space
 
 Megaparsec keeps track of those “possible” matches using something called
 *hints*. (Parsec passes around dummy parse errors from which only “expected”
-component is used with the same result, that's uglier of course.) They are
-created when something fails without consuming input in context of a bigger
-combinator (typically alternatives with `(<|>)`) that itself succeeds and
-are kept until more input is consumed, then they are discarded by
-Megaparsec's machinery:
+component is used with the same result.) They are created when something
+fails without consuming input in context of a bigger combinator (typically
+alternatives with `(<|>)`) that itself succeeds and are kept until more
+input is consumed, then they are discarded by Megaparsec's machinery:
 
 ```haskell
 λ> parseTest (many spaceChar <* many (char 'b') <* eof) "  a"
@@ -468,8 +467,8 @@ unexpected 'a'
 expecting end of input or the rest of integer
 ```
 
-This “the rest of integer” phrase is different from just “digit” and it does
-not care how `digitChar` itself is labelled, so it's a different thing.
+This “the rest of integer” phrase is different from just “digit”, so it's a
+different thing.
 
 We want to label those individual tokens matched by `takeWhile` even though
 our parsing code never really gets to manipulate them “normally”. So a
@@ -812,8 +811,8 @@ from Attoparsec's docs:
 and `notInClass`—`noneOf`.)
 
 Then I profiled the parsers and found out that numeric helpers like
-`decimal` can be a nasty bottleneck. I'll save your time and won't show
-details. Right now I'm working on a PR that should heavily optimize all
+`decimal` can be a nasty bottleneck. I'll save your time and won't show the
+details here. Right now I'm working on a PR that should heavily optimize all
 numeric parsers in Megaparsec (let's say “no” to `read`-based
 implementations!). At the time of writing it's not ready yet, but I've put
 faster implementations of `decimal` and `scientific` (borrowed mostly from
@@ -869,6 +868,6 @@ extra-deps:
 - parser-combinators-0.1.0
 ```
 
-I'm thankful for any feedback, you can
+I'm thankful for any feedback you may have. You can
 open [issues on GitHub](https://github.com/mrkkrp/megaparsec/issues) or
 reach [me on Twitter](https://twitter.com/mrkkrp).

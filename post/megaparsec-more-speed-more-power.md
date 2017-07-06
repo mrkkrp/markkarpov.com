@@ -664,7 +664,7 @@ Surprised? Here are the facts:
   there. No need to allocate a `Char` every time and `uncons` is a very
   efficient operation for lists.
 
-* `Text` is `Data Text = Text Array Int Int` (omitting unboxing pragmas). No
+* `Text` is `data Text = Text Array Int Int` (omitting unboxing pragmas). No
   `Char`s here. Every time we uncons we need to do a lot more work and
   allocate new `Char`. It's slower.
 

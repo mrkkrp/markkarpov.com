@@ -11,7 +11,7 @@ software developers) started to complain about pains in hands. I have to
 admit that also faced this issue a couple of years ago. Since then though, I
 managed to eliminate the problem completely and currently I type as long and
 as much as I want and do not experience any pain at all. Here I describe the
-combination of hardware/settings/techniques what helped me.
+combination of hardware/settings/techniques that helped me.
 
 ## The keyboard
 

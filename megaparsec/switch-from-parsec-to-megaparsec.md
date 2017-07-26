@@ -4,7 +4,7 @@ desc: Practical recommendations for people who decide to switch from Parsec to M
 difficulty: 4
 date:
   published: October 15, 2015
-  updated: June 8, 2017
+  updated: July 26, 2017
 ---
 
 This tutorial explains the practical differences between the two libraries
@@ -31,24 +31,24 @@ uses Megaparsec looks like this:
 ```haskell
 -- this module contains commonly useful tools:
 import Text.Megaparsec
--- this module depends on type of data you want to parse, you only need to
--- import one of these:
-import Text.Megaparsec.String          -- if you parse ‘String’
-import Text.Megaparsec.ByteString      -- if you parse strict ‘ByteString’
-import Text.Megaparsec.ByteString.Lazy -- if you parse lazy ‘ByteString’
-import Text.Megaparsec.Text            -- if you parse strict ‘Text’
-import Text.Megaparsec.Text.Lazy       -- if you parse lazy ‘Text’
+-- if you parse a stream of characters
+import Text.Megaparsec.Char
+-- if you parse a stream of bytes
+import Tetx.Megaparsec.Byte
 -- if you need to parse permutation phrases:
 import Text.Megaparsec.Perm
 -- if you need to parse expressions:
 import Text.Megaparsec.Expr
--- if you need to parse languages:
-import qualified Text.Megaparsec.Lexer as L
+-- for lexing of character streams
+import qualified Text.Megaparsec.Char.Lexer as L
+-- for lexing of binary streams
+import qualified Text.Megaparsec.Byte.Lexer as L
 ```
 
 So, the only noticeable difference that Megaparsec has no
 `Text.Megaparsec.Token` module which is replaced with
-`Text.Megaparsec.Lexer`, see about this in the
+`Text.Megaparsec.Char.Lexer` (or `Text.Megaparsec.Byte.Lexer` if you work
+with binary data), see about this in the
 section
 [“What happened to `Text.Parsec.Token`”](#what-happened-to-text.parsec.token).
 
@@ -110,7 +110,7 @@ that were removed in Megaparsec and reasons of their removal:
 
 ## Completely changed things
 
-In Megaparsec 5 the modules `Text.Megaparsec.Pos` and
+In Megaparsec 5 and 6 the modules `Text.Megaparsec.Pos` and
 `Text.Megaparsec.Error` are completely different from those found in Parsec
 and Megaparsec 4. Take some time to look at documentation of the modules if
 your use-case requires operations on error messages or positions. You may
@@ -154,8 +154,14 @@ like the fact that we have well-typed and extensible error messages now.
   default, so it's not necessary to use `try` with them (beginning from
   `4.4.0`). This feature does not affect performance.
 
-* The new `failure` combinator allows to fail with an arbitrary error
-  message, it even allows to use your own data types.
+* The new `failure` and `fancyFailure` combinators allow to fail with an
+  arbitrary error message and add your own data.
+
+For full up to date info
+see
+[the changelog](https://github.com/mrkkrp/megaparsec/blob/master/CHANGELOG.md).
+Over the years we have gone so far ahead of Parsec that it would take a lot
+of space to enumerate all the nice stuff.
 
 ## Character parsing
 
@@ -177,8 +183,6 @@ may be useful if you work with Unicode:
 Ever wanted to have case-insensitive character parsers? Here you go:
 
 * `char'`
-* `oneOf'`
-* `noneOf'`
 * `string'`
 
 ## Expression parsing
@@ -195,13 +199,13 @@ three `Operator` constructors:
 
 That module was extremely inflexible and thus it has been eliminated. In
 Megaparsec you have
-[`Text.Megaparsec.Lexer`](https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Lexer.html)
+[`Text.Megaparsec.Char.Lexer`](https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Char-Lexer.html)
 instead, which doesn't impose anything on user but provides useful
 helpers. The module can also parse indentation-sensitive languages.
 
 Let's quickly describe how you go about writing your lexer with
-`Text.Megaparsec.Lexer`. First, you should import the module qualified, we
-will use `L` as its synonym here.
+`Text.Megaparsec.Char.Lexer`. First, you should import the module qualified,
+we will use `L` as its synonym here.
 
 ### White space
 
@@ -210,16 +214,17 @@ language. `space`, `skipLineComment`, and `skipBlockComment` can be helpful:
 
 ```haskell
 sc :: Parser () -- ‘sc’ stands for “space consumer”
-sc = L.space (void spaceChar) lineComment blockComment
-  where lineComment  = L.skipLineComment "//"
-        blockComment = L.skipBlockComment "/*" "*/"
+sc = L.space space1 lineComment blockComment
+  where
+    lineComment  = L.skipLineComment "//"
+    blockComment = L.skipBlockComment "/*" "*/"
 ```
 
 This is generally called *space consumer*, often you'll need only one space
 consumer, but you can define as many of them as you want. Note that this new
 module allows you avoid consuming newline characters automatically, just use
-something different than `void spaceChar` as first argument of `space`. Even
-better, you can control what white space is on per-lexeme basis:
+something different than `space1` as first argument of `space`. Even better,
+you can control what white space is on per-lexeme basis:
 
 ```haskell
 lexeme :: Parser a -> Parser a
@@ -287,7 +292,7 @@ new level of indentation.
 
 *Later update*: now we have full support for indentation-sensitive parsing,
 see `nonIndented`, `indentBlock`, and `lineFold` in the
-`Text.Megaparsec.Lexer` module.
+`Text.Megaparsec.Char.Lexer` module.
 
 ### Character and string literals
 
@@ -324,27 +329,17 @@ Parsing of numbers is easy:
 
 ```haskell
 integer :: Parser Integer
-integer = lexeme L.integer
+integer = lexeme L.decimal
 
 float :: Parser Double
 float = lexeme L.float
 
 number :: Parser Scientific
-number lexeme L.number -- similar to ‘naturalOrFloat’ in Parsec
+number lexeme L.scientific -- similar to ‘naturalOrFloat’ in Parsec
 ```
 
-Note that Megaparsec internally uses the standard Haskell functions to parse
-floating point numbers, thus no precision loss is possible (and it's
-tested). On the other hand, Parsec again re-implements the whole thing.
-Approach taken by Parsec authors is to parse the numbers one by one and then
-re-create the floating point number by means of floating point arithmetic.
-Any professional knows that this is not possible and the only way to parse
-floating point number is via bit-level manipulation (it's usually done on OS
-level, in C libraries). Of course results produced by Parsec built-in parser
-for floating point numbers are incorrect. This is a known bug now, but it's
-been a long time till we “discovered” it, because again, Parsec has no test
-suite. (*Update*: it took one year but Parsec's maintainer has recently
-merged a pull request that seems to fix that and released Parsec 3.1.11.)
+Megaparsec's numeric parsers have been heavily optimized in version 6, they
+are close to Attoparsec's solutions by performance.
 
 Hexadecimal and octal numbers do not parse “0x” or “0o” prefixes, because
 different languages may have other prefixes for this sort of numbers. We
@@ -359,7 +354,7 @@ octal = lexeme $ char '0' >> char' 'o' >> L.octal
 ```
 
 Since Haskell report says nothing about sign in numeric literals, basic
-parsers like `integer` do not parse sign. You can easily create parsers for
+parsers like `decimal` do not parse sign. You can easily create parsers for
 signed numbers with the help of `signed`:
 
 ```haskell
@@ -373,9 +368,10 @@ signedNumber :: Parser Scientific
 signedNumber = L.signed sc number
 ```
 
-And that's it, shiny and new, `Text.Megaparsec.Lexer` is at your service,
-now you can implement anything you want without the need to copy and edit
-entire `Text.Parsec.Token` module (people had to do it sometimes, you know).
+And that's it, shiny and new, `Text.Megaparsec.Char.Lexer` is at your
+service, now you can implement anything you want without the need to copy
+and edit entire `Text.Parsec.Token` module (people had to do it sometimes,
+you know).
 
 ## What's next?
 

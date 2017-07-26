@@ -5,7 +5,7 @@ attachment: ParsingWhile.hs
 difficulty: 2
 date:
   published: October 13, 2015
-  updated: June 8, 2017
+  updated: July 26, 2017
 ---
 
 This tutorial will present how to parse a subset of a simple imperative
@@ -27,13 +27,14 @@ material for a tutorial.
 First let's import the necessary modules:
 
 ```haskell
-module Main (main) where
+module Main where
 
 import Control.Monad (void)
+import Data.Void
 import Text.Megaparsec
+import Text.Megaparsec.Char
 import Text.Megaparsec.Expr
-import Text.Megaparsec.String -- input stream is of the type ‘String’
-import qualified Text.Megaparsec.Lexer as L
+import qualified Text.Megaparsec.Char.Lexer as L
 ```
 
 ## The language
@@ -127,6 +128,13 @@ data Stmt
   deriving (Show)
 ```
 
+Since we won't need custom data in error messages and our input stream will
+be in the form of `String`, the following definition of `Parser` will do:
+
+```haskell
+type Parser = Parsec Void String
+```
+
 ## Lexer
 
 Having all the data structures we can go on with writing the code to do the
@@ -137,17 +145,19 @@ whitespace and how it should be consumed. `space` from
 
 ```haskell
 sc :: Parser ()
-sc = L.space (void spaceChar) lineCmnt blockCmnt
-  where lineCmnt  = L.skipLineComment "//"
-        blockCmnt = L.skipBlockComment "/*" "*/"
+sc = L.space space1 lineCmnt blockCmnt
+  where
+    lineCmnt  = L.skipLineComment "//"
+    blockCmnt = L.skipBlockComment "/*" "*/"
 ```
 
 `sc` stands for “space consumer”. `space` takes three arguments: a parser
-that parses single whitespace character, a parser for line comments, and a
-parser for block (multi-line) comments. `skipLineComment` and
-`skipBlockComment` help with quickly creating parsers to consume the
-comments. (If our language didn't have block comments, we could pass `empty`
-from `Control.Applicative` as the third argument of `space`.)
+that parses whitespace (but it should not accept empty input), a parser for
+line comments, and a parser for block (multi-line) comments.
+`skipLineComment` and `skipBlockComment` help with quickly creating parsers
+to consume the comments. (If our language didn't have block comments, we
+could pass `empty` from `Control.Applicative` as the third argument of
+`space`.)
 
 Next, we will follow the strategy where whitespace will be consumed *after*
 every lexeme automatically, but not before it. Let's define a wrapper to
@@ -181,7 +191,7 @@ parens = between (symbol "(") (symbol ")")
 -- | 'integer' parses an integer.
 
 integer :: Parser Integer
-integer = lexeme L.integer
+integer = lexeme L.decimal
 
 -- | 'semi' parses a semicolon.
 
@@ -202,7 +212,7 @@ Let's express it in code:
 
 ```haskell
 rword :: String -> Parser ()
-rword w = string w *> notFollowedBy alphaNumChar *> sc
+rword w = lexeme (string w *> notFollowedBy alphaNumChar)
 
 rws :: [String] -- list of reserved words
 rws = ["if","then","else","while","do","skip","true","false","not","and","or"]
@@ -254,8 +264,9 @@ stmt = parens stmt <|> stmtSeq
 
 stmtSeq :: Parser Stmt
 stmtSeq = f <$> sepBy1 stmt' semi
-  -- if there's only one stmt return it without using ‘Seq’
-  where f l = if length l == 1 then head l else Seq l
+  where
+    -- if there's only one stmt return it without using ‘Seq’
+    f l = if length l == 1 then head l else Seq l
 ```
 
 Now a single statement is quite simple, it's either an `if` conditional, a
@@ -308,6 +319,10 @@ assignStmt = do
 skipStmt :: Parser Stmt
 skipStmt = Skip <$ rword "skip"
 ```
+
+We don't need `try` with these alternatives because `rword` matches on
+keyword (such as `if`, `while`, `skip`) using `string` which backtracks
+automatically. `identifier` already has `try` in its definition.
 
 ## Expressions
 
@@ -366,8 +381,8 @@ arithmetic expressions.
 ```haskell
 bTerm :: Parser BExpr
 bTerm =  parens bExpr
-  <|> (rword "true"  *> pure (BoolConst True))
-  <|> (rword "false" *> pure (BoolConst False))
+  <|> (BoolConst True  <$ rword "true")
+  <|> (BoolConst False <$ rword "false")
   <|> rExpr
 ```
 
@@ -396,6 +411,8 @@ be handy:
 
 * `parseTest p input` applies parser `p` on input `input` and prints
   results.
+* `parseTest' p input` is the same as `parseTest`, but also displays
+  offending line as part of error message.
 
 ----
 

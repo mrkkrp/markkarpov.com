@@ -1,10 +1,11 @@
-module Main (main) where
+module Main where
 
 import Control.Monad (void)
+import Data.Void
 import Text.Megaparsec
+import Text.Megaparsec.Char
 import Text.Megaparsec.Expr
-import Text.Megaparsec.String -- input stream is of the type ‘String’
-import qualified Text.Megaparsec.Lexer as L
+import qualified Text.Megaparsec.Char.Lexer as L
 
 data BExpr
   = BoolConst Bool
@@ -45,10 +46,13 @@ data Stmt
   | Skip
   deriving (Show)
 
+type Parser = Parsec Void String
+
 sc :: Parser ()
-sc = L.space (void spaceChar) lineCmnt blockCmnt
-  where lineCmnt  = L.skipLineComment "//"
-        blockCmnt = L.skipBlockComment "/*" "*/"
+sc = L.space space1 lineCmnt blockCmnt
+  where
+    lineCmnt  = L.skipLineComment "//"
+    blockCmnt = L.skipBlockComment "/*" "*/"
 
 lexeme :: Parser a -> Parser a
 lexeme = L.lexeme sc
@@ -64,7 +68,7 @@ parens = between (symbol "(") (symbol ")")
 -- | 'integer' parses an integer.
 
 integer :: Parser Integer
-integer = lexeme L.integer
+integer = lexeme L.decimal
 
 -- | 'semi' parses a semicolon.
 
@@ -72,7 +76,7 @@ semi :: Parser String
 semi = symbol ";"
 
 rword :: String -> Parser ()
-rword w = string w *> notFollowedBy alphaNumChar *> sc
+rword w = lexeme (string w *> notFollowedBy alphaNumChar)
 
 rws :: [String] -- list of reserved words
 rws = ["if","then","else","while","do","skip","true","false","not","and","or"]
@@ -93,8 +97,9 @@ stmt = parens stmt <|> stmtSeq
 
 stmtSeq :: Parser Stmt
 stmtSeq = f <$> sepBy1 stmt' semi
-  -- if there's only one stmt return it without using ‘Seq’
-  where f l = if length l == 1 then head l else Seq l
+  where
+    -- if there's only one stmt return it without using ‘Seq’
+    f l = if length l == 1 then head l else Seq l
 
 stmt' :: Parser Stmt
 stmt' = ifStmt <|> whileStmt <|> skipStmt <|> assignStmt
@@ -156,8 +161,8 @@ aTerm = parens aExpr
 
 bTerm :: Parser BExpr
 bTerm =  parens bExpr
-  <|> (rword "true"  *> pure (BoolConst True))
-  <|> (rword "false" *> pure (BoolConst False))
+  <|> (BoolConst True  <$ rword "true")
+  <|> (BoolConst False <$ rword "false")
   <|> rExpr
 
 rExpr :: Parser BExpr

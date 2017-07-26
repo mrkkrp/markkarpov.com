@@ -352,7 +352,7 @@ contains two `Tokens` items of different length and `mappend` it with
 normalization kicks in and we get a different thing as output: right/left
 identity laws for `Monoid` do not hold.
 
-But really, we would like `ParseErro` to be a `Monoid`, very much.
+But really, we would like `ParseError` to be a `Monoid`, very much.
 
 If `ParseError` is just a `Semigroup`, then we can't make our parser an
 instance of `Alternative` and `MonadPlus` which are monoids on applicative

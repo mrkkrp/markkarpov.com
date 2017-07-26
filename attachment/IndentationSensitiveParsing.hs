@@ -1,27 +1,35 @@
 {-# LANGUAGE TupleSections #-}
 
-module Main (main) where
+module Main where
 
 import Control.Applicative (empty)
 import Control.Monad (void)
+import Data.Void
+import Data.Char (isAlphaNum)
 import Text.Megaparsec
-import Text.Megaparsec.String
-import qualified Text.Megaparsec.Lexer as L
+import Text.Megaparsec.Char
+import qualified Text.Megaparsec.Char.Lexer as L
+
+type Parser = Parsec Void String
 
 lineComment :: Parser ()
 lineComment = L.skipLineComment "#"
 
 scn :: Parser ()
-scn = L.space (void spaceChar) lineComment empty
+scn = L.space space1 lineComment empty
 
 sc :: Parser ()
-sc = L.space (void $ oneOf " \t") lineComment empty
+sc = L.space (void $ takeWhile1P Nothing f) lineComment empty
+  where
+    f x = x == ' ' || x == '\t'
 
 lexeme :: Parser a -> Parser a
 lexeme = L.lexeme sc
 
 pItem :: Parser String
-pItem = lexeme $ some (alphaNumChar <|> char '-')
+pItem = lexeme (takeWhile1P Nothing f) <?> "list item"
+  where
+    f x = isAlphaNum x || x == '-'
 
 pComplexItem :: Parser (String, [String])
 pComplexItem = L.indentBlock scn p
@@ -32,7 +40,8 @@ pComplexItem = L.indentBlock scn p
 
 pLineFold :: Parser String
 pLineFold = L.lineFold scn $ \sc' ->
-  let ps = some (alphaNumChar <|> char '-') `sepBy1` try sc'
+  let ps = takeWhile1P Nothing f `sepBy1` try sc'
+      f x = isAlphaNum x || x == '-'
   in unwords <$> ps <* sc
 
 pItemList :: Parser (String, [(String, [String])])

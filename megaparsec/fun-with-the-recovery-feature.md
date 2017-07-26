@@ -5,11 +5,11 @@ attachment: RecoveryFeature.hs
 difficulty: 3
 date:
   published: February 19, 2016
-  updated: June 8, 2017
+  updated: July 26, 2017
 ---
 
 Megaparsec 4.4.0 is a major improvement of the library. Among other things,
-it provides new primitive combinator `withRecovery` that allows to recover
+it provides a new primitive combinator `withRecovery` that allows to recover
 from parse errors “on-the-fly” and report several errors after parsing is
 finished or ignore them altogether. In this tutorial, we will learn how to
 use this incredible tool.
@@ -38,7 +38,7 @@ grab input from console, etc., but since our aim is to explore a new parsing
 feature, this language will do.
 
 First, we will write a parser that can parse entire program in this language
-as list of ASTs representing equations. Then we will make it
+as a list of ASTs representing equations. Then we will make it
 failure-tolerant in a way, so when it cannot parse particular equation, it
 does not stop, but continues its work until all input is analyzed.
 
@@ -54,11 +54,11 @@ module Main where
 
 import Control.Applicative (empty)
 import Control.Monad (void)
-import Data.Scientific (toRealFloat)
+import Data.Void
 import Text.Megaparsec
-import Text.Megaparsec.String
+import Text.Megaparsec.Char
 import Text.Megaparsec.Expr
-import qualified Text.Megaparsec.Lexer as L
+import qualified Text.Megaparsec.Char.Lexer as L
 ```
 
 To represent AST of our language we will use these definitions:
@@ -85,6 +85,13 @@ where every equation gives a name to an expression which in turn can be
 simply a number, reference to other equation, or some math involving those
 concepts.
 
+We'll parse input stream in the form of `String` and we don't need custom
+error messages, so we'll use the following definition of `Parser`:
+
+```haskell
+type Parser = Parsec Void String
+```
+
 As usual, the first thing that we need to handle when starting a parser is
 white space. We will have two space-consuming parsers:
 
@@ -102,10 +109,12 @@ lineComment :: Parser ()
 lineComment = L.skipLineComment "#"
 
 scn :: Parser ()
-scn = L.space (void spaceChar) lineComment empty
+scn = L.space space1 lineComment empty
 
 sc :: Parser ()
-sc = L.space (void $ oneOf " \t") lineComment empty
+sc = L.space (void $ takeWhile1P Nothing f) lineComment empty
+  where
+    f x = x == ' ' || x == '\t'
 
 lexeme :: Parser a -> Parser a
 lexeme = L.lexeme sc
@@ -117,9 +126,9 @@ symbol = L.symbol sc
 Consult Haddocks for description of `L.space`, `L.lexeme`, and `L.symbol`.
 In short, `L.space` is a helper to quickly put together a general-purpose
 space-consuming parser. We will follow this strategy: *assume no white space
-before lexemes and consume all white space after lexemes*. There is a case
-with white space that can be found before any lexeme, but that will be dealt
-with specially, see below.
+before lexemes and consume all white space after lexemes*. There may be some
+white space before the first lexeme, but that will be dealt with specially,
+see below.
 
 We also need a parser for equation names (`x`, `y`, and `result` in the
 first example). Like in many other programming languages, we will accept
@@ -140,7 +149,7 @@ expr = makeExprParser term table <?> "expression"
 term :: Parser Expr
 term = parens expr
   <|> (Reference <$> name)
-  <|> (Value     <$> number)
+  <|> (Value     <$> L.float)
 
 table :: [[Operator Parser Expr]]
 table =
@@ -151,30 +160,27 @@ table =
     , InfixL (Division       <$ symbol "-") ]
   ]
 
-number :: Parser Double
-number = toRealFloat <$> lexeme L.number
-
 parens :: Parser a -> Parser a
 parens = between (symbol "(") (symbol ")")
 ```
 
 We just wrote a fairly complete parser for expressions in our language! If
 you're new to all this stuff I suggest you load the code into GHCi and play
-with it a bit. Use `parseTest` function to feed input into the parser:
+with it a bit. Use `parseTest'` function to feed input into the parser:
 
 ```
-λ> parseTest expr "5"
+λ> parseTest' expr "5"
 Value 5.0
-λ> parseTest expr "5 + foo"
+λ> parseTest' expr "5 + foo"
 Sum (Value 5.0) (Reference "foo")
-λ> parseTest expr "(x + y) * 5 + 7 * z"
+λ> parseTest' expr "(x + y) * 5 + 7 * z"
 Sum
   (Multiplication (Sum (Reference "x") (Reference "y")) (Value 5.0))
   (Multiplication (Value 7.0) (Reference "z"))
 ```
 
-Power! The only thing that remains is a parser for equations and a parser
-for entire program:
+Power! The only thing that remains is the parser for equations and the
+parser for entire program:
 
 ```haskell
 equation :: Parser Equation
@@ -200,8 +206,8 @@ independently, even if one of them is malformed, we have no reason to stop
 and not to check the others. In fact, that's how some “serious” parsers work
 (parser of C++ language, although it depends on compiler I guess). Reporting
 multiple parse errors at once may be a more efficient method of
-communication with the programmer who needs to fix them, than when he/she
-has to recompile the program every time to get to the next error. In this
+communication with the programmer who needs to fix them, than when she has
+to recompile the program every time to get to the next error. In this
 section we will make our parser failure-tolerant and able to report multiple
 error messages at once.
 
@@ -219,10 +225,11 @@ You will be amazed just how easy it is to add recovering to an existing
 parser:
 
 ```haskell
-rawData :: Parser (RawData Char Dec)
+rawData :: Parser (RawData Char Void)
 rawData = between scn eof (sepEndBy e scn)
-  where e = withRecovery recover (Right <$> equation)
-        recover err = Left err <$ manyTill anyChar eol
+  where
+    e = withRecovery recover (Right <$> equation)
+    recover err = Left err <$ manyTill anyChar eol
 ```
 
 Let try it, here is the input:
@@ -236,16 +243,15 @@ Result:
 
 ```haskell
 [ Left
-   (ParseError
-     { errorPos = SourcePos
-       { sourceName = "", sourceLine = Pos 1
-       , sourceColumn = Pos 10} :| []
-       , errorUnexpected = fromList [Tokens ('$' :| "")]
-       , errorExpected = fromList
-         [ Tokens (')' :| "")
-         , Label ('o' :| "perator")
-         , Label ('r' :| "est of expression") ]
-       , errorCustom = fromList [] })
+   (TrivialError
+     (SourcePos
+       { sourceName = ""
+       , sourceLine = Pos 1
+       , sourceColumn = Pos 10 } :| [])
+     (Just (Tokens ('$' :| "")))
+     (fromList [ Tokens (')' :| "")
+               , Label ('o' :| "perator")
+               , Label ('t' :| "he rest of expression") ]))
 , Right (Equation "bar" (Value 15.0)) ]
 ```
 

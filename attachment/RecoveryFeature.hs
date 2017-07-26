@@ -5,11 +5,11 @@ module Main where
 
 import Control.Applicative (empty)
 import Control.Monad (void)
-import Data.Scientific (toRealFloat)
+import Data.Void
 import Text.Megaparsec
-import Text.Megaparsec.String
+import Text.Megaparsec.Char
 import Text.Megaparsec.Expr
-import qualified Text.Megaparsec.Lexer as L
+import qualified Text.Megaparsec.Char.Lexer as L
 
 type Program = [Equation]
 
@@ -26,14 +26,18 @@ data Expr
   | Division       Expr Expr
   deriving (Eq, Show)
 
+type Parser = Parsec Void String
+
 lineComment :: Parser ()
 lineComment = L.skipLineComment "#"
 
 scn :: Parser ()
-scn = L.space (void spaceChar) lineComment empty
+scn = L.space space1 lineComment empty
 
 sc :: Parser ()
-sc = L.space (void $ oneOf " \t") lineComment empty
+sc = L.space (void $ takeWhile1P Nothing f) lineComment empty
+  where
+    f x = x == ' ' || x == '\t'
 
 lexeme :: Parser a -> Parser a
 lexeme = L.lexeme sc
@@ -50,7 +54,7 @@ expr = makeExprParser term table <?> "expression"
 term :: Parser Expr
 term = parens expr
   <|> (Reference <$> name)
-  <|> (Value     <$> number)
+  <|> (Value     <$> L.float)
 
 table :: [[Operator Parser Expr]]
 table =
@@ -60,9 +64,6 @@ table =
   , [ InfixL (Sum            <$ symbol "+")
     , InfixL (Division       <$ symbol "-") ]
   ]
-
-number :: Parser Double
-number = toRealFloat <$> lexeme L.number
 
 parens :: Parser a -> Parser a
 parens = between (symbol "(") (symbol ")")
@@ -75,10 +76,11 @@ prog = between scn eof (sepEndBy equation scn)
 
 type RawData t e = [Either (ParseError t e) Equation]
 
-rawData :: Parser (RawData Char Dec)
+rawData :: Parser (RawData Char Void)
 rawData = between scn eof (sepEndBy e scn)
-  where e = withRecovery recover (Right <$> equation)
-        recover err = Left err <$ manyTill anyChar eol
+  where
+    e = withRecovery recover (Right <$> equation)
+    recover err = Left err <$ manyTill anyChar eol
 
 main :: IO ()
 main = return ()

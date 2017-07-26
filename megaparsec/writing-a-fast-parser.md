@@ -4,7 +4,7 @@ desc: Practical recommendations that should help you write a fast parser.
 difficulty: 4
 date:
   published: September 11, 2016
-  updated: June 8, 2017
+  updated: July 26, 2017
 ---
 
 If performance of your Megaparsec parser is worse that you hoped, there may
@@ -16,7 +16,7 @@ doing the right thing when tuning performance).
 * If your parser uses a monad stack instead of plain `Parsec` monad (which
   is a monad transformer over `Identity` too, but it's much more
   lightweight), make sure you use at least version 0.5 of `transformers`
-  library, and at least version 5.0 of `megaparsec`. Both libraries have
+  library, and at least version 6.0 of `megaparsec`. Both libraries have
   critical performance improvements in those versions, so you can just get
   better performance for free.
 
@@ -32,6 +32,11 @@ doing the right thing when tuning performance).
   chains of alternatives where every alternative can go deep into input
   before failing.
 
+* Do not keep your parsers polymorphic unless you really have a reason to do
+  so. It's best to “fix” the types of parsers specifying concrete types,
+  such as `type Parser = Parsec Void Text` for every top-level definition.
+  This way GHC will be able to optimize a lot better.
+
 * Inline generously (when it makes sense, of course). You may not believe
   your eyes when you see how much of a difference inlining can do,
   especially for short functions. This is especially true for parsers that
@@ -40,6 +45,14 @@ doing the right thing when tuning performance).
   file and this facilitates specializing (I've written a tutorial about
   this,
   [available here](https://www.stackbuilders.com/tutorials/haskell/ghc-optimization-and-fusion/)).
+
+* Use fast parsers such as `takeWhileP`, `takeWhile1P`, and `takeP` whenever
+  you can.
+  [These are fast](https://markkarpov.com/post/megaparsec-more-speed-more-power.html#there-is-hope) for
+  `Text` and `ByteString`.
+
+* Avoid `oneOf` and `noneOf` preferring `satisfy` and `notChar` whenever
+  possible.
 
 The same parser can be written in many ways. Think about your grammar and
 how parsing happens, when you get some experience with this process, it will

@@ -155,7 +155,7 @@ can “multiply the constructor by zero” by parametrizing `ErrorFancy` by
 The custom error component will store conversion errors when a vector of
 `ByteString`s cannot be converted into some type:
 
-```
+```haskell
 -- | Custom error component for CSV parsing. It allows typed reporting of
 -- conversion errors.
 

@@ -5,7 +5,7 @@ attachment: IndentationSensitiveParsing.hs
 difficulty: 3
 date:
   published: January 12, 2016
-  updated: June 8, 2017
+  updated: July 26, 2017
 ---
 
 Megaparsec 4.3.0 introduces new combinators that should be of some use when
@@ -48,7 +48,7 @@ nonIndented :: MonadParsec e s m
   => m ()              -- ^ How to consume indentation (white space)
   -> m a               -- ^ How to parse actual data
   -> m a
-nonIndented sc p = indentGuard sc EQ (unsafePos 1) *> p
+nonIndented sc p = indentGuard sc EQ pos1 *> p
 ```
 
 However, it's a part of a logical model behind high-level parsing of
@@ -87,12 +87,12 @@ several options:
 data IndentOpt m a b
   = IndentNone a
     -- ^ Parse no indented tokens, just return the value
-  | IndentMany (Maybe Int) ([b] -> m a) (m b)
+  | IndentMany (Maybe Pos) ([b] -> m a) (m b)
     -- ^ Parse many indented tokens (possibly zero), use given indentation
     -- level (if 'Nothing', use level of the first indented token); the
     -- second argument tells how to get final result, and third argument
     -- describes how to parse an indented token
-  | IndentSome (Maybe Int) ([b] -> m a) (m b)
+  | IndentSome (Maybe Pos) ([b] -> m a) (m b)
     -- ^ Just like 'IndentMany', but requires at least one indented token to
     -- be present
 ```
@@ -112,13 +112,14 @@ section:
 ```haskell
 {-# LANGUAGE TupleSections #-}
 
-module Main (main) where
+module Main where
 
 import Control.Applicative (empty)
 import Control.Monad (void)
+import Data.Void
 import Text.Megaparsec
-import Text.Megaparsec.String
-import qualified Text.Megaparsec.Lexer as L
+import Text.Megaparsec.Char
+import qualified Text.Megaparsec.Char.Lexer as L
 ```
 
 We will need two kinds of space-consumers: one that consumes new lines `scn`
@@ -129,10 +130,12 @@ lineComment :: Parser ()
 lineComment = L.skipLineComment "#"
 
 scn :: Parser ()
-scn = L.space (void spaceChar) lineComment empty
+scn = L.space space1 lineComment empty
 
 sc :: Parser ()
-sc = L.space (void $ oneOf " \t") lineComment empty
+sc = L.space (void $ takeWhile1P Nothing f) lineComment empty
+  where
+    f x = x == ' ' || x == '\t'
 
 lexeme :: Parser a -> Parser a
 lexeme = L.lexeme sc
@@ -167,23 +170,34 @@ dashes:
 
 ```haskell
 pItem :: Parser String
-pItem = lexeme $ some (alphaNumChar <|> char '-')
+pItem = lexeme (takeWhile1P Nothing f) <?> "list item"
+  where
+    f x = isAlphaNum x || x == '-'
 ```
 
-Now, load the code into GHCi and try it with help of `parseTest` built-in:
+Now, load the code into GHCi and try it with help of `parseTest'` built-in:
 
 ```
-λ> parseTest parser ""
+λ> parseTest' parser ""
 1:1:
+  |
+1 | <empty line>
+  | ^
 unexpected end of input
-expecting '-' or alphanumeric character
-λ> parseTest parser "something"
+expecting list item
+λ> parseTest' parser "something"
 ("something",[])
-λ> parseTest parser "  something"
+λ> parseTest' parser "  something"
 1:3:
+  |
+1 |   something
+  |   ^
 incorrect indentation (got 3, should be equal to 1)
-λ> parseTest parser "something\none\ntwo\nthree"
+λ> parseTest' parser "something\none\ntwo\nthree"
 2:1:
+  |
+2 | one
+  | ^
 unexpected 'o'
 expecting end of input
 ```
@@ -196,19 +210,25 @@ noise to all messages), so this error message is perfectly reasonable.
 Let's continue:
 
 ```
-λ> parseTest parser "something\n  one\n    two\n  three"
+λ> parseTest' parser "something\n  one\n    two\n  three"
 3:5:
+  |
+3 |     two
+  |     ^
 incorrect indentation (got 5, should be equal to 3)
-λ> parseTest parser "something\n  one\n  two\n three"
+λ> parseTest' parser "something\n  one\n  two\n three"
 4:2:
+  |
+4 |  three
+  |  ^
 incorrect indentation (got 2, should be equal to 3)
-λ> parseTest parser "something\n  one\n  two\n  three"
+λ> parseTest' parser "something\n  one\n  two\n  three"
 ("something",["one","two","three"])
 ```
 
 This definitely seems to work. Let's replace `IndentMany` with `IndentSome`
-and `Nothing` with `Just 5` (indentation levels are counted from 1, so it
-will require 4 spaces before indented items):
+and `Nothing` with `Just (mkPos 5)` (indentation levels are counted from 1,
+so it will require 4 spaces before indented items):
 
 ```haskell
 pItemList :: Parser (String, [String])
@@ -216,19 +236,25 @@ pItemList = L.nonIndented scn (L.indentBlock scn p)
   where
     p = do
       header <- pItem
-      return (L.IndentSome (Just (unsafePos 5)) (return . (header, )) pItem)
+      return (L.IndentSome (Just (mkPos 5)) (return . (header, )) pItem)
 ```
 
 Now:
 
 ```
-λ> parseTest parser "something\n"
+λ> parseTest' parser "something\n"
 2:1:
+  |
+2 | <empty line>
+  | ^
 incorrect indentation (got 1, should be greater than 1)
-λ> parseTest parser "something\n  one"
+λ> parseTest' parser "something\n  one"
 2:3:
+  |
+2 |   one
+  |   ^
 incorrect indentation (got 3, should be equal to 5)
-λ> parseTest parser "something\n    one"
+λ> parseTest' parser "something\n    one"
 ("something",["one"])
 ```
 
@@ -313,7 +339,8 @@ pComplexItem = L.indentBlock scn p
 
 pLineFold :: Parser String
 pLineFold = L.lineFold scn $ \sc' ->
-  let ps = some (alphaNumChar <|> char '-') `sepBy1` try sc'
+  let ps = takeWhile1P Nothing f `sepBy1` try sc'
+      f x = isAlphaNum x || x == '-'
   in unwords <$> ps <* sc
 ```
 

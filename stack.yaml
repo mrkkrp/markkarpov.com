@@ -1,7 +1,6 @@
-resolver: lts-8.15
+resolver: lts-9.0
 packages:
 - '.'
-- location:
-    git: https://github.com/stackbuilders/stache.git
-    commit: 7cb3a40fcc75fa113c71de72a30addc22a16e49c
-  extra-dep: true
+extra-deps:
+- megaparsec-6.0.1
+- stache-1.0.0

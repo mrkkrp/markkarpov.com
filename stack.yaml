@@ -2,5 +2,5 @@ resolver: lts-9.0
 packages:
 - '.'
 extra-deps:
-- megaparsec-6.0.1
-- stache-1.0.0
+- megaparsec-6.0.2
+- stache-1.1.1

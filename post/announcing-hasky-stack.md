@@ -2,7 +2,7 @@
 title: Announcing Hasky Stack
 desc: Announing my new package for working with Haskell Tool Stack — Hasky Stack.
 date:
-  published: August 11, 2017
+  published: August 13, 2017
 ---
 
 It's been a while since I released an Emacs package. The last one was
@@ -36,7 +36,11 @@ If you hit <kbd>b</kbd> now, a sub-popup for the build command appears:
 
 Next you can toggle the switches and set options, then hit <kbd>b</kbd>
 again to build. You'll be presented with all build targets in your project
-to choose from, etc.
+to choose from, etc. Note that if you would like to always build the default
+target (i.e. your entire current project), set `hasky-stack-auto-target` to
+`t`. When it's not `nil`, `hasky-stack` won't ask you build/test target
+using the default automatically (this is what you almost always want
+anyway).
 
 The `hasky-stack-new` (which should be called from a new directory created
 for the project to initialize) asks for project name and allows to choose
@@ -44,6 +48,5 @@ from a list of all available templates (which it detects for you
 automatically).
 
 Right now the wrapper is rather basic, I've put it together in just several
-hours yesterday. I plan to improve and extend the package iteratively as I
-use it taking into account user feedback. So please feel free to request
-features!
+hours. I plan to improve and extend the package iteratively as I use it
+taking into account user feedback. Feel free to request features!

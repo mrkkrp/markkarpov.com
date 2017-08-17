@@ -4,7 +4,7 @@ desc: Practical recommendations that should help you write a fast parser.
 difficulty: 4
 date:
   published: September 11, 2016
-  updated: July 26, 2017
+  updated: August 17, 2017
 ---
 
 If performance of your Megaparsec parser is worse that you hoped, there may
@@ -22,15 +22,14 @@ doing the right thing when tuning performance).
 
 * `Parsec` monad will be always faster then `ParsecT`-based monad
   transformers. Avoid using `StateT`, `WriterT`, and other monad
-  transformers unless absolutely necessary. When you have relatively simple
-  monad stack, for example with `StateT` and nothing more, performance of
-  Megaparsec parser will be on par with Parsec. The more you add to the
-  stack, the slower it will be.
+  transformers unless absolutely necessary. When you have a relatively
+  simple monad stack, for example with `StateT` and nothing more,
+  performance of Megaparsec parser will be on par with Parsec. The more you
+  add to the stack, the slower it will be.
 
-* The most expensive operation is backtracking (you enable it with `try` and
-  it happens automatically with `tokens`-based parsers). Avoid building long
-  chains of alternatives where every alternative can go deep into input
-  before failing.
+* Backtracking is an expensive operation. Avoid building long chains of
+  alternatives where every alternative can go deep into input before
+  failing.
 
 * Do not keep your parsers polymorphic unless you really have a reason to do
   so. It's best to “fix” the types of parsers specifying concrete types,
@@ -43,13 +42,13 @@ doing the right thing when tuning performance).
   are defined in one module and used in another one, because `INLINE` and
   `INLINEABLE` pragmas make GHC dump functions definitions into an interface
   file and this facilitates specializing (I've written a tutorial about
-  this,
-  [available here](https://www.stackbuilders.com/tutorials/haskell/ghc-optimization-and-fusion/)).
+  this, [available
+  here](https://www.stackbuilders.com/tutorials/haskell/ghc-optimization-and-fusion/)).
 
-* Use fast parsers such as `takeWhileP`, `takeWhile1P`, and `takeP` whenever
-  you can.
-  [These are fast](https://markkarpov.com/post/megaparsec-more-speed-more-power.html#there-is-hope) for
-  `Text` and `ByteString`.
+* Use the fast parsers such as `takeWhileP`, `takeWhile1P`, and `takeP`
+  whenever you can. [These are
+  fast](https://markkarpov.com/post/megaparsec-more-speed-more-power.html#there-is-hope)
+  for `Text` and `ByteString`.
 
 * Avoid `oneOf` and `noneOf` preferring `satisfy` and `notChar` whenever
   possible.

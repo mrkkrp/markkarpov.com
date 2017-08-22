@@ -78,7 +78,8 @@ data Routes
   | AttachmentR
   | MTutorialR
   | TutorialR
-  | ResumeR
+  | ResumeHtmlR
+  | ResumePdfR
 
 instance Route 'PostR where
   pat    = Pat "post/*.md"
@@ -112,10 +113,15 @@ instance Route 'TutorialR where
   mapIn  = Tagged (\x -> dropDirectory1 x -<.> "md")
   mapOut = Tagged (\x -> outdir </> x -<.> "html")
 
-instance Route 'ResumeR where
-  pat    = Pat "other/resume.md"
-  mapIn  = Tagged (\x -> dropDirectory1 x -<.> "md")
-  mapOut = Tagged (\x -> outdir </> x -<.> "html")
+instance Route 'ResumeHtmlR where
+  pat    = Pat "resume/resume.md"
+  mapIn  = Tagged (\x -> "resume" </> dropDirectory1 x -<.> "md")
+  mapOut = Tagged (\x -> outdir </> dropDirectory1 x -<.> "html")
+
+instance Route 'ResumePdfR where
+  pat    = Pat "resume/resume.pdf"
+  mapIn  = Tagged (\x -> "resume" </> dropDirectory1 x)
+  mapOut = Tagged (\x -> outdir </> dropDirectory1 x)
 
 -- | TODO Find a way to abstract working with these files.
 
@@ -146,7 +152,8 @@ main = shakeArgs shakeOptions $ do
     r @'RawR Proxy
     r @'AttachmentR Proxy
     r @'MTutorialR Proxy
-    r @'ResumeR Proxy
+    r @'ResumeHtmlR Proxy
+    r @'ResumePdfR Proxy
 
     need $ cmnOut <$>
       [aboutFile, ossFile, notFoundFile, learnFile, postsFile, atomFile]
@@ -242,10 +249,10 @@ main = shakeArgs shakeOptions $ do
       (selectTemplate "default" ts)
       (mkContext (provideAs "inner" tutorial : context))
 
-  unPat (outPattern @'ResumeR) %> \out -> do
+  unPat (outPattern @'ResumeHtmlR) %> \out -> do
     env <- commonEnv ()
     ts  <- templates ()
-    let src = unTagged (mapIn @'ResumeR) out
+    let src = unTagged (mapIn @'ResumeHtmlR) out
     need [src]
     (v, content) <- getPost src
     let context = [env, v]
@@ -255,6 +262,9 @@ main = shakeArgs shakeOptions $ do
     liftIO . TL.writeFile out $ renderMustache
       (selectTemplate "default" ts)
       (mkContext (provideAs "inner" post : context))
+
+  unPat (outPattern @'ResumePdfR) %> \out ->
+    copyFile' (unTagged (mapIn @'ResumePdfR) out) out
 
   cmnOut learnFile %> \out -> do
     env <- commonEnv ()

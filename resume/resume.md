@@ -2,11 +2,10 @@
 title: Resume
 ---
 
-* <span class="fa fa-envelope"></span>
-    <a class="protected-email" data-email="markkarpov92@gmail.com"
-       href="javascript:void(0)">Enable JavaScript to see my email</a>
-* twitter
-* Github
+* Email: markkarpov92 at gmail dot com
+* Twitter: https://twitter.com/mrkkrp
+* GitHub: https://github.com/mrkkrp
+* This document is also available in PDF format: https://markkarpov.com/resume.pdf
 
 ## Summary
 
@@ -19,18 +18,17 @@ professional experience.
   Builders](https://www.stackbuilders.com/) (remote). The job involved
   working for several clients mostly from the US. Web-applications built
   with Yesod, Snap, Servant (including a micro-service based system with
-  Servant on backend). A part of the job was also writing tutorials and blog
-  posts to improve visibility of the company.
+  Servant on backend). Agile. Another part of the job was writing tutorials
+  and blog posts to increase visibility of the company.
 
 ## Technologies
 
 * Databases: PostgreSQL, MySQL.
-* Ansible.
+* Server automation: Ansible.
 * Linux server.
 * Strong knowledge of Git.
 * CI: Travis CI, Circle CI.
-* Front-end (mostly vanilla web): HTML (5), CSS (Bootstrap), JavaScript
-  (jQuery, AJAX).
+* Front-end: HTML (5), CSS (Bootstrap), JavaScript (jQuery, AJAX).
 * Bash/Python/Haskell scripting.
 * Other languages I know: C, C++, Python, Common Lisp, Emacs Lisp.
 
@@ -43,13 +41,12 @@ professional experience.
 
 * Libraries (not mentioning vital common libs like `monad-control` and
   `base`): `lens`, `aeson`, `conduit`, `postgresql-simple`, `persistent`,
-  `esqueletto`, `dbmigrations`, `parsec`, `megaparsec`, `attoparsec`,
+  `esqueleto`, `dbmigrations`, `parsec`, `megaparsec`, `attoparsec`,
   `yesod`, `snap`, `servant`, `http-client`, `http-conduit`, `wreq`, `req`,
-  `cryptonite`, `warp`, `hunit`, `hspec`, `QuickCheck`, `test-framework`,
+  `cryptonite`, `warp`, `HUnit`, `hspec`, `QuickCheck`, `test-framework`,
   `tasty`, `hedgehog`, `webdriver`, `optparse-applicative`, `path`,
   `path-io`, `stache`, `vector`, `containers`, `unordered-containers`,
-  `binary`, `cereal`, `store`, etc. I've probably worked with everything
-  that has more or less decent visibility/use in the community.
+  `binary`, `cereal`, `store`, etc.
 
 ## Open source
 
@@ -71,12 +68,6 @@ professional experience.
 * [Stache](https://github.com/stackbuilders/stache)—Mustache templates for
   Haskell.
 
-* [Text Metrics](https://github.com/mrkkrp/text-metrics)—Calculate various
-  string metrics efficiently in Haskell.
-
-* [FLAC](https://github.com/mrkkrp/flac)—Complete high-level Haskell binding
-  to libFLAC.
-
 The full list can be found at https://markkarpov.com/oss.html.
 
 ## Writing
@@ -88,12 +79,13 @@ The full list can be found at https://markkarpov.com/oss.html.
 
 * Blog posts are available [here](https://markkarpov.com/posts.html), see
   e.g. [Megaparsec: more speed, more
-  power](http://localhost:5000/post/megaparsec-more-speed-more-power.html)
+  power](https://markkarpov.com/post/megaparsec-more-speed-more-power.html)
   from the recent ones.
 
 * I've authored two chapters for the upcoming book [Intermediate
   Haskell](https://intermediatehaskell.com/): Exceptions and Megaparsec.
-  Unfortunately the content is not available yet (except for reviewers).
+  Unfortunately the content is not publicly available yet (only available to
+  reviewers).
 
 ## Soft skills
 

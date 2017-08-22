@@ -1,0 +1,137 @@
+\documentclass[a4paper,12pt]{article}
+\pagenumbering{gobble}
+\usepackage{sectsty}
+\usepackage{enumitem}
+\usepackage[tmargin=1in,bmargin=0.5in]{geometry}
+\usepackage[T1,T2A]{fontenc}
+\usepackage[utf8x]{inputenc}
+\usepackage[pdftex,unicode=true]{hyperref}
+\usepackage{graphicx}
+\usepackage{tikz}
+
+\begin{document}
+
+% \begin{tikzpicture}[remember picture,overlay]
+%   \node [xshift=-4.9cm,yshift=-4.7cm] at (current page.north east)
+%   {\includegraphics{photo.png}};
+% \end{tikzpicture}
+
+\section*{Mark Karpov}
+
+Tel.: (+7) 960-947-8031\\
+Email: markkarpov92@gmail.com\\
+Twitter: \href{https://twitter.com/mrkkrp}{https://twitter.com/mrkkrp}\\
+GitHub: \href{https://github.com/mrkkrp}{https://github.com/mrkkrp}\\
+This document is also available as HTML: \href{https://markkarpov.com/resume.html}{https://markkarpov.com/resume.html}
+
+\sectionfont{\fontsize{12}{15}\selectfont\sectionrule{0pt}{0pt}{-5pt}{0.8pt}}
+
+\section*{Summary}
+
+Haskell software developer with 3 years of experience, including 1 year of
+professional experience.
+
+\section*{Tech work experience}
+
+\begin{itemize}[noitemsep]
+\item \textbf{May 4th, 2016--May 20th, 2017} Tier 2 Haskell developer at
+  \href{https://www.stackbuilders.com/}{Stack Builders} (remote). The job
+  involved working for several clients mostly from the US. Web-applications
+  built with Yesod, Snap, Servant (including a micro-service based system
+  with Servant on backend). Agile. Another part of the job was writing
+  tutorials and blog posts to increase visibility of the company.
+\end{itemize}
+
+\section*{Technologies}
+
+\begin{itemize}[noitemsep]
+\item Databases: PostgreSQL, MySQL.
+\item Server automation: Ansible.
+\item Linux server.
+\item Strong knowledge of Git.
+\item CI: Travis CI, Circle CI.
+\item Front-end: HTML (5), CSS (Bootstrap), JavaScript (jQuery, AJAX).
+\item Bash/Python/Haskell scripting.
+\item Other languages I know: C, C++, Python, Common Lisp, Emacs Lisp.
+\end{itemize}
+
+\section*{Haskell}
+
+\begin{itemize}[noitemsep]
+\item Concepts (not mentioning basic things like rank-N types, existentials,
+  phantom types etc.): EDSL using combinators, GADTs, type-level
+  programming, generics, TH, high-performance Haskell, parallel and
+  concurrent Haskell, lens (van Laarhoven/profunctor).
+\item Libraries (not mentioning vital common libs like monad-control and
+  base): lens, aeson, conduit, postgresql-simple, persistent, esqueleto,
+  dbmigrations, parsec, megaparsec, attoparsec, yesod, snap, servant,
+  http-client, http-conduit, wreq, req, cryptonite, warp, HUnit, hspec,
+  QuickCheck, test-framework, tasty, hedgehog, webdriver,
+  optparse-applicative, path, path-io, stache, vector, containers,
+  unordered-containers, binary, cereal, store, etc.
+\end{itemize}
+
+\pagebreak
+
+\section*{Open source projects}
+
+\begin{itemize}[noitemsep]
+\item \href{https://github.com/mrkkrp/megaparsec}
+  {Megaparsec---Industrial-strength monadic parser combinator library
+    \newline
+    https://github.com/mrkkrp/megaparsec}
+\item \href{https://github.com/mrkkrp/req}
+  {Req---Easy-to-use, type-safe, expandable, high-level HTTP library.
+    \newline
+    https://github.com/mrkkrp/req}
+\item \href{https://github.com/mrkkrp/zip}
+  {Zip---Efficient library for manipulating zip archives
+    \newline
+    https://github.com/mrkkrp/zip}
+\item \href{https://github.com/commercialhaskell/path}
+  {Path---Support for well-typed paths (co-maintainer).
+    \newline
+    https://github.com/commercialhaskell/path}
+\item \href{https://github.com/mrkkrp/path-io}
+  {Path IO---Operations on files and directories with well-typed paths.
+    \newline
+    https://github.com/mrkkrp/path-io}
+\item \href{https://github.com/stackbuilders/stache}
+  {Stache---Mustache templates for Haskell.
+    \newline
+    https://github.com/stackbuilders/stache}
+\end{itemize}
+
+The full list can be found at \href{https://markkarpov.com/oss.html}{https://markkarpov.com/oss.html}.
+
+\section*{Writing}
+
+\begin{itemize}[noitemsep]
+\item I've authored a number of tutorials as part of my job and on my own,
+  see e.g.
+  \href{https://www.stackbuilders.com/tutorials/haskell/ghc-optimization-and-fusion/}{“GHC
+    optimization and fusion”}, the full list is available at \\
+  \href{https://markkarpov.com/learn-haskell.html}{https://markkarpov.com/learn-haskell.html}.
+\item Blog posts are available at
+  \href{https://markkarpov.com/posts.html}{https://markkarpov.com/posts.html},
+  see e.g.
+  \href{https://markkarpov.com/post/megaparsec-more-speed-more-power.html}{“Megaparsec:
+    more speed, more power”} from the recent ones.
+\item I've authored two chapters for the upcoming book
+  \href{https://intermediatehaskell.com/}{“Intermediate Haskell”}:
+  Exceptions and Megaparsec. Unfortunately the content is not publicly
+  available yet (only available to reviewers).
+\end{itemize}
+
+\section*{Education}
+
+\begin{itemize}[noitemsep]
+\item 2009--2014---Polzunov Altai State Technical University. Engineer
+  degree in informational technology and measuring engineering.
+\end{itemize}
+
+\begin{flushright}
+  \today
+\end{flushright}
+
+\end{document}

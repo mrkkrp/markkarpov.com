@@ -5,6 +5,7 @@ title: Resume
 * Email: markkarpov92 at gmail dot com
 * Twitter: https://twitter.com/mrkkrp
 * GitHub: https://github.com/mrkkrp
+* StackOverflow: https://stackoverflow.com/users/3687048/mark
 * This document is also available in PDF format: https://markkarpov.com/resume.pdf
 
 ## Summary

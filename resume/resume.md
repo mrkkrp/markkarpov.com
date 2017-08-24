@@ -25,6 +25,7 @@ professional experience.
 ## Technologies
 
 * Databases: PostgreSQL, MySQL.
+* AWS.
 * Server automation: Ansible.
 * Linux server.
 * Strong knowledge of Git.

@@ -61,14 +61,15 @@ professional experience.
 * [Zip](https://github.com/mrkkrp/zip)—Efficient library for manipulating
   zip archives.
 
-* [Path](https://github.com/commercialhaskell/path)—Support for well-typed
-  paths (co-maintainer).
-
-* [Path IO](https://github.com/mrkkrp/path-io)—Operations on files and
-  directories with well-typed paths.
+* [Text Metrics](https://github.com/mrkkrp/text-metrics)—Calculate various
+  string metrics efficiently in Haskell.
 
 * [Stache](https://github.com/stackbuilders/stache)—Mustache templates for
   Haskell.
+
+* [Path IO](https://github.com/mrkkrp/path-io)—Operations on files and
+  directories with well-typed paths. I'm also a contributor and
+  co-maintainer of `path` itself.
 
 The full list can be found at https://markkarpov.com/oss.html.
 

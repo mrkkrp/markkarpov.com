@@ -5,7 +5,7 @@ attachment: ParsingWhile.hs
 difficulty: 2
 date:
   published: October 13, 2015
-  updated: July 26, 2017
+  updated: September 22, 2017
 ---
 
 This tutorial will present how to parse a subset of a simple imperative
@@ -13,14 +13,6 @@ programming language called *WHILE* (introduced in the book “Principles of
 Program Analysis” by Nielson, Nielson and Hankin). It includes only a few
 statements and basic boolean/arithmetic expressions, which makes it nice
 material for a tutorial.
-
-1. [Imports](#imports)
-2. [The language](#the-language)
-3. [Data structures](#data-structures)
-4. [Lexer](#lexer)
-5. [Parser](#parser)
-6. [Expressions](#expressions)
-7. [Notes](#notes)
 
 ## Imports
 
@@ -49,7 +41,7 @@ opb ::= and | or
 opr ::= > | <
 ```
 
-Note that we have three groups of operators—arithmetic, boolean and
+Note that we have three groups of operators: arithmetic, Boolean and
 relational ones.
 
 And now the definition of statements:
@@ -59,13 +51,14 @@ S ::= x := a | skip | S1; S2 | ( S ) | if b then S1 else S2 | while b do S
 ```
 
 We probably want to parse that into some internal representation of the
-language (an [abstract syntax tree](https://en.wikipedia.org/wiki/Abstract_syntax_tree)).
-Therefore we need to define the data structures for the expressions and statements.
+language (an [abstract syntax
+tree](https://en.wikipedia.org/wiki/Abstract_syntax_tree)). Therefore we
+need to define the data structures for the expressions and statements.
 
 ## Data structures
 
-We need to take care of boolean and arithmetic expressions and the
-appropriate operators. First let's look at the boolean expressions:
+We need to take care of Boolean and arithmetic expressions and the
+appropriate operators. First let's look at the Boolean expressions:
 
 ```haskell
 data BExpr
@@ -76,7 +69,7 @@ data BExpr
   deriving (Show)
 ```
 
-Binary boolean operators:
+Binary Boolean operators:
 
 ```haskell
 data BBinOp
@@ -105,7 +98,7 @@ data AExpr
   deriving (Show)
 ```
 
-And arithmetic operators:
+…and arithmetic operators:
 
 ```haskell
 data ABinOp
@@ -128,8 +121,8 @@ data Stmt
   deriving (Show)
 ```
 
-Since we won't need custom data in error messages and our input stream will
-be in the form of `String`, the following definition of `Parser` will do:
+Since we don't need custom data in error messages and our input stream will
+be in the form of a `String`, the following definition of `Parser` will do:
 
 ```haskell
 type Parser = Parsec Void String
@@ -141,7 +134,7 @@ Having all the data structures we can go on with writing the code to do the
 actual parsing. Here we will define *lexemes* of our language. When writing
 a lexer for a language it's always important to define what counts as
 whitespace and how it should be consumed. `space` from
-`Text.Megaparsec.Lexer` module can be helpful here:
+`Text.Megaparsec.Char.Lexer` module can be helpful here:
 
 ```haskell
 sc :: Parser ()
@@ -154,10 +147,9 @@ sc = L.space space1 lineCmnt blockCmnt
 `sc` stands for “space consumer”. `space` takes three arguments: a parser
 that parses whitespace (but it should not accept empty input), a parser for
 line comments, and a parser for block (multi-line) comments.
-`skipLineComment` and `skipBlockComment` help with quickly creating parsers
-to consume the comments. (If our language didn't have block comments, we
-could pass `empty` from `Control.Applicative` as the third argument of
-`space`.)
+`skipLineComment` and `skipBlockComment` help with parsers that consume
+comments. (If our language didn't have block comments, we could pass `empty`
+from `Control.Applicative` as the third argument of `space`.)
 
 Next, we will follow the strategy where whitespace will be consumed *after*
 every lexeme automatically, but not before it. Let's define a wrapper to
@@ -199,8 +191,8 @@ semi :: Parser String
 semi = symbol ";"
 ```
 
-Great. To parse various operators we can just use `symbol`, but reserved
-words and identifiers are a bit trickier. There are two things to note:
+To parse various operators we can just use `symbol`, but reserved words and
+identifiers are a bit trickier. There are two things to note:
 
 * Parsers for reserved words should check that the parsed reserved word is
   not a prefix of an identifier.
@@ -244,9 +236,9 @@ start writing the parser.
 ## Parser
 
 As already mentioned, a program in this language is simply a statement, so
-the main parser should basically only parse a statement. But remember to
-take care of initial whitespace—our parsers only get rid of whitespace
-*after* the tokens!
+the main parser should basically only parse a statement. But we must
+remember to take care of initial whitespace—our parsers only get rid of
+whitespace *after* the tokens!
 
 ```haskell
 whileParser :: Parser Stmt
@@ -327,7 +319,7 @@ automatically. `identifier` already has `try` in its definition.
 ## Expressions
 
 What's left is to parse the expressions. Fortunately Megaparsec provides an
-easy way to do that. Let's define the arithmetic and boolean expressions:
+easy way to do that. Let's define the arithmetic and Boolean expressions:
 
 ```haskell
 aExpr :: Parser AExpr
@@ -374,7 +366,7 @@ aTerm = parens aExpr
   <|> IntConst <$> integer
 ```
 
-However, a term in a boolean expression is a bit more tricky. In this case,
+However, a term in a Boolean expression is a bit more tricky. In this case,
 a term can also be an expression with relational operator consisting of
 arithmetic expressions.
 

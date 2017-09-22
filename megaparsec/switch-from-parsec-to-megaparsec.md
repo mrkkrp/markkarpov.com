@@ -4,7 +4,7 @@ desc: Practical recommendations for people who decide to switch from Parsec to M
 difficulty: 4
 date:
   published: October 15, 2015
-  updated: July 26, 2017
+  updated: September 22, 2017
 ---
 
 This tutorial explains the practical differences between the two libraries
@@ -12,20 +12,10 @@ that you will need to address if you choose to undertake the switch.
 Remember, all the functionality available in Parsec is available in
 Megaparsec and often in a better form.
 
-1. [Imports](#imports)
-2. [Renamed things](#renamed-things)
-3. [Removed things](#removed-things)
-4. [Completely changed things](#completely-changed-things)
-5. [Other](#other)
-6. [Character parsing](#character-parsing)
-7. [Expression parsing](#expression-parsing)
-8. [What happened to `Text.Parsec.Token`?](#what-happened-to-text.parsec.token)
-9. [What's next?](#whats-next)
-
 ## Imports
 
-You'll mainly need to replace “Parsec” part in your imports with
-“Megaparsec”. That's pretty simple. Typical import section of module that
+You'll mainly need to replace `Parsec` part in your imports with
+`Megaparsec`. That's pretty simple. Typical import section of module that
 uses Megaparsec looks like this:
 
 ```haskell
@@ -48,9 +38,8 @@ import qualified Text.Megaparsec.Byte.Lexer as L
 So, the only noticeable difference that Megaparsec has no
 `Text.Megaparsec.Token` module which is replaced with
 `Text.Megaparsec.Char.Lexer` (or `Text.Megaparsec.Byte.Lexer` if you work
-with binary data), see about this in the
-section
-[“What happened to `Text.Parsec.Token`”](#what-happened-to-text.parsec.token).
+with binary data), see about this in the section [“What happened to
+`Text.Parsec.Token`”](#what-happened-to-text.parsec.token).
 
 ## Renamed things
 
@@ -86,8 +75,8 @@ hang. So be careful to replace `many space` with either `many spaceChar` or
 ## Removed things
 
 Parsec also has many names for the same or similar things. Megaparsec
-usually has one function per task that does its job well. Here are the items
-that were removed in Megaparsec and reasons of their removal:
+usually has one function per task. Here are the items that were removed in
+Megaparsec and reasons of their removal:
 
 * `parseFromFile`—from file and then parsing its contents is trivial for
   every instance of `Stream` and this function provides no way to use newer
@@ -97,7 +86,7 @@ that were removed in Megaparsec and reasons of their removal:
   been eliminated.
 
 * `unexpected`, `token` and `tokens`, now there is a bit different versions
-  of these functions under the same name.
+  of these functions under the same names.
 
 * `Reply` and `Consumed` are not public data types anymore, because they are
   low-level implementation details.
@@ -106,7 +95,8 @@ that were removed in Megaparsec and reasons of their removal:
   `runParser` respectively.
 
 * `chainl`, `chainl1`, `chainr`, and `chainr1`—use
-  [`Text.Megaparsec.Expr`](https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Expr.html) instead.
+  [`Text.Megaparsec.Expr`](https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Expr.html)
+  instead.
 
 ## Completely changed things
 
@@ -118,48 +108,48 @@ like the fact that we have well-typed and extensible error messages now.
 
 ## Other
 
-* The `Stream` type class now have `updatePos` method that gives precise
+* The `Stream` type class now has `updatePos` method that gives precise
   control over advancing of textual positions during parsing.
 
 * Note that argument order of `label` has been flipped (the label itself
-  goes first now), so you can write now: `myParser = label "my parser" $ …`.
+  goes first now), so you can write: `myParser = label "my parser" $ …`.
 
 * Don't use the `label ""` (or the `… <?> ""`) idiom to “hide” some
   “expected” tokens from error messages, use `hidden`.
 
-* The new `token` parser is more powerful, its first argument provides full
+* New `token` parser is more powerful, its first argument provides full
   control over reported error message while its second argument allows to
   specify how to report a missing token in case of empty input stream.
 
-* Now `tokens` parser allows to control how tokens are compared (yes, we
+* New `tokens` parser allows to control how tokens are compared (yes, we
   have case-insensitive `string` called `string'`).
 
-* The `unexpected` parser allows to specify precisely what is unexpected in
-  a well-typed manner.
+* `unexpected` allows to specify precisely what is unexpected in a
+  well-typed manner.
 
 * Tab width is not hard-coded anymore, use `getTabWidth` and `setTabWidth`
   to change it. Default tab width is `defaultTabWidth`.
 
-* Now you can reliably test error messages, equality for them is now defined
-  properly (in Parsec `Expect "foo"` is equal to `Expect "bar"`), error
-  messages are also well-typed and customizeable.
+* Now you can reliably test error messages, equality for them is defined
+  properly (in Parsec `Expect "foo"` is equal to `Expect "bar"`).
 
-* To render a error message, apply `parseErrorPretty` on it.
+* To render an error message, apply `parseErrorPretty` or
+  `parseErrorPretty'`.
 
 * `count' m n p` allows you to parse from `m` to `n` occurrences of `p`.
 
-* Now you have `someTill` and `eitherP` out of the box.
+* Now we have `someTill` and `eitherP` out of the box (in the package called
+  `parse-combinators`).
 
 * `token`-based combinators like `string` and `string'` backtrack by
   default, so it's not necessary to use `try` with them (beginning from
   `4.4.0`). This feature does not affect performance.
 
 * The new `failure` and `fancyFailure` combinators allow to fail with an
-  arbitrary error message and add your own data.
+  arbitrary error messages that can contain custom data.
 
-For full up to date info
-see
-[the changelog](https://github.com/mrkkrp/megaparsec/blob/master/CHANGELOG.md).
+For full up to date info see [the
+changelog](https://github.com/mrkkrp/megaparsec/blob/master/CHANGELOG.md).
 Over the years we have gone so far ahead of Parsec that it would take a lot
 of space to enumerate all the nice stuff.
 
@@ -180,7 +170,7 @@ may be useful if you work with Unicode:
 * `separatorChar`
 * `symbolChar`
 
-Ever wanted to have case-insensitive character parsers? Here you go:
+Case-insensitive character parsers are also available:
 
 * `char'`
 * `string'`
@@ -200,8 +190,8 @@ three `Operator` constructors:
 That module was extremely inflexible and thus it has been eliminated. In
 Megaparsec you have
 [`Text.Megaparsec.Char.Lexer`](https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Char-Lexer.html)
-instead, which doesn't impose anything on user but provides useful
-helpers. The module can also parse indentation-sensitive languages.
+instead, which doesn't impose anything on user but provides useful helpers.
+The module can also parse indentation-sensitive languages.
 
 Let's quickly describe how you go about writing your lexer with
 `Text.Megaparsec.Char.Lexer`. First, you should import the module qualified,
@@ -220,7 +210,7 @@ sc = L.space space1 lineComment blockComment
     blockComment = L.skipBlockComment "/*" "*/"
 ```
 
-This is generally called *space consumer*, often you'll need only one space
+`sc` is generally called *space consumer*. Often you'll need only one space
 consumer, but you can define as many of them as you want. Note that this new
 module allows you avoid consuming newline characters automatically, just use
 something different than `space1` as first argument of `space`. Even better,
@@ -265,15 +255,15 @@ sc = space (void spaceChar) skipLineComment' skipBlockComment'
 ### Indentation-sensitive languages
 
 Parsing of indentation-sensitive language deserves its own tutorial, but
-let's take a look at the basic tools upon which you can build. First of all
-you should work with space consumer that doesn't eat newlines automatically.
-This means you'll need to pick them up manually.
+let's take a look at the basic tools upon which we can build. First of all
+we should work with space consumer that doesn't eat newlines automatically.
+This means we'll need to pick them up manually.
 
 The main helper is called `indentGuard`. It takes a parser that will be used
-to consume white space (indentation) and a predicate of type `Int -> Bool`.
-If after running the given parser column number does not satisfy given
-predicate, the parser fails with message “incorrect indentation”, otherwise
-it returns current column number.
+to consume white space (indentation) and a predicate of the type `Int ->
+Bool`. If after running the given parser column number does not satisfy
+given predicate, the parser fails with message “incorrect indentation”,
+otherwise it returns current column number.
 
 In simple cases you can explicitly pass around value returned by
 `indentGuard`, i.e. current level of indentation. If you prefer to preserve
@@ -297,31 +287,26 @@ see `nonIndented`, `indentBlock`, and `lineFold` in the
 ### Character and string literals
 
 Parsing of string and character literals is done a bit differently than in
-Parsec. You have the single helper `charLiteral`, which parses a character
+Parsec. We have the single helper `charLiteral`, which parses a character
 literal. It *does not* parse surrounding quotes, because different languages
-may quote character literals differently. Purpose of this parser is to help
-with parsing of conventional escape sequences (literal character is parsed
-according to rules defined in Haskell report).
+may quote character literals differently. The purpose of this parser is to
+help with parsing of conventional escape sequences (literal character is
+parsed according to rules defined in the Haskell report).
 
 ```haskell
 charLiteral :: Parser Char
 charLiteral = char '\'' *> charLiteral <* char '\''
 ```
 
-Use `charLiteral` to parse string literals. This is simplified version that
-will accept plain (not escaped) newlines in string literals (it's easy to
-make it conform to Haskell syntax, this is left as an exercise for the
-reader):
+`charLiteral` can be also used to parse string literals. This is simplified
+version that will accept plain (not escaped) newlines in string literals
+(it's easy to make it conform to Haskell syntax, this is left as an exercise
+for the reader):
 
 ```haskell
 stringLiteral :: Parser String
 stringLiteral = char '"' >> manyTill L.charLiteral (char '"')
 ```
-
-I should note that in `charLiteral` we use built-in support for parsing of
-all the tricky combinations of characters. On the other hand Parsec
-re-implements the whole thing. Given that it mostly has no tests at all, I
-cannot tell for sure that it works.
 
 ### Numbers
 
@@ -339,7 +324,7 @@ number lexeme L.scientific -- similar to ‘naturalOrFloat’ in Parsec
 ```
 
 Megaparsec's numeric parsers have been heavily optimized in version 6, they
-are close to Attoparsec's solutions by performance.
+are close to Attoparsec's solutions in terms of performance.
 
 Hexadecimal and octal numbers do not parse “0x” or “0o” prefixes, because
 different languages may have other prefixes for this sort of numbers. We
@@ -353,7 +338,7 @@ octal :: Parser Integer
 octal = lexeme $ char '0' >> char' 'o' >> L.octal
 ```
 
-Since Haskell report says nothing about sign in numeric literals, basic
+Since the Haskell report says nothing about sign in numeric literals, basic
 parsers like `decimal` do not parse sign. You can easily create parsers for
 signed numbers with the help of `signed`:
 

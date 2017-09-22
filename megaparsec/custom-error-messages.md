@@ -1,36 +1,35 @@
 ---
 title: How to introduce custom error messages
-desc: It's possible to use user-defined data types as part of parse errors, let's learn how.
+desc: Learn how to use user-defined data types in parse errors.
 difficulty: 3
 date:
   published: August 10, 2016
-  updated: July 26, 2017
+  updated: September 22, 2017
 ---
 
-One of the advantages of Megaparsec 5 and 6 is the ability to use your own
-data types as part of data that is returned on parse failure. This opens the
+One of the advantages of Megaparsec is the ability to use your own data
+types as part of data that is returned on parse failure. This opens the
 possibility to tailor error messages to your domain of interest in a way
 that is quite unique to this library. Needless to say, all data that
-constitutes a error message is typed in Megaparsec 5, so it's easy to
-inspect and manipulate it.
+constitutes a error message is typed, so it's easy to inspect and manipulate
+it.
 
 ## The goal
 
-In this tutorial we will walk through creation of a parser found in the
+In this tutorial we will walk through creation of a parser found in an
 existing library called
 [`cassava-megaparsec`](https://hackage.haskell.org/package/cassava-megaparsec),
-which is an alternative parser for the
-popular [`cassava`](https://hackage.haskell.org/package/cassava) library
-that allows to parse CSV data. The default parser features not very
-user-friendly error messages, so I was asked to design a better one using
-Megaparsec.
+which is an alternative parser for the popular
+[`cassava`](https://hackage.haskell.org/package/cassava) library for parsing
+CSV data. The default parser features not very user-friendly error messages,
+so I was asked to design a better one using Megaparsec.
 
 In addition to the standard error messages (“expected” and “unexpected”
 tokens), the library can report problems that have to do with using methods
-from `FromRecord` and `FromNamedRecord` type classes that describe how to
-transform a collection of `ByteString`s into a particular instance of those
-type classes. While performing the conversion, things may go wrong, and we
-would like to use a special data constructor in these cases.
+from the `FromRecord` and `FromNamedRecord` type classes that describe how
+to transform a collection of `ByteString`s into a particular instance of
+those type classes. While performing the conversion, things can go wrong,
+and we would like to use a special data constructor in these cases.
 
 The complete source code can be found in
 [this GitHub repository](https://github.com/stackbuilders/cassava-megaparsec).
@@ -80,14 +79,14 @@ import qualified Data.Vector          as V
 
 Note that there are two imports for `Data.Csv`, one for some common things
 like names of type classes that I want to keep unprefixed and the second one
-for the rest of the stuff (qualified as `C`).
+for the rest (qualified as `C`).
 
 ## What is `ParseError` actually?
 
 To start with custom error messages we should take a look at how parse
 errors are represented in Megaparsec 6.
 
-The main type for error messages in `ParseError` which is defined like this:
+The main type for error messages is `ParseError` which is defined like this:
 
 ```haskell
 -- | @'ParseError' t e@ represents a parse error parametrized over the token
@@ -145,10 +144,10 @@ data ErrorFancy e
 
 `ErrorFail` and `ErrorIndentation` are required by the library. The
 constructor `ErrorCustom` works like an extension slot allowing to insert
-arbitrary data inside. By default, when we don't need any custom data, we
-can “multiply the constructor by zero” by parametrizing `ErrorFancy` by
-`Void`. Since `Void` is not inhabited by any value other than bottom,
-`ErrorCustom` cannot be created.
+arbitrary data inside. When we don't need any custom data, we can “multiply
+the constructor by zero” by parametrizing `ErrorFancy` by `Void`. Since
+`Void` is not inhabited by any value other than bottom, the `ErrorCustom`
+constructor cannot be used.
 
 ## Defining a custom error component
 
@@ -200,7 +199,6 @@ decode :: FromRecord a
      -- ^ CSV data
   -> Either (ParseError Word8 ConversionError) (Vector a)
 decode = decodeWith defaultDecodeOptions
-{-# INLINE decode #-}
 
 -- | Like 'decode', but lets you customize how the CSV data is parsed.
 
@@ -215,7 +213,6 @@ decodeWith :: FromRecord a
      -- ^ CSV data
   -> Either (ParseError Word8 ConversionError) (Vector a)
 decodeWith = decodeWithC csv
-{-# INLINE decodeWith #-}
 
 -- | Deserialize CSV records from a lazy 'BL.ByteString'. If this fails due
 -- to incomplete or invalid input, 'Left' is returned. The data is assumed
@@ -227,7 +224,6 @@ decodeByName :: FromNamedRecord a
   -> BL.ByteString     -- ^ CSV data
   -> Either (ParseError Word8 ConversionError) (Header, Vector a)
 decodeByName = decodeByNameWith defaultDecodeOptions
-{-# INLINE decodeByName #-}
 
 -- | Like 'decodeByName', but lets you customize how the CSV data is parsed.
 
@@ -237,7 +233,6 @@ decodeByNameWith :: FromNamedRecord a
   -> BL.ByteString     -- ^ CSV data
   -> Either (ParseError Word8 ConversionError) (Header, Vector a)
 decodeByNameWith opts = parse (csvWithHeader opts)
-{-# INLINE decodeByNameWith #-}
 
 -- | Decode CSV data using the provided parser, skipping a leading header if
 -- necessary.
@@ -259,14 +254,13 @@ decodeWithC p opts@DecodeOptions {..} hasHeader = parse parser
     parser = case hasHeader of
       HasHeader -> header decDelimiter *> p opts
       NoHeader  -> p opts
-{-# INLINE decodeWithC #-}
 ```
 
 Really nothing interesting here, just a bunch of wrappers that boil down to
 running the `parser` either with skipping the CSV header or not.
 
-What I would really like to show to you is the helpers, because one of them
-is going to be very handy when you decide to write your own parser after
+What I would really like to show you is the helpers, because one of them is
+going to be very handy when you decide to write your own parser after
 reading this manual. Here are the helpers:
 
 ```haskell
@@ -274,19 +268,19 @@ reading this manual. Here are the helpers:
 
 conversionError :: String -> Parser a
 conversionError = fancyFailure . S.singleton . ErrorCustom . ConversionError
-{-# INLINE conversionError #-}
 
 -- | Convert a 'Record' to a 'NamedRecord' by attaching column names. The
 -- 'Header' and 'Record' must be of the same length.
 
 toNamedRecord :: Header -> Record -> NamedRecord
 toNamedRecord hdr v = H.fromList . V.toList $ V.zip hdr v
-{-# INLINE toNamedRecord #-}
 ```
 
-The `conversionError` is a handy thing to have as you can quickly fail with
-your custom error message without writing all the `fancyFailure`-related
-boilerplate. `toNamedRecord` just converts a `Record` to `NamedRecord`.
+`conversionError` is a handy thing to have as you can quickly fail with your
+custom error message without writing all the `fancyFailure`-related
+boilerplate.
+
+`toNamedRecord` just converts a `Record` to `NamedRecord`.
 
 ## The parser
 
@@ -330,9 +324,9 @@ unescapedField del = BL.toStrict <$> takeWhileP (Just "unescaped character") f
 ```
 
 To parse a record we have to parse a non-empty collection of fields
-separated by delimiter characters (supplied from the `DecodeOptions` thing).
-Then we convert it to `Vector ByteString`, because that's what Cassava's
-conversion functions expect:
+separated by delimiter characters (provided by `DecodeOptions`). Then we
+convert it to `Vector ByteString`, because that's what Cassava's conversion
+functions expect:
 
 ```haskell
 -- | Parse a record, not including the terminating line separator. The
@@ -352,10 +346,10 @@ record del f = do
     Right x  -> return x
 ```
 
-The `(<$!>)` operator works just like the familiar `(<$>)`operator, but
-applies `V.fromList` strictly. Now that we have the vector of `ByteString`s,
-we can try to convert it: on success we just return the result, on failure
-we fail using the `conversionError` helper.
+`(<$!>)` works just like the familiar `(<$>)`operator, but applies
+`V.fromList` strictly. Now that we have a vector of `ByteString`s, we can
+try to convert it: on success we just return the result, on failure we fail
+using the `conversionError` helper.
 
 The library also should handle CSV files with headers:
 
@@ -402,8 +396,6 @@ csv !DecodeOptions {..} = do
   return $! V.fromList xs
 ```
 
-Too simple!
-
 ## Trying it out
 
 The custom error messages play seamlessly with the rest of the parser. Let's
@@ -412,7 +404,10 @@ I try to parse `"foo`, I get the usual Megaparsec error message with
 “unexpected” and “expected” parts:
 
 ```
-my-file.csv:1:5:
+1:5:
+  |
+1 | "foo
+  |     ^
 unexpected end of input
 expecting '"', escaped double-quote, or unescaped character
 ```
@@ -422,7 +417,10 @@ However, when that phase of parsing is passed successfully, as with
 reported:
 
 ```
-my-file.csv:1:11:
+1:11:
+  |
+1 | foo,12,boo
+  |           ^
 conversion error: expected Double, got "boo" (Failed reading: takeWhile1)
 ```
 
@@ -431,8 +429,8 @@ that's what Cassava's conversion methods are producing.)
 
 ## Conclusion
 
-I hope this walk-through has demonstrated that it's quite trivial to insert
-your own data into Megaparsec error messages. This way it's also possible to
-pump out some data from failing parser or just keep track of things in a
-type-safe way, which is one thing we should always care about when writing
-Haskell programs.
+I hope this walk-through has demonstrated that it's quite trivial to add
+arbitrary data to Megaparsec error messages. This way it's possible to pump
+out some data from a failing parser keeping track of things in a type-safe
+way, which is one thing we should always care about when writing Haskell
+programs.

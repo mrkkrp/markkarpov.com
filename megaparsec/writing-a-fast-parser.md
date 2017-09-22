@@ -4,7 +4,7 @@ desc: Practical recommendations that should help you write a fast parser.
 difficulty: 4
 date:
   published: September 11, 2016
-  updated: August 17, 2017
+  updated: September 22, 2017
 ---
 
 If performance of your Megaparsec parser is worse that you hoped, there may
@@ -14,18 +14,17 @@ and benchmarking your parsers (that's the only way to understand if you are
 doing the right thing when tuning performance).
 
 * If your parser uses a monad stack instead of plain `Parsec` monad (which
-  is a monad transformer over `Identity` too, but it's much more
-  lightweight), make sure you use at least version 0.5 of `transformers`
-  library, and at least version 6.0 of `megaparsec`. Both libraries have
-  critical performance improvements in those versions, so you can just get
-  better performance for free.
+  is a monad transformer over `Identity`), make sure you use at least
+  version 0.5 of `transformers` library, and at least version 6.0 of
+  `megaparsec`. Both libraries have critical performance improvements in
+  those versions, so you can just get better performance for free.
 
-* `Parsec` monad will be always faster then `ParsecT`-based monad
-  transformers. Avoid using `StateT`, `WriterT`, and other monad
-  transformers unless absolutely necessary. When you have a relatively
-  simple monad stack, for example with `StateT` and nothing more,
-  performance of Megaparsec parser will be on par with Parsec. The more you
-  add to the stack, the slower it will be.
+* `Parsec` monad will be always faster then `ParsecT`-based monadic stacks.
+  Avoid using `StateT`, `WriterT`, and other monad transformers unless
+  absolutely necessary. When you have a relatively simple monad stack, for
+  example with `StateT` and nothing more, performance of Megaparsec parser
+  will be on par with Parsec. The more you add to the stack, the slower it
+  will be.
 
 * Backtracking is an expensive operation. Avoid building long chains of
   alternatives where every alternative can go deep into input before
@@ -45,7 +44,7 @@ doing the right thing when tuning performance).
   this, [available
   here](https://www.stackbuilders.com/tutorials/haskell/ghc-optimization-and-fusion/)).
 
-* Use the fast parsers such as `takeWhileP`, `takeWhile1P`, and `takeP`
+* Use the fast primitives such as `takeWhileP`, `takeWhile1P`, and `takeP`
   whenever you can. [These are
   fast](https://markkarpov.com/post/megaparsec-more-speed-more-power.html#there-is-hope)
   for `Text` and `ByteString`.

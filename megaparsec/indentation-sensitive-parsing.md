@@ -1,32 +1,24 @@
 ---
 title: Indentation-sensitive parsing
-desc: Native, composable solution to identation-sensitivy parsing.
+desc: Megaparsec's built-in composable solution to identation-sensitivy parsing.
 attachment: IndentationSensitiveParsing.hs
 difficulty: 3
 date:
   published: January 12, 2016
-  updated: July 26, 2017
+  updated: September 22, 2017
 ---
 
-Megaparsec 4.3.0 introduces new combinators that should be of some use when
-you want to parse indentation-sensitive input. Megaparsec 5.0.0 adds support
-for line-folds, completing support for indentation-sensitive parsing. This
-tutorial shows how these new tools work, compose, and hopefully, *feel
-natural*—something we cannot say about ad-hoc solutions to this problem that
-exist as separate packages to work on top of Parsec, for example.
-
-1. [Combinator overview](#combinator-overview)
-2. [Parsing a simple indented list](#parsing-a-simple-indented-list)
-3. [Nested indented list](#nested-indented-list)
-4. [Adding line folds](#adding-line-folds)
-5. [Conclusion](#conclusion)
+This tutorial shows how helpers for indentation-sensitive parsing work,
+compose, and hopefully, *feel natural*—something we cannot say about ad-hoc
+solutions to this problem that exist as separate packages to work on top of
+Parsec, for example.
 
 ## Combinator overview
 
 From the first release of Megaparsec, there has been the `indentGuard`
 function, which is a great shortcut, but a kind of pain to use for complex
-tasks. So, we won't cover it here, instead we will talk about the new
-combinators built upon it and available beginning from Megaparsec 4.3.0.
+tasks. So, we won't cover it here, instead we will talk about the
+combinators built upon it.
 
 First, we have `indentLevel`, which is defined just as:
 
@@ -35,8 +27,8 @@ indentLevel :: MonadParsec e s m => m Pos
 indentLevel = sourceColumn <$> getPosition
 ```
 
-That's right, it's just a shortcut, but I found myself using this idiom so
-often, so I included it in the public lexer API.
+Simple as it is, I found myself using this idiom so often, so I included it
+in the public lexer API.
 
 Second, we have `nonIndented`. This allows to make sure that some input is
 not indented. Just wrap a parser in `nonIndented` and you're done.
@@ -51,7 +43,7 @@ nonIndented :: MonadParsec e s m
 nonIndented sc p = indentGuard sc EQ pos1 *> p
 ```
 
-However, it's a part of a logical model behind high-level parsing of
+It's a part of a logical model behind high-level parsing of
 indentation-sensitive input. We state that there are top-level items that
 are not indented (`nonIndented` helps to define parsers for them), and that
 all indented tokens are directly or indirectly are “children” of those
@@ -101,7 +93,6 @@ We can change our mind and parse no indented tokens, we can parse *many*
 (that is, possibly zero) indented tokens or require *at least one* such
 token. We can either allow `indentBlock` detect indentation level of the
 first indented token and use that, or manually specify indentation level.
-This should be flexible enough.
 
 ## Parsing a simple indented list
 
@@ -141,10 +132,10 @@ lexeme :: Parser a -> Parser a
 lexeme = L.lexeme sc
 ```
 
-Just for fun, we will allow line comments that start with `#` as well.
+Just for fun, we also allow line comments that start with `#`.
 
 Assuming `pItemList` parses the entire list, we can define the high-level
-parser as:
+`parser` as:
 
 ```haskell
 parser :: Parser (String, [String])
@@ -204,8 +195,8 @@ expecting end of input
 
 Remember that we're using `IndentMany` option, so empty lists are OK, on the
 other hand the built-in combinator `space` has hidden the phrase “expecting
-more space” from error messages (usually you don't want it because it adds
-noise to all messages), so this error message is perfectly reasonable.
+more space” from the error messages (usually you don't want it because it
+adds noise to all messages), so this error message is perfectly reasonable.
 
 Let's continue:
 
@@ -266,7 +257,7 @@ which is incorrect, so it reports it.
 
 What I like about `indentBlock` is that another `indentBlock` can be put
 inside of it and the whole thing will work smoothly, parsing more complex
-input with several levels of indentation. No additional effort is required.
+input with several levels of indentation.
 
 Let's allow list items to have sub-items. For this we will need a new
 parser, `pComplexItem` (looks familiar…):
@@ -295,7 +286,7 @@ pItemList = L.nonIndented scn (L.indentBlock scn p)
       return (L.IndentSome Nothing (return . (header, )) pComplexItem)
 ```
 
-If I feed something like this:
+If I feed something like this into our parser:
 
 ```
 first-chapter
@@ -308,7 +299,7 @@ first-chapter
   paragraph-three
 ```
 
-…into our parser, I get:
+…I get:
 
 ```haskell
 Right

@@ -238,10 +238,10 @@ The approach with using this simple `ReaderT`-based stack for things that
 actually run real actions is nice as explained in the post I link to above.
 It's exception-friendly because of the stateless nature of the reader monad
 transformer and the context is easy to manipulate. In particular, I advise
-to always use lens with this setup because with them it's possible to change
-(not only read) a specific component of the abstract `r` thing, so you can
-have a region of code with changed environment using `local` with `Lens'`
-and `withReader` with the more general `Lens` type.
+to always use lenses with this setup because with them it's possible to
+change (not only read) a specific component of the abstract `r` thing, so
+you can have a region of code with changed environment using `local` with
+`Lens'` and `withReader` with the more general `Lens` type.
 
 Note that if performance is of any concern, it's possible to use
 `INLINEABLE` and `SPECIALIZE` pragmas to squeeze out any undesirable

@@ -3,6 +3,7 @@ title: Free monad considered harmful
 desc: Before you start writing your code using free monads read this, you may change your mind.
 date:
   published: September 27, 2017
+  updated: September 29, 2017
 ---
 
 Now and then blog posts explaining and promoting use of free monads pop up,
@@ -301,16 +302,29 @@ myProgram = do
 
 And this is familiar to any Haskeller. No brain damage can be incurred from
 reading the code. With some effort we can still recover the same data
-structure we would get if we wrote directly in free monad, although I'm not
-sure if there is a way to do this:
+structure we would get if we wrote directly in free monad, and [G.
+Allais](https://github.com/gallais) showed in the comments that one in fact
+can do the following transformation:
 
 ```haskell
-liberate :: (Inject Terminal f, Inject Log f, MonadTerm m, MonadLog m)
-  => m ()
-  -> Free f ()
+newtype LogTerm f a = LogTerm { runLogTerm :: Free f a }
+  deriving (Functor, Applicative, Monad)
+
+instance Inject Terminal f => MonadTerm (LogTerm f) where
+  getLine = LogTerm (Free $ inject (GetLine return))
+  printLine str = LogTerm (liftF $ inject (PrintLine str ()))
+
+instance Inject Log f => MonadLog (LogTerm f) where
+  log str = LogTerm (liftF $ inject (Log str ()))
+
+liberate :: (Inject Terminal f, Inject Log f)
+  => (forall m. (MonadTerm m, MonadLog m) => m a)
+  -> Free f a
+liberate = runLogTerm
 ```
 
-If you know of a way to do this, please comment.
+So it is possible to go from type class-based representation to free
+representation quite straightforwardly.
 
 ## Conclusion
 

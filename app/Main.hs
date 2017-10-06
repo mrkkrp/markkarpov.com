@@ -152,6 +152,7 @@ main = shakeArgs shakeOptions $ do
     r @'RawR Proxy
     r @'AttachmentR Proxy
     r @'MTutorialR Proxy
+    r @'TutorialR Proxy
     r @'ResumeHtmlR Proxy
     r @'ResumePdfR Proxy
 
@@ -196,41 +197,29 @@ main = shakeArgs shakeOptions $ do
     let src = unTagged (mapIn @'PostR) out
     need [src]
     (v, content) <- getPost src
-    let context =
-          [ env
-          , v
-          , provideAs "location" (dropDirectory1 out) ]
-        post = renderMustache
-          (selectTemplate "post" ts)
-          (mkContext (provideAs "inner" content : context))
-    liftIO . TL.writeFile out $ renderMustache
-      (selectTemplate "default" ts)
-      (mkContext (provideAs "inner" post : context))
+    renderAndWrite ts ["post","default"] (Just content)
+      [env, v, mkLocation out]
+      out
 
   cmnOut postsFile %> \out -> do
     env <- commonEnv ()
     ts  <- templates ()
     ps  <- gatherPostInfo @'PostR Proxy (Down . postPublished)
-    liftIO . TL.writeFile out $ renderMustache
-      (selectTemplate "default" ts)
-      (mkContext [ env
-                 , provideAs "title" ("Posts" :: Text)
-                 , provideAs "inner"
-                   (renderMustache
-                     (selectTemplate "posts" ts)
-                     (mkContext [env, provideAs "post" ps])) ] )
+    renderAndWrite ts ["posts","default"] Nothing
+      [env, provideAs "post" ps]
+      out
 
   cmnOut atomFile %> \out -> do
     env <- commonEnv ()
     ts  <- templates ()
     ps  <- gatherPostInfo @'PostR Proxy (Down . postPublished)
     let feedUpdated = renderIso8601 $ maximum (normalizedUpdated <$> ps)
-    liftIO . TL.writeFile out $ renderMustache
-      (selectTemplate "atom-feed" ts)
-      (mkContext [ env
-                 , provideAs "entry" ps
-                 , provideAs "feed_file" (dropDirectory1 out)
-                 , provideAs "feed_updated" feedUpdated])
+    renderAndWrite ts ["atom-feed"] Nothing
+      [ env
+      , provideAs "entry" ps
+      , provideAs "feed_file" (dropDirectory1 out)
+      , provideAs "feed_updated" feedUpdated ]
+      out
 
   unPat (outPattern @'MTutorialR) %> \out -> do
     env <- commonEnv ()
@@ -238,16 +227,19 @@ main = shakeArgs shakeOptions $ do
     let src = unTagged (mapIn @'MTutorialR) out
     need [src]
     (v, content) <- getPost src
-    let context =
-          [ env
-          , v
-          , provideAs "location" (dropDirectory1 out) ]
-        tutorial = renderMustache
-          (selectTemplate "post" ts)
-          (mkContext (provideAs "inner" content : context))
-    liftIO . TL.writeFile out $ renderMustache
-      (selectTemplate "default" ts)
-      (mkContext (provideAs "inner" tutorial : context))
+    renderAndWrite ts ["post","default"] (Just content)
+      [env, v, mkLocation out]
+      out
+
+  unPat (outPattern @'TutorialR) %> \out -> do
+    env <- commonEnv ()
+    ts  <- templates ()
+    let src = unTagged (mapIn @'TutorialR) out
+    need [src]
+    (v, content) <- getPost src
+    renderAndWrite ts ["post","default"] (Just content)
+      [env, v, mkLocation out]
+      out
 
   unPat (outPattern @'ResumeHtmlR) %> \out -> do
     env <- commonEnv ()
@@ -255,13 +247,9 @@ main = shakeArgs shakeOptions $ do
     let src = unTagged (mapIn @'ResumeHtmlR) out
     need [src]
     (v, content) <- getPost src
-    let context = [env, v]
-        post = renderMustache
-          (selectTemplate "post" ts)
-          (mkContext (provideAs "inner"content : context))
-    liftIO . TL.writeFile out $ renderMustache
-      (selectTemplate "default" ts)
-      (mkContext (provideAs "inner" post : context))
+    renderAndWrite ts ["post","default"] (Just content)
+      [env,v]
+      out
 
   unPat (outPattern @'ResumePdfR) %> \out ->
     copyFile' (unTagged (mapIn @'ResumePdfR) out) out
@@ -270,27 +258,20 @@ main = shakeArgs shakeOptions $ do
     env <- commonEnv ()
     ts  <- templates ()
     mts <- gatherPostInfo @'MTutorialR Proxy postDifficulty
-    let post = renderMustache
-          (selectTemplate "learn-haskell" ts)
-          (mkContext [env, provideAs "megaparsec_tutorials" mts])
-    liftIO . TL.writeFile out $ renderMustache
-      (selectTemplate "default" ts)
-      (mkContext [ env
-                 , provideAs "inner" post
-                 , provideAs "title" ("Learn Haskell" :: Text) ])
+    tts <- gatherPostInfo @'TutorialR  Proxy (Down . postPublished)
+    renderAndWrite ts ["learn-haskell","default"] Nothing
+      [ env
+      , provideAs "megaparsec_tutorials" mts
+      , provideAs "fresh_tutorials"      tts ]
+      out
 
   let justFromTemplate :: Text -> PName -> FilePath -> Action ()
       justFromTemplate title template out = do
         env <- commonEnv ()
         ts  <- templates ()
-        let post = renderMustache
-              (selectTemplate template ts)
-              (mkContext [env])
-        liftIO . TL.writeFile out $ renderMustache
-          (selectTemplate "default" ts)
-          (mkContext [ env
-                     , provideAs "inner" post
-                     , provideAs "title" title ])
+        renderAndWrite ts [template,"default"] Nothing
+          [env, provideAs "title" title]
+          out
 
   cmnOut ossFile      %> justFromTemplate "Open Source"   "oss"
   cmnOut aboutFile    %> justFromTemplate "About me"      "about"
@@ -338,6 +319,32 @@ getDirFiles = getDirectoryFiles "" . pure . unPat
 selectTemplate :: PName -> Template -> Template
 selectTemplate name t = t { templateActual = name }
 
+renderAndWrite :: MonadIO m
+  => Template          -- ^ Templates to use
+  -> [PName]           -- ^ Names of templates, in order
+  -> Maybe TL.Text     -- ^ First inner value to interpolate
+  -> [Value]           -- ^ Rendering context
+  -> FilePath          -- ^ File path where to write rendered file
+  -> m ()
+renderAndWrite ts pnames minner context out =
+  liftIO . TL.writeFile out $
+    foldl f (fromMaybe TL.empty minner) pnames
+  where
+    f inner pname = renderMustache
+      (selectTemplate pname ts)
+      (mkContext (provideAs "inner" inner : context))
+
+getPost :: (MonadIO m, FromJSON v) => FilePath -> m (v, TL.Text)
+getPost path = do
+  (yaml', doc') <- T.breakOn "\n---\n" <$> liftIO (T.readFile path)
+  yaml <-
+    case Y.decodeEither' (TE.encodeUtf8 yaml') of
+      Left err -> fail (Y.prettyPrintParseException err)
+      Right value -> return value
+  let r = writeHtml pandocWriterOpts . handleError $
+        readMarkdown pandocReaderOpts (T.unpack (T.drop 5 doc'))
+  return (yaml, renderHtml r)
+
 pandocReaderOpts :: ReaderOptions
 pandocReaderOpts = def
   { readerExtensions = S.union pandocExtensions $ S.fromList
@@ -351,22 +358,14 @@ pandocWriterOpts = def
   , writerHighlight      = True
   , writerHTMLMathMethod = MathJax "" }
 
-getPost :: (MonadIO m, FromJSON v) => FilePath -> m (v, TL.Text)
-getPost path = do
-  (yaml', doc') <- T.breakOn "\n---\n" <$> liftIO (T.readFile path)
-  yaml <-
-    case Y.decodeEither' (TE.encodeUtf8 yaml') of
-      Left err -> fail (Y.prettyPrintParseException err)
-      Right value -> return value
-  let r = writeHtml pandocWriterOpts . handleError $
-        readMarkdown pandocReaderOpts (T.unpack (T.drop 5 doc'))
-  return (yaml, renderHtml r)
-
 mkContext :: [Value] -> Value
 mkContext = foldl1' f
   where
     f (Object m0) (Object m1) = Object (HM.union m0 m1)
     f _ _                     = error "context merge failed"
+
+mkLocation :: FilePath -> Value
+mkLocation = provideAs "location" . dropDirectory1
 
 provideAs :: ToJSON v => Text -> v -> Value
 provideAs k v = Object (HM.singleton k (toJSON v))

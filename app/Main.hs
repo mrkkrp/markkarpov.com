@@ -206,7 +206,7 @@ main = shakeArgs shakeOptions $ do
     ts  <- templates ()
     ps  <- gatherPostInfo @'PostR Proxy (Down . postPublished)
     renderAndWrite ts ["posts","default"] Nothing
-      [env, provideAs "post" ps]
+      [env, provideAs "post" ps, mkTitle "Posts"]
       out
 
   cmnOut atomFile %> \out -> do
@@ -262,7 +262,8 @@ main = shakeArgs shakeOptions $ do
     renderAndWrite ts ["learn-haskell","default"] Nothing
       [ env
       , provideAs "megaparsec_tutorials" mts
-      , provideAs "fresh_tutorials"      tts ]
+      , provideAs "fresh_tutorials"      tts
+      , mkTitle   "Learn Haskell" ]
       out
 
   let justFromTemplate :: Text -> PName -> FilePath -> Action ()
@@ -363,6 +364,9 @@ mkContext = foldl1' f
   where
     f (Object m0) (Object m1) = Object (HM.union m0 m1)
     f _ _                     = error "context merge failed"
+
+mkTitle :: Text -> Value
+mkTitle = provideAs "title"
 
 mkLocation :: FilePath -> Value
 mkLocation = provideAs "location" . dropDirectory1

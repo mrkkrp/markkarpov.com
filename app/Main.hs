@@ -190,22 +190,23 @@ instance ToJSON TutorialInfo where
 main :: IO ()
 main = shakeArgs shakeOptions $ do
 
-  action $ do
-    let r :: forall r. Route r => Proxy r -> Action ()
-        r Proxy = getDirFiles (pat @r) >>= need . fmap (unTagged $ mapOut @r)
-    r @'PostR Proxy
-    r @'CssR Proxy
-    r @'JsR Proxy
-    r @'ImgR Proxy
-    r @'RawR Proxy
-    r @'AttachmentR Proxy
-    r @'MTutorialR Proxy
-    r @'TutorialR Proxy
-    r @'ResumeHtmlR Proxy
-    r @'ResumePdfR Proxy
+  let z :: forall r. Route r => Proxy r -> Rules ()
+      z Proxy = action $
+        getDirFiles (pat @r) >>= need . fmap (unTagged $ mapOut @r)
 
-    need $ cmnOut <$>
-      [aboutFile, ossFile, notFoundFile, learnFile, postsFile, atomFile]
+  z @'PostR Proxy
+  z @'CssR Proxy
+  z @'JsR Proxy
+  z @'ImgR Proxy
+  z @'RawR Proxy
+  z @'AttachmentR Proxy
+  z @'MTutorialR Proxy
+  z @'TutorialR Proxy
+  z @'ResumeHtmlR Proxy
+  z @'ResumePdfR Proxy
+
+  want $ cmnOut <$>
+    [aboutFile, ossFile, notFoundFile, learnFile, postsFile, atomFile]
 
   phony "clean" $ do
     putNormal ("Cleaning files in " ++ outdir)

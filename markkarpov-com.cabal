@@ -24,6 +24,8 @@ executable mk-com
                     , blaze-html
                     , containers
                     , data-default-class
+                    , lens
+                    , lens-aeson
                     , mtl
                     , pandoc
                     , shake
@@ -33,6 +35,7 @@ executable mk-com
                     , time
                     , transformers
                     , unordered-containers
+                    , vector
                     , yaml
   ghc-options:        -O2 -Wall -threaded
   default-language:   Haskell2010

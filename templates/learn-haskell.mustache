@@ -2,23 +2,20 @@
 
 <h2>Generic tutorials</h2>
 <table class="table table-striped">
-  {{# fresh_tutorials }}
+  {{# generic_tutorials }}
   <tr>
     <td>{{ published }}</td>
     <td>
-      <a href="{{ file }}">{{ title }}</a>
-    </td>
-  </tr>
-  {{/ fresh_tutorials }}
-  {{# tutorials_for_former_employers }}
-  <tr>
-    <td>{{ published }}</td>
-    <td>
-      <a href="{{ url }}" target="_blank">{{ title }}</a>
+      {{# url }}
+      <a href="{{ . }}" target="_blank">{{ title }}</a>
       <span class="fa fa-external-link"></span>
+      {{/ url }}
+      {{^ url }}
+      <a href="{{ file }}">{{ title }}</a>
+      {{/ url }}
     </td>
   </tr>
-  {{/ tutorials_for_former_employers }}
+  {{/ generic_tutorials }}
 </table>
 
 <p>

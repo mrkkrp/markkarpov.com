@@ -9,12 +9,14 @@
 
 module Main (main) where
 
+import Control.Lens hiding ((.=))
 import Control.Monad
 import Control.Monad.IO.Class
 import Data.Aeson
+import Data.Aeson.Lens
 import Data.Default.Class
 import Data.List (sortBy, foldl1')
-import Data.Maybe (fromMaybe)
+import Data.Maybe (fromMaybe, mapMaybe)
 import Data.Ord (comparing, Down (..))
 import Data.Proxy
 import Data.Tagged
@@ -32,6 +34,7 @@ import qualified Data.Text.Encoding  as TE
 import qualified Data.Text.IO        as T
 import qualified Data.Text.Lazy      as TL
 import qualified Data.Text.Lazy.IO   as TL
+import qualified Data.Vector         as V
 import qualified Data.Yaml           as Y
 
 ----------------------------------------------------------------------------
@@ -135,6 +138,51 @@ atomFile     = "feed.atom"
 
 cmnOut :: FilePath -> FilePath
 cmnOut x = outdir </> x
+
+----------------------------------------------------------------------------
+-- Post info
+
+data PostInfo = PostInfo
+  { postTitle      :: Text
+  , postPublished  :: Day
+  , postUpdated    :: Maybe Day
+  , postDesc       :: Text
+  , postDifficulty :: Maybe Int
+  , postFile       :: FilePath
+  } deriving (Eq, Show)
+
+instance FromJSON PostInfo where
+  parseJSON = withObject "post metadata" $ \o -> do
+    postTitle     <- o .: "title"
+    postPublished <- (o .: "date") >>= (.: "published") >>= parseDay
+    postUpdated   <- (o .: "date") >>= (.:? "updated")  >>=
+      maybe (pure Nothing) (fmap Just . parseDay)
+    postDesc      <- o .: "desc"
+    postDifficulty <- o .:? "difficulty"
+    let postFile = ""
+    return PostInfo {..}
+
+instance ToJSON PostInfo where
+  toJSON info@PostInfo {..} = object
+    [ "title"             .= postTitle
+    , "published"         .= renderDay postPublished
+    , "published_iso8601" .= renderIso8601 postPublished
+    , "updated"           .= fmap renderDay postUpdated
+    , "updated_iso8601"   .= renderIso8601 (normalizedUpdated info)
+    , "desc"              .= postDesc
+    , "file"              .= postFile ]
+
+data TutorialInfo
+  = InternalTutorial PostInfo      -- ^ 'PostInfo' injection
+  | ExternalTutorial Day Text Text -- ^ Published, title, URL
+  deriving (Eq, Show)
+
+instance ToJSON TutorialInfo where
+  toJSON (InternalTutorial postInfo) = toJSON postInfo
+  toJSON (ExternalTutorial published title url) = object
+    [ "published" .= renderDay published
+    , "title"     .= title
+    , "url"       .= url ]
 
 ----------------------------------------------------------------------------
 -- Build system
@@ -258,11 +306,16 @@ main = shakeArgs shakeOptions $ do
     env <- commonEnv ()
     ts  <- templates ()
     mts <- gatherPostInfo @'MTutorialR Proxy postDifficulty
-    tts <- gatherPostInfo @'TutorialR  Proxy (Down . postPublished)
+    its <- fmap InternalTutorial <$> gatherPostInfo @'TutorialR  Proxy (Down . postPublished)
+    let ets = fromMaybe [] $ env
+          ^? key "external_tutorials"
+          . _Array
+          . to (mapMaybe parseExternalTutorial . V.toList)
     renderAndWrite ts ["learn-haskell","default"] Nothing
       [ env
       , provideAs "megaparsec_tutorials" mts
-      , provideAs "fresh_tutorials"      tts
+      , provideAs "generic_tutorials"
+          (sortBy (comparing (Down . tutorialInfoPublished)) (its ++ ets))
       , mkTitle   "Learn Haskell" ]
       out
 
@@ -277,39 +330,6 @@ main = shakeArgs shakeOptions $ do
   cmnOut ossFile      %> justFromTemplate "Open Source"   "oss"
   cmnOut aboutFile    %> justFromTemplate "About me"      "about"
   cmnOut notFoundFile %> justFromTemplate "404 Not Found" "404"
-
-----------------------------------------------------------------------------
--- Post info
-
-data PostInfo = PostInfo
-  { postTitle      :: Text
-  , postPublished  :: Day
-  , postUpdated    :: Maybe Day
-  , postDesc       :: Text
-  , postDifficulty :: Maybe Int
-  , postFile       :: FilePath
-  } deriving (Eq, Show)
-
-instance FromJSON PostInfo where
-  parseJSON = withObject "post metadata" $ \o -> do
-    postTitle     <- o .: "title"
-    postPublished <- (o .: "date") >>= (.: "published") >>= parseDay
-    postUpdated   <- (o .: "date") >>= (.:? "updated")  >>=
-      maybe (pure Nothing) (fmap Just . parseDay)
-    postDesc      <- o .: "desc"
-    postDifficulty <- o .:? "difficulty"
-    let postFile = ""
-    return PostInfo {..}
-
-instance ToJSON PostInfo where
-  toJSON info@PostInfo {..} = object
-    [ "title"             .= postTitle
-    , "published"         .= renderDay postPublished
-    , "published_iso8601" .= renderIso8601 postPublished
-    , "updated"           .= fmap renderDay postUpdated
-    , "updated_iso8601"   .= renderIso8601 (normalizedUpdated info)
-    , "desc"              .= postDesc
-    , "file"              .= postFile ]
 
 ----------------------------------------------------------------------------
 -- Helpers
@@ -398,3 +418,14 @@ renderIso8601 :: Day -> String
 renderIso8601 = formatTime defaultTimeLocale fmt
   where
     fmt = iso8601DateFormat (Just "00:00:00Z")
+
+parseExternalTutorial :: Value -> Maybe TutorialInfo
+parseExternalTutorial o = do
+  published <- (o ^? key "published" . _String) >>= parseDay
+  title     <- o ^? key "title" . _String
+  url       <- o ^? key "url" . _String
+  return (ExternalTutorial published title url)
+
+tutorialInfoPublished :: TutorialInfo -> Day
+tutorialInfoPublished (InternalTutorial postInfo) = postPublished postInfo
+tutorialInfoPublished (ExternalTutorial published _ _) = published

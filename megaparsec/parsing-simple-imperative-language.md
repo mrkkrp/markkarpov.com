@@ -252,10 +252,7 @@ parentheses, which is useful, for instance, in the `while` loop.
 
 ```haskell
 stmt :: Parser Stmt
-stmt = parens stmt <|> stmtSeq
-
-stmtSeq :: Parser Stmt
-stmtSeq = f <$> sepBy1 stmt' semi
+stmt = f <$> sepBy1 stmt' semi
   where
     -- if there's only one stmt return it without using ‘Seq’
     f l = if length l == 1 then head l else Seq l
@@ -269,7 +266,11 @@ this means that the order is important.*
 
 ```haskell
 stmt' :: Parser Stmt
-stmt' = ifStmt <|> whileStmt <|> skipStmt <|> assignStmt
+stmt' = ifStmt
+  <|> whileStmt
+  <|> skipStmt
+  <|> assignStmt
+  <|> parens stmt
 ```
 
 If you have a parser that might fail after consuming some input, and you

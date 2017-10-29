@@ -88,9 +88,38 @@ operations as `ByteString`. Here goes a quote about where to use
 It's also worth remembering that conversion between `ShortByteString` and
 `ByteString` is an *O(n)* operation involving copying of payload.
 
-## The `text-short` package
+## `ShortText`
 
-…
+The `ShortText` type provided by the new
+[`text-short`](https://hackage.haskell.org/package/text-short) package is
+roughly what `ShortByteString` to `ByteString`—a more memory efficient, but
+also quite limited in functionality variation.
+
+Here is the definition of strict `Text`:
+
+```haskell
+data Text = Text
+    {-# UNPACK #-} !A.Array          -- payload (Word16 elements)
+    {-# UNPACK #-} !Int              -- offset (units of Word16, not Char)
+    {-# UNPACK #-} !Int              -- length (units of Word16, not Char)
+```
+
+And the definition of `ShortText`:
+
+```haskell
+newtype ShortText = ShortText ShortByteString
+-- essentially has a ByteArray# inside
+```
+
+`ShortText` is different from `Text` in the following:
+
+* It uses UTF-8 internally, while `Text` uses UTC-16.
+* It does not support slicing because it does not store start/end offsets.
+
+So the use case for `ShortText` is when you have to store a lot of short
+text values in memory. Check the
+[`Data.Text.Short`](https://hackage.haskell.org/package/text-short-0.1.1/docs/Data-Text-Short.html)
+module for collection of supported operations on `ShortText` values.
 
 ## The `text-containers` package
 

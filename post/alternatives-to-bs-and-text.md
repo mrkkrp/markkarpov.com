@@ -6,21 +6,20 @@ date:
 ---
 
 The `ByteString` and `Text` (strict and lazy) types have a great adoption in
-the Haskell ecosystem and community. Usually when one has binary data, or
-data that cannot contain characters outside of ASCII range, `ByteString` is
-preferred. `Text` on the other hand allows to work with arbitrary streams of
-characters, including Unicode characters, similarly to `String`, but in a
-more efficient way.
+the Haskell ecosystem. Usually when one has binary data, or data that cannot
+contain characters outside of ASCII range, `ByteString` is preferred. `Text`
+on the other hand allows to work with arbitrary streams of characters,
+including Unicode characters, similarly to `String`, but in a more efficient
+way.
 
 The both libraries
 ([`bytestring`](https://hackage.haskell.org/package/bytestring) and
 [`text`](https://hackage.haskell.org/package/text)) come with a handy
 collection of operations that are stream fuse-able and sufficient for
 solving virtually any task. However, it happens so that there are other
-under-appreciated types and libraries similar in their purpose to
-`ByteString` and `Text`. These may be a better choice in some circumstances,
-but I believe many Haskellers are not aware of them. This post aims to
-rectify that.
+under-appreciated types and libraries that complement `ByteString` and
+`Text`. These may be a better choice in some circumstances, but I believe
+many Haskellers are not aware of them. This post aims to rectify that.
 
 ## `ShortByteString`
 
@@ -46,15 +45,17 @@ when Haskell run time detects that there are no more references to the the
 pointer within Haskell heap and stack. Seems about right, it's not that easy
 to cause memory leaks by forgetting to free a `ForeignPtr`. We should be OK
 then? The problem is that Haskell GC cannot move around things `ForeginPtr`
-points to, because foreign code would become… err *very* fragile if it did.
-This means that once a `ByteString` is allocated, its payload stays at the
-same address. When many `ByteStrings` are allocated/freed more or less
-intensively the impossibility of moving them around to optimize memory usage
-contributes to memory fragmentation.
+points to (they are in what is called *pinned memory*), because foreign code
+would become… err very fragile if it could (and also because moving around
+long `ByteString`s is not very efficient). This means that once a
+`ByteString` is allocated, its payload stays at the same address. When many
+short `ByteStrings` are allocated/freed more or less intensively the
+impossibility of moving them around to optimize memory usage contributes to
+memory fragmentation.
 
-So if you work with many `ByteString`s, you may start to obverse something
-like a space leak when memory usage is much higher than the amount of data
-you actually have.
+So if you work with many short `ByteString`s, you may start to obverse
+something like a space leak when memory usage becomes much higher than the
+amount of data you actually have.
 
 `ShortByteString` is different. It uses `ByteArray#` as payload:
 
@@ -68,9 +69,32 @@ Let's refresh what `ByteArray#` is:
 > heap, which is not scanned for pointers. It carries its own size (in
 > bytes).
 
-Sounds good! Not only we do not have to worry about memory fragmentation,
-but `ByteArray#` takes care of storing its own size, so the representation
-is more compact than that of `ByteString`.
+Not only we do not have to worry about memory fragmentation, but
+`ByteArray#` takes care of storing its own size, so the representation is
+also more compact than that of `ByteString`.
+
+If we look at the
+[`Data.ByteString.Short`](https://hackage.haskell.org/package/bytestring/docs/Data-ByteString-Short.html)
+module we however will find that `ShortByteString` does not support as many
+operations as `ByteString`. Here goes a quote about where to use
+`ShortByteString`:
+
+> It is suitable for use as an internal representation for code that needs
+> to keep many short strings in memory, but it should not be used as an
+> interchange type. That is, it should not generally be used in public APIs.
+> The `ByteString` type is usually more suitable for use in interfaces; it
+> is more flexible and it supports a wide range of operations.
+
+It's also worth remembering that conversion between `ShortByteString` and
+`ByteString` is an *O(n)* operation involving copying of payload.
+
+## The `text-short` package
+
+…
+
+## The `text-containers` package
+
+…
 
 ## Conclusion
 

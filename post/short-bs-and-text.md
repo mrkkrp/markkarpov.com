@@ -113,8 +113,9 @@ newtype ShortText = ShortText ShortByteString
 
 `ShortText` is different from `Text` in the following:
 
-* It uses UTF-8 internally, while `Text` uses UTC-16.
-* It does not support slicing because it does not store start/end offsets.
+* It uses UTF-8 internally, while `Text` uses UTF-16.
+* It does not support slicing because it does not store start/end offsets
+  saving some bytes this way as well.
 
 So the use case for `ShortText` is when you have to store a lot of short
 text values in memory. Check the

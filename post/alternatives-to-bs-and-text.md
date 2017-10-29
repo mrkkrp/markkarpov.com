@@ -46,7 +46,7 @@ pointer within Haskell heap and stack. Seems about right, it's not that easy
 to cause memory leaks by forgetting to free a `ForeignPtr`. We should be OK
 then? The problem is that Haskell GC cannot move around things `ForeginPtr`
 points to (they are in what is called *pinned memory*), because foreign code
-would become… err very fragile if it could (and also because moving around
+would become… err very fragile if it could (and also because moving around a
 long `ByteString`s is not very efficient). This means that once a
 `ByteString` is allocated, its payload stays at the same address. When many
 short `ByteStrings` are allocated/freed more or less intensively the
@@ -91,9 +91,9 @@ It's also worth remembering that conversion between `ShortByteString` and
 ## `ShortText`
 
 The `ShortText` type provided by the new
-[`text-short`](https://hackage.haskell.org/package/text-short) package is
-roughly what `ShortByteString` to `ByteString`—a more memory efficient, but
-also quite limited in functionality variation.
+[`text-short`](https://hackage.haskell.org/package/text-short) package to
+`Text` is roughly what `ShortByteString` to `ByteString`—a more memory
+efficient, but also quite limited in functionality variation.
 
 Here is the definition of strict `Text`:
 
@@ -121,12 +121,9 @@ text values in memory. Check the
 [`Data.Text.Short`](https://hackage.haskell.org/package/text-short-0.1.1/docs/Data-Text-Short.html)
 module for collection of supported operations on `ShortText` values.
 
-## The `text-containers` package
-
-…
-
 ## Conclusion
 
-I must say it's really great that we have the “common ground” types like
-`Text` and `ByteString` that help building bridges between different
-packages. …something…
+The `ShortByteString` and `ShortText` should help scaling applications that
+tend to store large quantities of short `ByteString`s/`Text` values. As easy
+as it is, just replacing a type may actually help to reduce memory usage
+considerably.

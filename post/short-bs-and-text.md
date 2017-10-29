@@ -1,5 +1,5 @@
 ---
-title: Alternatives to ByteString and Text
+title: Short ByteString and Text
 desc: We all know the ByteString and Text types, but are they always the best choice? What else does the Haskell ecosystem provide?
 date:
   published: October 29, 2017

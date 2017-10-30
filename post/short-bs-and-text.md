@@ -121,7 +121,8 @@ newtype ShortText = ShortText ShortByteString
   UTF-16 compactness.
 
 * It does not support slicing because it does not store start/end offsets
-  saving some bytes this way as well.
+  saving several bytes this way as well (may be a big deal if you have many
+  short `ShortText` values).
 
 So the use case for `ShortText` is when you have to store a lot of short
 text values in memory. This is the case e.g. with Cabal which needs to store

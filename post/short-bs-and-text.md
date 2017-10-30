@@ -44,7 +44,7 @@ to is managed not by Haskell's GC, but possibly by some external means.
 when Haskell run time detects that there are no more references to the the
 pointer within Haskell heap and stack. Seems about right, it's not that easy
 to cause memory leaks by forgetting to free a `ForeignPtr`. We should be OK
-then? The problem is that Haskell GC cannot move around things `ForeginPtr`
+then? The problem is that Haskell GC cannot move around things `ForeignPtr`
 points to (they are in what is called *pinned memory*), because foreign code
 would become… err very fragile if it could, and also because moving around a
 long `ByteString` is not very efficient. This means that once a `ByteString`

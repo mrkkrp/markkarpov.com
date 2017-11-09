@@ -13,36 +13,34 @@
   </head>
   <body>
     <nav class="navbar navbar-expand-md navbar-dark bg-primary">
-      <a class="navbar-brand" href="/" title="Mark Karpov">
-        Mark Karpov
-      </a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="fa fa-bars" aria-hidden="true"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbar">
-        <ul class="navbar-nav ml-auto">
-          {{# main_menu }}
-          <li class="nav-item">
-            <a class="nav-link" href="{{& link }}">{{ title }}</a>
-          </li>
-          {{/ main_menu }}
-        </ul>
+      <div class="container">
+        <a class="navbar-brand" href="/" title="Mark Karpov">
+          Mark Karpov
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="fa fa-bars" aria-hidden="true"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbar">
+          <ul class="navbar-nav ml-auto">
+            {{# main_menu }}
+            <li class="nav-item">
+              <a class="nav-link" href="{{& link }}">{{ title }}</a>
+            </li>
+            {{/ main_menu }}
+          </ul>
+        </div>
       </div>
     </nav>
-    <div class="container">
-      <div class="row">
-        <div class="col-12 col-sm-12 col-md-12 col-lg-10 col-xl-8 mx-auto">
-          <div class="content">
-            {{& inner }}
-          </div>
+    <main role="main">
+      <div class="container">
+        <div class="content">
+          {{& inner }}
         </div>
       </div>
-    </div>
+    </main>
     <footer class="footer">
-      <div class="container">
-        <div class="text-center text-muted">
-          {{ copyright }}
-        </div>
+      <div class="text-center text-muted">
+        {{ copyright }}
       </div>
     </footer>
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>

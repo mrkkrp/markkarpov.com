@@ -1,5 +1,6 @@
 {-# LANGUAGE DataKinds           #-}
 {-# LANGUAGE KindSignatures      #-}
+{-# LANGUAGE LambdaCase          #-}
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE PolyKinds           #-}
 {-# LANGUAGE RankNTypes          #-}
@@ -185,6 +186,27 @@ instance ToJSON TutorialInfo where
     , "url"       .= url ]
 
 ----------------------------------------------------------------------------
+-- Menu items
+
+-- | Menu items.
+
+data MenuItem
+  = Posts
+  | LearnHaskell
+  | OSS
+  | Resume
+  | About
+  deriving (Eq, Ord, Show, Enum, Bounded)
+
+menuItemTitle :: MenuItem -> Text
+menuItemTitle = \case
+  Posts        -> "Posts"
+  LearnHaskell -> "Learn Haskell"
+  OSS          -> "OSS"
+  Resume       -> "Resume"
+  About        -> "About"
+
+----------------------------------------------------------------------------
 -- Build system
 
 main :: IO ()
@@ -247,7 +269,7 @@ main = shakeArgs shakeOptions $ do
     need [src]
     (v, content) <- getPost src
     renderAndWrite ts ["post","default"] (Just content)
-      [env, v, mkLocation out]
+      [menuItem Posts env, v, mkLocation out]
       out
 
   cmnOut postsFile %> \out -> do
@@ -255,7 +277,7 @@ main = shakeArgs shakeOptions $ do
     ts  <- templates ()
     ps  <- gatherPostInfo @'PostR Proxy (Down . postPublished)
     renderAndWrite ts ["posts","default"] Nothing
-      [env, provideAs "post" ps, mkTitle "Posts"]
+      [menuItem Posts env, provideAs "post" ps, mkTitle Posts]
       out
 
   cmnOut atomFile %> \out -> do
@@ -277,7 +299,7 @@ main = shakeArgs shakeOptions $ do
     need [src]
     (v, content) <- getPost src
     renderAndWrite ts ["post","default"] (Just content)
-      [env, v, mkLocation out]
+      [menuItem LearnHaskell env, v, mkLocation out]
       out
 
   unPat (outPattern @'TutorialR) %> \out -> do
@@ -287,7 +309,7 @@ main = shakeArgs shakeOptions $ do
     need [src]
     (v, content) <- getPost src
     renderAndWrite ts ["post","default"] (Just content)
-      [env, v, mkLocation out]
+      [menuItem LearnHaskell env, v, mkLocation out]
       out
 
   unPat (outPattern @'ResumeHtmlR) %> \out -> do
@@ -297,7 +319,7 @@ main = shakeArgs shakeOptions $ do
     need [src]
     (v, content) <- getPost src
     renderAndWrite ts ["post","default"] (Just content)
-      [env,v]
+      [menuItem Resume env, v]
       out
 
   unPat (outPattern @'ResumePdfR) %> \out ->
@@ -313,24 +335,25 @@ main = shakeArgs shakeOptions $ do
           . _Array
           . to (mapMaybe parseExternalTutorial . V.toList)
     renderAndWrite ts ["learn-haskell","default"] Nothing
-      [ env
+      [ menuItem LearnHaskell env
       , provideAs "megaparsec_tutorials" mts
       , provideAs "generic_tutorials"
           (sortBy (comparing (Down . tutorialInfoPublished)) (its ++ ets))
-      , mkTitle   "Learn Haskell" ]
+      , mkTitle LearnHaskell ]
       out
 
-  let justFromTemplate :: Text -> PName -> FilePath -> Action ()
-      justFromTemplate title template out = do
+  let justFromTemplate :: Either Text MenuItem -> PName -> FilePath -> Action ()
+      justFromTemplate etitle template out = do
         env <- commonEnv ()
         ts  <- templates ()
         renderAndWrite ts [template,"default"] Nothing
-          [env, provideAs "title" title]
+          [ either (const env) (`menuItem` env) etitle
+          , provideAs "title" (either id menuItemTitle etitle) ]
           out
 
-  cmnOut ossFile      %> justFromTemplate "Open Source"   "oss"
-  cmnOut aboutFile    %> justFromTemplate "About me"      "about"
-  cmnOut notFoundFile %> justFromTemplate "404 Not Found" "404"
+  cmnOut ossFile      %> justFromTemplate (Right OSS)            "oss"
+  cmnOut aboutFile    %> justFromTemplate (Right About)          "about"
+  cmnOut notFoundFile %> justFromTemplate (Left "404 Not Found") "404"
 
 ----------------------------------------------------------------------------
 -- Helpers
@@ -355,6 +378,14 @@ renderAndWrite ts pnames minner context out =
     f inner pname = renderMustache
       (selectTemplate pname ts)
       (mkContext (provideAs "inner" inner : context))
+
+menuItem :: MenuItem -> Value -> Value
+menuItem item = over (key "main_menu" . _Array) . V.map $ \case
+  Object m -> Object $
+    if HM.lookup "title" m == (Just . String . menuItemTitle) item
+      then HM.insert "active" (Bool True) m
+      else m
+  v -> v
 
 getPost :: (MonadIO m, FromJSON v) => FilePath -> m (v, TL.Text)
 getPost path = do
@@ -386,8 +417,8 @@ mkContext = foldl1' f
     f (Object m0) (Object m1) = Object (HM.union m0 m1)
     f _ _                     = error "context merge failed"
 
-mkTitle :: Text -> Value
-mkTitle = provideAs "title"
+mkTitle :: MenuItem -> Value
+mkTitle = provideAs "title" . menuItemTitle
 
 mkLocation :: FilePath -> Value
 mkLocation = provideAs "location" . dropDirectory1

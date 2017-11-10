@@ -23,7 +23,12 @@
         <div class="collapse navbar-collapse" id="navbar">
           <ul class="navbar-nav ml-auto">
             {{# main_menu }}
+            {{# active }}
+            <li class="nav-item active">
+              {{/ active }}
+              {{^ active }}
             <li class="nav-item">
+              {{/ active }}
               <a class="nav-link" href="{{& link }}">{{ title }}</a>
             </li>
             {{/ main_menu }}

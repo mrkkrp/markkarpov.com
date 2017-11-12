@@ -22,7 +22,7 @@ test:
     - stack test
     - stack exec mk-com -- clean
     - stack exec mk-com
-    - html5validator --show-warnings --root _build/
+    - html5validator --root _build/ # --show-warnings
 
 deployment:
   production:

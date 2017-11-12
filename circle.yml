@@ -1,3 +1,7 @@
+machine:
+  java:
+    version: oraclejdk8
+
 dependencies:
   cache_directories:
     - "~/.stack"
@@ -6,6 +10,7 @@ dependencies:
   pre:
     - sudo apt-get update
     - sudo apt-get install rsync
+    - sudo pip install html5validator
 
   override:
     - (curl -sSL https://get.haskellstack.org/ | sh) || true
@@ -15,7 +20,9 @@ dependencies:
 test:
   override:
     - stack test
+    - stack exec mk-com -- clean
     - stack exec mk-com
+    - html5validator --root _build/ # --show-warnings
 
 deployment:
   production:

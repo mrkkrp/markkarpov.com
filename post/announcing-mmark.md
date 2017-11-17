@@ -145,43 +145,138 @@ Let's try to feed some markdown to this program and see what happens now.
 
 Given this input:
 
+```markdown
+#My header
+
+Something is __not __ so right about this paragraph.
+
+[Here goes link text, [another link](/my-url)](/my-url).
 ```
 
+The program outputs the following parse errors:
+
+```
+input.md:1:2:
+  |
+1 | #My header
+  |  ^
+unexpected 'M'
+expecting '#' or white space
+input.md:3:21:
+  |
+3 | Something is __not __ so right about this paragraph.
+  |                     ^
+'_' should be in left- or right- flanking position
+input.md:5:23:
+  |
+5 | [Here goes link text, [another link](/my-url)](/my-url).
+  |                       ^
+unexpected '['
+expecting ']', inline content, or the rest of inline content
 ```
 
-We get the following parse errors:
+Here we can see how the parser has spotted three different problems in one
+pass:
 
-Several things to note here:
+* `#My header` is not a valid header in markdown because there must be at
+  least one space between the hash sign and the header text itself. This is
+  a common mistake and markdown processors would usually fall back and
+  interpret this as a paragraph starting with a hash. I decided to catch
+  these nasty little mistakes and report them. In the unlikely case when you
+  really want to start a paragraph with a hash sign `#`, just escape it with
+  backslash.
 
-We should thank John MacFarlane not only for developing so many markdown
-processors, but also for writing the Common Mark specification I mentioned
-above.
+* Here `__` is part of strong emphasis but it must go after “not” without
+  spaces between them. Normal markdown engine would just accept this and
+  render underscores literally. Most likely, that's not what you want.
+  Again, to put literal underscores it's enough to escape them.
 
- `MMark.parse :: String -> Text -> Either (NonEmpty)`
+* Putting a link inside of text of another link is not a good idea and we
+  can detect that and report too.
 
-While working on the project I thought several times how essential it is
-that I have Megaparsec in its current state in my disposal. Without it I
+After fixing these issues, we get the expected result:
+
+```html
+<h1 id="my-header">My header</h1>
+<p>Something is <strong>not</strong> so right about this paragraph.</p>
+<p><a href="/my-url">Here goes link text</a>.</p>
+```
+
+*(You can add enclosing `body` and `html` tags around this manually, for now
+MMark doesn't do that for you.)*
+
+MMark is not a fully custom dialect of Markdown though, in most cases it
+behaves quite conventionally. We should thank John MacFarlane not only for
+developing so many markdown processors, but also for writing [the Common
+Mark specification](http://spec.commonmark.org/0.28/) I mentioned above. I
+took it as a starting point and only diverged from it where I saw that doing
+so would be an improvement. The
+[readme](https://github.com/mrkkrp/mmark/blob/master/README.md) of MMark
+documents all differences between Common Mark and MMark, so I won't
+re-iterate the information here.
+
+Finally, while working on the project I noted several times how essential it
+is that I have Megaparsec in its current state in my disposal. Without it I
 would not be able to get such nice error-reporting.
 
 ## Extensibility
 
 TODO
 
-Mention also syntax highlighting and interpolation as possible extensions.
-
-* About “strictness” in Markdown interpretation/parsing.
-* Accent how MMark parser can return many parse errors without choking on
-  the first parse error.
-* Efficiency. Mention that block-level parsing is quite fast, thanks to
-  latest improvements available in Megaparsec 6. Inline parsing can be
-  optimized though. Mention the possibility of parallel inline parsing.
 * Extension system (overview). Mention scanning and how many things may be
   combined into a single scan.
+
+## Let's write some extensions
+
 * Extension system (concrete examples from `mmark-ext`). Something like a
   quick walkthrough of how they are implemented. A link to the actual
   `mmark-ext` package would be nice too.
-* Future plans (just list interesting directions to explore). Mention here
-  that the current release is rather a proof-of-concept than a real usable
-  markdown processor and many features are yet to be added.
-* Current roadmap.
-* “You can help” section for future contributors.
+
+## Performance and inner workings
+
+* Efficiency. Mention that block-level parsing is quite fast, thanks to
+  latest improvements available in Megaparsec 6. Inline parsing can be
+  optimized though. Mention the possibility of parallel inline parsing.
+
+## Future plans
+
+MMark is right now in the “proof-of-concept” state, it does not even support
+essential things like blockquotes and lists, so it's not for real-world use
+yet (you're welcome to play with it anyway, of course). The missing features
+should be easy to add to the base I already have, because it looks like the
+base has evolved into something that is well-designed for what I have in
+mind. So it's just a matter of time when MMark will be power enough to
+replace Pandoc at least for my personal use.
+
+Features/ideas related to MMark itself, roughly in the order I'd like to
+work on them:
+
+* Implement blockquotes.
+* Implement lists (ordered and unordered).
+* Optimize inline-level parser without degrading quality of error messages.
+* Support link references and link reference definitions (so you can put URL
+  at the end of your document).
+* Allow image references (the same thing).
+* Implement PHP-style footnotes.
+* Support for HTML blocks.
+* Support for HTML inlines.
+* Implement pipe tables as supported by GitHub.
+* Support entity and numeric character references.
+* Experiment with parallel parsing of inlines.
+
+MMark extensions that would be nice to have in `mmark-ext`:
+
+* An extension to generate anchors statically with results similar to what
+  `anchor.js` produces.
+* An extension that would allow to mark links so they will open in a new
+  tab.
+* An extension that would allow interpolation of values from a context, this
+  could turn MMark into a sort of template system.
+* Syntax highlighting extensions:
+    * JSON
+    * YAML
+    * Haskell, high-quality syntax highlighter which can link to language
+      extensions and pragmas in GHC user guide, and does not choke on
+      `DataKinds` and `TypeApplications`, god dammit.
+
+The last one probably could be a project on its own :-D

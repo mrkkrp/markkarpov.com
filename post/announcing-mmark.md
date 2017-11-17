@@ -37,9 +37,9 @@ markdown into HTML, there are several options for a Haskeller:
   attacks.
 
 * [`markdown`](https://hackage.haskell.org/package/markdown) is a solution
-  from Michael Snoyman, we all know him. Can parse markdown and convert it
-  to HTML. Has additional features that make it good (or rather a bit better
-  than others) for publishing (you can customize the parser, for instance).
+  from Michael Snoyman. It can parse markdown and convert it to HTML. Has
+  additional features that make it good (or rather a bit better than others)
+  for publishing (you can customize the parser, for instance).
 
 * [`sundown`](https://hackage.haskell.org/package/sundown) is bindings to
   GitHub's (former) C markdown library. The projects has not been updated
@@ -139,7 +139,7 @@ things with it (I will return to some of these later):
    rendering.
 3. Render it with the `render` function.
 
-Let's try to feed some markdown to this program and see what happens now.
+Let's try to feed some markdown to this program and see what happens.
 
 ## A taste of strict markdown
 
@@ -212,8 +212,8 @@ Mark specification](http://spec.commonmark.org/0.28/) I mentioned above. I
 took it as a starting point and only diverged from it where I saw that doing
 so would be an improvement. The
 [readme](https://github.com/mrkkrp/mmark/blob/master/README.md) of MMark
-documents all differences between Common Mark and MMark, so I won't
-re-iterate the information here.
+documents all differences between Common Mark and MMark, so I won't cite the
+information here.
 
 Finally, while working on the project I noted several times how essential it
 is that I have Megaparsec in its current state in my disposal. Without it I
@@ -227,8 +227,8 @@ module. When designing the extension system my goals were:
 
 1. Make it powerful, so users can write interesting extensions.
 2. Make it efficient, so every type of transformation is only applied once
-   and the number of traversals of the syntax tree stays constrant no matter
-   how many extensions user chooses to apply and how complex they are.
+   and the number of traversals of the syntax tree stays constant no matter
+   how many extensions the user chooses to apply and how complex they are.
 3. Make it easy to write extensions that are very focused in what they do
    and do not interfere with each other in weird and unexpected ways.
 
@@ -251,8 +251,8 @@ that are applied to the parsed document in turn:
 `Extension`s are combined using `mappend`, because an `Extension` is a
 `Monoid` (and obviously also a `Semigroup`). When one combines different
 extensions, extensions of the same kind get fused together into a single
-function, this is how we keep number of traversals of syntax tree constant.
-This allows for faster processing in the end.
+function, this is how we keep the number of traversals over syntax tree
+constant. This allows for faster processing in the end.
 
 There is also the concept of a scanner. We can make a scanner with the
 `scanner` function:
@@ -463,12 +463,31 @@ tocScanner cutoff = fmap (Toc . reverse) . Ext.scanner [] $ \xs block ->
         else (n, a) : as
 ```
 
+A scanner can be run using the `runScanner` function:
+
+```haskell
+-- | Scan an 'MMark' document efficiently in one pass. This uses the
+-- excellent 'L.Fold' type, which see.
+--
+-- Take a look at the "Text.MMark.Extension" module if you want to create
+-- scanners of your own.
+
+runScanner
+  :: MMark             -- ^ Document to scan
+  -> L.Fold Bni a      -- ^ 'L.Fold' to use
+  -> a                 -- ^ Result of scanning
+```
+
+Combine all scanners you need to run using applicative syntax `Fold`
+supports and then do a single scan. For more information see the wonderful
+[`foldl`](https://hackage.haskell.org/package/foldl) package.
+
 You have probably noticed that the extension system does not allow us to
 just add things at the beginning or end of a document, as it's fully focused
 on transforming existing blocks and inlines. Not sure if it's a good or bad
 thing, but I'd like to control where table of contents is inserted anyway,
 so let's just have a convention: the extension will replace a code block
-with a given info string:
+identified by a given info string with table of contents:
 
 ```haskell
 -- | Create an extension that replaces a certain code block with previously
@@ -560,6 +579,34 @@ getOis :: Ois -> NonEmpty Inline
 getOis (Ois inlines) = inlines
 ```
 
+MMark assigns header ids automatically for us, but if it didn't, we would be
+able to correct that quite easily using `blockRender`:
+
+```haskell
+addHeaderIds :: Extension
+addHeaderIds = Ext.blockRender $ \old block ->
+  case block of
+    h@(Heading1 (i,_)) ->
+      withId (old h) i
+    h@(Heading2 (i,_)) ->
+      withId (old h) i
+    h@(Heading3 (i,_)) ->
+      withId (old h) i
+    h@(Heading4 (i,_)) ->
+      withId (old h) i
+    h@(Heading5 (i,_)) ->
+      withId (old h) i
+    h@(Heading6 (i,_)) ->
+      withId (old h) i
+    other -> old other
+  where
+    withId h i = with h [id_ (Ext.headerId (Ext.getOis i))]
+```
+
+Here we carefully re-use the `old` rendering function and just add an `id`
+attribute to headers. This principle of “minimal intervention” should be
+followed in all MMark extensions for them to stay composable.
+
 ## Performance and inner workings
 
 Performance-wise, there are three things of interest in MMark:
@@ -611,7 +658,7 @@ and
 [`takeWhile1P`](https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec.html#v:takeWhile1P)
 primitives Megaparsec 6 provides. They make a huge difference in terms of
 speed indeed, so I'm satisfied with this. Inline parsing on the other hand
-is not so fast and can be optimized. Right now this is the bottleneck of our
+is not so fast and can be optimized. Right now this is the bottleneck of the
 parser, and I have added optimizing inline-level parser to my todo list,
 although there are still things with higher priority, which I'll mention in
 the next section.

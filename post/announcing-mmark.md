@@ -131,8 +131,8 @@ It should be obvious what this little program does:
 Once you get a value of the `MMark` type, you can do literally only three
 things with it (I will return to some of these later):
 
-1. Scan it with `runScanner` . This cannot change the `MMark` document.
-2. Apply an extension to `MMark` document with `useExtensions` or
+1. Scan it with `runScanner` . This cannot change `MMark` document.
+2. Apply an extension to `MMark` document with `useExtension` or
    `useExtensions`. We can pretend that this actually changes the document
    (there is no way for an API user to prove otherwise anyway), but really
    extensions just get fused for final efficient application just before

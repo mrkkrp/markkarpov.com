@@ -221,22 +221,400 @@ would not be able to get such nice error-reporting.
 
 ## Extensibility
 
-TODO
+The API of extension system is presented in the
+[`Text.MMark.Extension`](https://hackage.haskell.org/package/mmark/docs/Text-MMark-Extension.html)
+module. When designing the extension system my goals were:
 
-* Extension system (overview). Mention scanning and how many things may be
-  combined into a single scan.
+1. Make it powerful, so users can write interesting extensions.
+2. Make it efficient, so every type of transformation is only applied once
+   and the number of traversals of the syntax tree stays constrant no matter
+   how many extensions user chooses to apply and how complex they are.
+3. Make it easy to write extensions that are very focused in what they do
+   and do not interfere with each other in weird and unexpected ways.
+
+I ruled out allowing users to mess with AST directly pretty quickly because
+it would be against the points 2 and 3. Instead, we have four
+extension-producing functions. They correspond internally to four functions
+that are applied to the parsed document in turn:
+
+* `blockTrans` is applied first, as it's quite general and can change
+  block-level structure of document as well as inline-level structure.
+* `inlineTrans` is applied to every inline in the document obtained in the
+  previous step.
+* `inlineRender` is applied to every inline; this function produces HTML
+  rendition of the inlines and we also preserve the original inline so
+  `blockRender` can look at it (sometimes it is useful, we'll see why
+  shortly).
+* `blockRender` is applied to every block to obtain HTML rendition of the
+  whole document.
+
+`Extension`s are combined using `mappend`, because an `Extension` is a
+`Monoid` (and obviously also a `Semigroup`). When one combines different
+extensions, extensions of the same kind get fused together into a single
+function, this is how we keep number of traversals of syntax tree constant.
+This allows for faster processing in the end.
+
+There is also the concept of a scanner. We can make a scanner with the
+`scanner` function:
+
+```haskell
+-- | Create a 'L.Fold' from an initial state and a folding function.
+
+scanner
+  :: a                                   -- ^ Initial state
+  -> (a -> Block (NonEmpty Inline) -> a) -- ^ Folding function
+  -> L.Fold (Block (NonEmpty Inline)) a  -- ^ Resulting 'L.Fold'
+scanner a f = L.Fold f a id
+```
+
+Which basically just a wrapper over the `Fold` data constructor from the
+[`foldl`](https://hackage.haskell.org/package/foldl) library. We'll see how
+this is used to run any number of scans over a `MMark` document in a single
+pass in the next section.
+
+Finally, to apply an extension, one can use the `useExtension` function:
+
+```haskell
+-- | Apply an 'Extension' to an 'MMark' document. The order in which you
+-- apply 'Extension's /does matter/. Extensions you apply first take effect
+-- first. The extension system is designed in such a way that in many cases
+-- the order doesn't matter, but sometimes the difference is important.
+
+useExtension :: Extension -> MMark -> MMark
+```
+
+If you have several extensions to apply, there is `useExtensions`, which is
+just a shortcut:
+
+```haskell
+-- | Apply several 'Extension's to an 'MMark' document.
+--
+-- This is a simple shortcut:
+--
+-- > useExtensions exts = useExtension (mconcat exts)
+--
+-- As mentioned in the docs for 'useExtension', the order in which you apply
+-- extensions matters. Extensions closer to beginning of the list are
+-- applied later, i.e. the last extension in the list is applied first.
+
+useExtensions :: [Extension] -> MMark -> MMark
+useExtensions exts = useExtension (mconcat exts)
+```
+
+This note about the order in which extensions are applied may seem
+counter-intuitive, but it's a consequence of the fact that `(<>)` associates
+to the right and `mconcat` is a right fold inside. So the situation is
+really similar to how functions compose with the `Endo` monoid.
 
 ## Let's write some extensions
 
-* Extension system (concrete examples from `mmark-ext`). Something like a
-  quick walkthrough of how they are implemented. A link to the actual
-  `mmark-ext` package would be nice too.
+The previous section has “good-to-know” things but it does not show what
+writing a useful MMark extension feels like. Let's correct that, I'm going
+to walk through some extensions I've released in the
+[`mmark-ext`](https://hackage.haskell.org/package/mmark-ext) package. After
+that writing your own MMark extension should be easy.
+
+### Transforming inlines
+
+Let's start with something simple. The simplest extension just transforms
+inlines, it's created with `inlineTrans`:
+
+```haskell
+-- | Create an extension that performs a transformation on 'Inline'
+-- components in entire markdown document.
+
+inlineTrans :: (Inline -> Inline) -> Extension
+```
+
+It simply lifts an `Inline`-transforming function into an `Extension`.
+No-brainer indeed!
+
+We could use it to write a punctuation-prettifying extension:
+
+```haskell
+-- | Prettify punctuation.
+
+punctuationPrettifier :: Extension
+punctuationPrettifier = Ext.inlineTrans $ \case
+  Plain txt -> Plain
+    . T.replace "--"  "–"
+    . T.replace "---" "—"
+    $ txt
+  other -> other
+```
+
+We could also change the data constructor, but for this one we just keep
+`Plain` things `Plain`. This is a simplified version of what is available in
+the `mmark-ext` package (`punctuationPrettifier` there just takes a record
+of settings that control which transformations to apply).
+
+### Rendering inlines
+
+To alter rendering of an inline we use the `inlineRender` function:
+
+```haskell
+-- | Create an extension that replaces or augments rendering of 'Inline's of
+-- markdown document. This works like 'blockRender'.
+
+inlineRender
+  :: ((Inline -> Html ()) -> Inline -> Html ())
+  --  ^                      ^         ^
+  --  |                      |         |
+  --  “old” rendering        inline    result of rendering
+  --      function           to render
+  -> Extension
+```
+
+Note an interesting thing: we receive the rendering function “constructed so
+far”, so we can preserve the rendering logic previously applied extensions
+have created. Let's see how it works by writing an extension that allows to
+insert [FontAwesome](http://fontawesome.io) icons:
+
+```haskell
+-- | Allow to insert @span@s with font awesome icons using autolinks like
+-- this:
+--
+-- > <fa:user>
+--
+-- This @user@ identifier is the name of icon you want to insert. You can
+-- also control the size of the icon like this:
+--
+-- > <fa:user/fw> -- fixed width
+-- > <fa:user/lg> -- large
+-- > <fa:user/2x>
+-- > <fa:user/3x>
+-- > <fa:user/4x>
+-- > <fa:user/5x>
+--
+-- In general, all path components in this URI that go after the name of
+-- icon will be prefixed with @\"fa-\"@ and added as classes, so you can do
+-- a lot of fancy stuff, see <http://fontawesome.io/examples/>:
+--
+-- > <fa:quote-left/3x/pull-left/border>
+--
+-- See also: <http://fontawesome.io>.
+
+fontAwesome :: Extension
+fontAwesome = Ext.inlineRender $ \old inline ->
+  case inline of
+    l@(Link _ fa _) ->
+      if URI.uriScheme fa == URI.mkScheme "fa"
+        then case URI.uriPath fa of
+               [] -> old l
+               xs ->
+                 let g x = "fa-" <> URI.unRText x
+                 in span_
+                    [ (class_ . T.intercalate " ") ("fa" : fmap g xs) ]
+                    ""
+        else old l
+    other -> old other
+```
+
+If we did not receive `old` rendering function, we would need to use some
+sort of default rendering function, and that would ruin composability,
+because we would have updated rendering logic for links with `fa` scheme,
+and have “reset” it for everything else at the same time. The function we
+apply to `inlineRender` can also be thought of as a transformation of inline
+rendering function of the type `Inline -> Html ()`:
+
+```haskell
+(Inline -> Html ()) -> (Inline -> Html ())
+```
+
+### Transforming blocks and scanning
+
+A super-useful extension is the one for generation of table of contents. For
+this we need two things:
+
+* A scanner which collects headers.
+* An extension that somehow inserts the headers as a nested list of links
+  into the document.
+
+Let's use `scanner` to write a scanner:
+
+```haskell
+-- | An opaque type representing table of contents produced by the
+-- 'tocScanner' scanner.
+
+newtype Toc = Toc [(Int, NonEmpty Inline)]
+
+-- | The scanner builds table of contents 'Toc' that can then be passed to
+-- 'toc' to obtain an extension that renders the table of contents in HTML.
+--
+-- __Note__: Top level header (level 1) is never added to the table of
+-- contents. Open an issue if you think it's not a good behavior.
+
+tocScanner
+  :: Int -- ^ Up to which level (inclusive) to collect headers? Values from
+         -- 2 to 6 make sense here.
+  -> L.Fold Bni Toc
+tocScanner cutoff = fmap (Toc . reverse) . Ext.scanner [] $ \xs block ->
+  case block of
+    Heading2 x -> f 2 x xs
+    Heading3 x -> f 3 x xs
+    Heading4 x -> f 4 x xs
+    Heading5 x -> f 5 x xs
+    Heading6 x -> f 6 x xs
+    _          -> xs
+  where
+    f n a as =
+      if n > cutoff
+        then as
+        else (n, a) : as
+```
+
+You have probably noticed that the extension system does not allow us to
+just add things at the beginning or end of a document, as it's fully focused
+on transforming existing blocks and inlines. Not sure if it's a good or bad
+thing, but I'd like to control where table of contents is inserted anyway,
+so let's just have a convention: the extension will replace a code block
+with a given info string:
+
+```haskell
+-- | Create an extension that replaces a certain code block with previously
+-- constructed table of contents.
+
+toc
+  :: Text -- ^ Label of the code block to replace by the table of contents
+  -> Toc  -- ^ Previously generated by 'tocScanner'
+  -> Extension
+toc label (Toc xs) = Ext.blockTrans $ \case
+  old@(CodeBlock mlabel _) ->
+    case NE.nonEmpty xs of
+      Nothing -> old
+      Just ns ->
+        if mlabel == pure label
+          then renderToc ns
+          else old
+  other -> other
+
+-- | Construct @'Block' ('NonEmpty' 'Inline')@ for a table of contents from
+-- given collection of headers. This is a non-public helper.
+
+renderToc :: NonEmpty (Int, NonEmpty Inline) -> Block (NonEmpty Inline)
+renderToc = UnorderedList . NE.unfoldr f
+  where
+    f ((n,x) :| xs) =
+      let (sitems, fitems) = span ((> n) . fst) xs
+          url = Ext.headerFragment (Ext.headerId x)
+      in ( Naked (Link x url Nothing :| [])
+           : maybeToList (renderToc <$> NE.nonEmpty sitems)
+         , NE.nonEmpty fitems )
+```
+
+You don't really need to understand how the code above works in details,
+it's just an example of what you can do and how easily.
+
+BTW, here is the signature of `blockTrans` for reference:
+
+```haskell
+-- | Create an extension that performs a transformation on 'Block's of
+-- markdown document.
+
+blockTrans
+  :: (Block (NonEmpty Inline) -> Block (NonEmpty Inline))
+  -> Extension
+```
+
+### Rendering blocks
+
+Finally, here is the scariest function for creating of extensions:
+
+```haskell
+-- | Create an extension that replaces or augments rendering of 'Block's of
+-- markdown document. The argument of 'blockRender' will be given the
+-- rendering function constructed so far @'Block' ('Ois', 'Html' ()) ->
+-- 'Html' ()@ as well as an actual block to render—@'Block' ('Ois', 'Html'
+-- ())@. The user can then decide whether to replace\/reuse that function to
+-- get the final rendering of the type @'Html' ()@.
+--
+-- The argument of 'blockRender' can also be thought of as a function that
+-- transforms the rendering function constructed so far:
+--
+-- > (Block (Ois, Html ()) -> Html ()) -> (Block (Ois, Html ()) -> Html ())
+--
+-- See also: 'Ois' and 'getOis'.
+
+blockRender
+  :: ((Block (Ois, Html ()) -> Html ()) -> Block (Ois, Html ()) -> Html ())
+  -> Extension
+```
+
+OK, the argument of `blockRender` just transforms a function of the type
+`Block (Ois, Html ()) -> Html ()`. We get a `Block` where every inline has
+been pre-rendered to `Html ()` for us, and its source has been put into the
+`Ois` wrapper:
+
+```haskell
+-- | A wrapper for “originial inlines”. Source inlines are wrapped in this
+-- during rendering of inline components and then it's available to block
+-- render, but only for inspection. Altering of 'Ois' is not possible
+-- because the user cannot construct a value of the 'Ois' type, she can only
+-- inspect it with 'getOis'.
+
+newtype Ois = Ois (NonEmpty Inline)
+
+-- | Project @'NonEmpty' 'Inline'@ from 'Ois'.
+
+getOis :: Ois -> NonEmpty Inline
+getOis (Ois inlines) = inlines
+```
 
 ## Performance and inner workings
 
-* Efficiency. Mention that block-level parsing is quite fast, thanks to
-  latest improvements available in Megaparsec 6. Inline parsing can be
-  optimized though. Mention the possibility of parallel inline parsing.
+Performance-wise, there are three things of interest in MMark:
+
+1. Parsing.
+2. Scanning.
+3. Rendering.
+
+Scanning is done with the `foldl` library, rendering with help of `lucid`.
+So performance of these parts depends on performance of the libraries. I
+trust Gabriel Gonzalez and Chris Done, *their stuff should work fine* (OK,
+I'm also just a bit lazy).
+
+I saved myself the trouble of benchmarking scanning and rendering, but
+parsing is the most complex and probably the slowest part of any markdown
+processor, so I had to benchmark it carefully.
+
+Now I should probably say a few words about the inner workings of the
+parser. I follow the recommendation from the Common Mark specification that
+says that it's better to parse block level structure first and then parse
+inlines in every block separately.
+
+The `Block` data type is a functor, so quite nicely I first parse `[Block
+Isp]` where `Isp` is this:
+
+```haskell
+-- | 'Inline' source pending parsing.
+
+data Isp = Isp SourcePos Text
+  deriving (Eq, Ord, Show)
+```
+
+Then I use Megaparsec's ability to run parsers with custom starting state
+and run inline-level parser on every `Isp` thing getting `[Block (Either
+(ParseError Char MMarkErr) (NonEmpty Inline))]`, from which I collect all
+parse errors for reporting, or if there is none, I can extract the `[Block
+(NonEmpty Inline)]` thing, which is exactly what I want to get. During
+rendering I again leverage the fact that `Block` is a functor and can turn
+every `Inline` into `(Ois, Html ())` in the same way by just using `fmap`.
+
+An astute reader might notice that this opens the possibility of parallel
+parsing on inline level, and indeed I think this is a thing to try out. I
+have no idea though if this would make the parser faster as a whole, and if
+yes, how much faster. This is a thing to explore in the future.
+
+Block-level mostly grabs input line by line using the newer
+[`takeWhileP`](https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec.html#v:takeWhileP)
+and
+[`takeWhile1P`](https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec.html#v:takeWhile1P)
+primitives Megaparsec 6 provides. They make a huge difference in terms of
+speed indeed, so I'm satisfied with this. Inline parsing on the other hand
+is not so fast and can be optimized. Right now this is the bottleneck of our
+parser, and I have added optimizing inline-level parser to my todo list,
+although there are still things with higher priority, which I'll mention in
+the next section.
 
 ## Future plans
 
@@ -245,7 +623,7 @@ essential things like blockquotes and lists, so it's not for real-world use
 yet (you're welcome to play with it anyway, of course). The missing features
 should be easy to add to the base I already have, because it looks like the
 base has evolved into something that is well-designed for what I have in
-mind. So it's just a matter of time when MMark will be power enough to
+mind. So it's just a matter of time when MMark will be powerful enough to
 replace Pandoc at least for my personal use.
 
 Features/ideas related to MMark itself, roughly in the order I'd like to

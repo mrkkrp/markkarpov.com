@@ -1323,18 +1323,17 @@ as well if you wish to work with `ByteString`s.
 
 ### White space
 
-HEREHERE
-
 The first topic we need to cover is dealing with white space. It's helpful
 to consume white space in a consistent manner either before every token or
-after every token. Megaparsec's lexer modules follow the strategy <<assume
-no white space before token and consume all white space after token>>.
+after every token. Megaparsec's lexer modules follow the strategy “assume no
+white space before token and consume all white space after token”.
 
 To consume white space we need a special parser that we'll refer to as
-[def](space consumer). The [module](megaparsec:Text.Megaparsec.Char.Lexer)
+*space consumer*. The
+[`Text.Megaparsec.Char.Lexer`](https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Char-Lexer.html)
 provides a helper allowing to build a general space consumer:
 
-```
+```haskell
 space :: MonadParsec e s m
   => m () -- ^ A parser for space characters which does not accept empty
           -- input (e.g. 'space1')
@@ -1346,7 +1345,7 @@ space :: MonadParsec e s m
 The documentation for the `space` function is quite comprehensive by itself,
 but let's complement it with an example:
 
-```
+```haskell
 {-# LANGUAGE OverloadedStrings #-}
 
 module Main (main) where
@@ -1368,15 +1367,19 @@ sc = L.space
 
 Some notes:
 
-1. The [module](megaparsec:Text.Megaparsec.Char.Lexer) is intended to be
-   imported qualified because it contains names that collide with names from
-   e.g. [module](megaparsec:Text.Megaparsec.Char), for example `space`.
+1. The
+   [`Text.Megaparsec.Char.Lexer`](https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Char-Lexer.html)
+   is intended to be imported qualified because it contains names that
+   collide with names from e.g.
+   [`Text.Megaparsec.Char`](https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Char.html),
+   for example `space`.
 
 2. The first argument of `L.space` should be a parser that is to be used to
    pick up white space. An important detail is that it should not accept
-   empty input because then `L.space` will go into an infinite loop.
-   `space1` is a parser from [module](megaparsec:Text.Megaparsec.Char) that
-   satisfies the requirements perfectly.
+   empty input because then `L.space` would go into an infinite loop.
+   `space1` is a parser from
+   [`Text.Megaparsec.Char`](https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Char.html)
+   that satisfies the requirements perfectly.
 
 3. The second argument of `L.space` defines how to skip line comments, that
    is, comments that start with a given sequence of tokens and end with end
@@ -1395,12 +1398,12 @@ all white space there is. Knowing this, it should make sense that if your
 grammar does not include block or line comments, you can just pass `empty`
 as the second/third argument of `L.space`. `empty`, being the identity of
 `Alternative`s, will just cause `L.space` to try parser for next white space
-component -- exactly what is desirable.
+component—exactly what is desirable.
 
 Having the space consumer `sc`, we can then define various white
 space-related helpers:
 
-```
+```haskell
 lexeme :: Parser a -> Parser a
 lexeme = L.lexeme sc -- (1)
 
@@ -1416,7 +1419,7 @@ symbol = L.symbol sc -- (2)
 
 We'll see how it all works together in a moment, but first we need to
 introduce a couple more helpers from
-[module](megaparsec:Text.Megaparsec.Char.Lexer).
+[`Text.Megaparsec.Char.Lexer`](https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Char-Lexer.html).
 
 ### Char and string literals
 
@@ -1424,7 +1427,7 @@ Parsing character and string literals can be tricky because of various
 escaping rules. To make life easier, Megaparsec provides the `charLiteral`
 parser:
 
-```
+```haskell
 charLiteral :: (MonadParsec e s m, Token s ~ Char) => m Char
 ```
 
@@ -1439,7 +1442,7 @@ reasons:
 
 Here are some example parsers built on top of `charLiteral`:
 
-```
+```haskell
 charLiteral :: Parser Char
 charLiteral = between (char '\'') (char '\'') L.charLiteral -- (1)
 
@@ -1458,7 +1461,7 @@ stringLiteral = char '\"' *> manyTill L.charLiteral (char '\"') -- (2)
 The second function is also interesting because of its use of the `manyTill`
 combinator:
 
-```
+```haskell
 manyTill :: Alternative m => m a -> m end -> m [a]
 manyTill p end = go
   where
@@ -1477,19 +1480,19 @@ Finally, a very common need is to parse numbers. For integral numbers, there
 are three helpers that can parse values in decimal, octal, and hexadecimal
 representations:
 
-```
+```haskell
 decimal, octal, hexadecimal
   :: (MonadParsec e s m, Token s ~ Char, Integral a) => m a
 ```
 
 Using them is easy:
 
-```
+```haskell
 integer :: Parser Integer
 integer = lexeme L.decimal
 ```
 
-```
+```haskell
 λ> parseTest' (integer <* eof) "123  "
 123
 λ> parseTest' (integer <* eof) "12a  "
@@ -1502,23 +1505,24 @@ expecting end of input or the rest of integer
 ```
 
 `scientific` and `float` accept integer and fractional grammars.
-`scientific` returns the `Scientific` type from the [package](scientific)
-package, while `float` is polymorphic in its result type and can return any
-instance of `RealFloat`:
+`scientific` returns the `Scientific` type from the
+[`scientific`](https://hackage.haskell.org/package/scientific) package,
+while `float` is polymorphic in its result type and can return any instance
+of `RealFloat`:
 
-```
+```haskell
 scientific :: (MonadParsec e s m, Token s ~ Char)              => m Scientific
 float      :: (MonadParsec e s m, Token s ~ Char, RealFloat a) => m a
 ```
 
 For example:
 
-```
+```haskell
 float :: Parser Double
 float = lexeme L.float
 ```
 
-```
+```haskell
 λ> parseTest' (float <* eof) "123"
 123.0
 λ> parseTest' (float <* eof) "123.45"
@@ -1536,7 +1540,7 @@ Note that all these parsers do not parse signed numbers. To make a parser
 for signed numbers, we need to wrap an existing parser with the `signed`
 combinator:
 
-```
+```haskell
 signedInteger :: Parser Integer
 signedInteger = L.signed sc integer
 
@@ -1544,9 +1548,9 @@ signedFloat :: Parser Double
 signedFloat = L.signed sc float
 ```
 
-The first argument of `signed` -- the space consumer -- controls how white
-space is consumed between the sign and actual numeral. If you don't want to
-allow space in there, just pass `return ()` instead.
+The first argument of `signed`—the space consumer—controls how white space
+is consumed between the sign and actual numeral. If you don't want to allow
+space in there, just pass `return ()` instead.
 
 ## `notFollowedBy` and `lookAhead`
 
@@ -1555,7 +1559,7 @@ ahead in input stream without actually advancing parsing position in it.
 
 The first one is called `notFollowedBy`:
 
-```
+```haskell
 notFollowedBy :: MonadParsec e s m => m a -> m ()
 ```
 
@@ -1565,7 +1569,7 @@ or modifies parser state.
 As an example when you may want to use `notFollowedBy`, consider parsing of
 keywords:
 
-```
+```haskell
 pKeyword :: Text -> Parser Text
 pKeyword keyword = lexeme (string keyword)
 ```
@@ -1574,14 +1578,14 @@ This parser has a problem: what if the keyword we're matching against is
 just a prefix of an identifier? In that case it's definitely not a keyword.
 Thus we must eliminate that case by using `notFollowedBy`:
 
-```
+```haskell
 pKeyword :: Text -> Parser Text
 pKeyword keyword = lexeme (string keyword <* notFollowedBy alphaNumChar)
 ```
 
 Another primitive is `lookAhead`:
 
-```
+```haskell
 lookAhead :: MonadParsec e s m => m a -> m a
 ```
 
@@ -1593,7 +1597,7 @@ One example of where this may be useful is performing a check on already
 parsed input and then either failing or continuing successfully. The idiom
 can be expressed in code like this:
 
-```
+```haskell
 withPredicate1
   :: (a -> Bool)       -- ^ The check to perform on parsed input
   -> String            -- ^ Message to print when the check fails
@@ -1610,7 +1614,7 @@ This demonstrates a use of `lookAhead`, but we also should note that when
 the check if successful we perform the parsing twice, which is not good.
 Here is an alternative solution using the `getNextTokenPosition` function:
 
-```
+```haskell
 withPredicate2
   :: (a -> Bool)       -- ^ The check to perform on parsed input
   -> String            -- ^ Message to print when the check fails
@@ -1626,7 +1630,7 @@ withPredicate2 f msg p = do
       fail msg
 ```
 
-NOTE: `getNextTokenPosition` is better than `getPosition` in this case
+**NOTE**: `getNextTokenPosition` is better than `getPosition` in this case
 because it returns the position at which next token in the input stream
 begins, not current position of parser. The difference is apparent when we
 work with a stream of custom tokens where every token may have its starting
@@ -1634,10 +1638,10 @@ and ending positions attached to it.
 
 ## Parsing expressions
 
-By <<expression>> we mean a structure formed from terms and operators
-applied to those terms. Operators can be prefix, infix, and postfix, left
-and right-associative, with different precedence. An example of such a
-construct would be arithmetic expressions familiar from school:
+By “expression” we mean a structure formed from terms and operators applied
+to those terms. Operators can be prefix, infix, and postfix, left and
+right-associative, with different precedence. An example of such a construct
+would be arithmetic expressions familiar from school:
 
 ```
 a * (b + 2)
@@ -1647,16 +1651,17 @@ Here we can see two kinds of terms: variables (`a` and `b`) and integers
 (`2`). There are also two operators: `*` and `+`.
 
 Writing an expression parser may take a while to get right. To help with
-that, Megaparsec comes with the [module](megaparsec:Text.Megaparsec.Expr)
+that, Megaparsec comes with the
+[`Text.Megaparsec.Expr`](https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Expr.html)
 module which exports only two things: the `Operator` data type and the
 `makeExprParser` helper. Both are well documented, so in this section we
 won't repeat the documentation, instead we are going to write a simple but
 fully functional expression parser.
 
 Let's start by defining a data type representing expression as
-[link=https://en.wikipedia.org/wiki/Abstract_syntax_tree](AST):
+[AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree):
 
-```
+```haskell
 data Expr
   = Var String
   | Int Int
@@ -1668,10 +1673,10 @@ data Expr
   deriving (Eq, Ord, Show)
 ```
 
-To use `makeExprParser` we need to provide it with term parser and
-<<operator table>>:
+To use `makeExprParser` we need to provide it with term parser and “operator
+table”:
 
-```
+```haskell
 makeExprParser :: MonadParsec e s m
   => m a               -- ^ Term parser
   -> [[Operator m a]]  -- ^ Operator table, see 'Operator'
@@ -1685,7 +1690,7 @@ precedence. In our case there are three things that fall into this category:
 variables, integers, and entire expressions in parentheses. Using the
 definitions from previous chapters we can define the term parser as:
 
-```
+```haskell
 pVariable :: Parser Expr
 pVariable = Var <$> lexeme
   ((:) <$> letterChar <*> many alphaNumChar <?> "variable")
@@ -1726,7 +1731,7 @@ operators we want to support, they all have equal precedence. The outer list
 is ordered in descending precedence, so higher we place a group of operators
 in it, tighter they bind:
 
-```
+```haskell
 data Operator m a -- N.B.
   = InfixN  (m (a -> a -> a)) -- ^ Non-associative infix
   | InfixL  (m (a -> a -> a)) -- ^ Left-associative infix
@@ -1759,7 +1764,7 @@ get the final result of type `Expr`.
 
 We can now try our parser, it's ready!
 
-```
+```haskell
 λ> parseTest' (pExpr <* eof) "a * (b + 2)"
 Product (Var "a") (Sum (Var "b") (Int 2))
 λ> parseTest' (pExpr <* eof) "a * b + 2"
@@ -1775,11 +1780,14 @@ unexpected '$'
 expecting ')' or operator
 ```
 
-Documentation for the [module](megaparsec:Text.Megaparsec.Expr) module
-contains some hints that are useful in certain less-standard situations, so
-it's a good idea to read it as well.
+Documentation for the
+[`Text.Megaparsec.Expr`](https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Expr.html)
+module contains some hints that are useful in certain less-standard
+situations, so it's a good idea to read it as well.
 
 ## Indentation-sensitive parsing
+
+HEREHERE
 
 The [module](megaparsec:Text.Megaparsec.Char.Lexer) module contains tools
 that should be helpful when parsing indentation-sensitive grammars. We are

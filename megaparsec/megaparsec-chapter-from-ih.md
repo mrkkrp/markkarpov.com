@@ -902,8 +902,6 @@ for parser's internal state as well. Backtracking is a way to travel back in
 time “un-consuming” input in the process. As we have already seen this is
 important primarily with branching. Here is an example:
 
-HEREHERE
-
 ```haskell
 alternatives :: Parser (Char, Char)
 alternatives = foo <|> bar
@@ -941,7 +939,7 @@ so that if `p` fails consuming input, `try p` fails as if no input has been
 consumed (in fact, it backtracks the entire parser state). This allows
 `(<|>)` to try its right-hand alternative:
 
-```
+```haskell
 alternatives :: Parser (Char, Char)
 alternatives = try foo <|> bar
   where
@@ -949,13 +947,13 @@ alternatives = try foo <|> bar
     bar = (,) <$> char 'a' <*> char 'c'
 ```
 
-```
+```haskell
 λ> parseTest' alternatives "ac"
 ('a','c')
 ```
 
 All primitives that actually consume input (there are also primitives that
-alter behavior of existing parsers, such as `try` itself) are <<atomic>> in
+alter behavior of existing parsers, such as `try` itself) are “atomic” in
 terms of input consumption. This means that if they fail, they backtrack
 automatically, so there is no way they can consume some input and then fail
 halfway through. This is why `pScheme` with its list of alternatives works:
@@ -966,17 +964,18 @@ input stream at all.
 Back to parsing URIs, `(<|>)` can be used to build a handy combinator called
 `optional`:
 
-```
+```haskell
 optional :: Alternative f => f a -> f (Maybe a)
 optional p = (Just <$> p) <|> pure Nothing
 ```
 
 If `p` in `optional p` matches, we get its result in `Just`, otherwise
 `Nothing` is returned. Just what we want! There is no need to define
-`optional`, [module](megaparsec:Text.Megaparsec) re-exports this combinator
-for us. We can now use it in `pUri`:
+`optional`,
+[`Text.Megapasec`](https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec.html)
+re-exports this combinator for us. We can now use it in `pUri`:
 
-```
+```haskell
 pUri :: Parser Uri
 pUri = do
   uriScheme <- pScheme
@@ -995,9 +994,9 @@ pUri = do
   return Uri {..}                                -- (6)
 ```
 
-NOTE: I took the liberty to accept any alpha-numeric sequences of characters
-as username and password, and made similarly arbitrary simplifications in
-the format of host for the sake of simplicity.
+**NOTE**: I took the liberty of accepting any alpha-numeric sequences of
+characters as username and password, and made similarly arbitrary
+simplifications in the format of host for the sake of simplicity.
 
 Important points here:
 
@@ -1022,7 +1021,7 @@ Important points here:
 
 Play with `pUri` in GHCi and see for yourself that it works:
 
-```
+```haskell
 λ> parseTest' (pUri <* eof) "https://mark:secret@example.com"
 Uri
   { uriScheme = SchemeHttps
@@ -1057,7 +1056,7 @@ expecting '.', ':', alphanumeric character, or end of input
 
 However, you may find that there is some funny stuff going on:
 
-```
+```haskell
 λ> parseTest' (pUri <* eof) "https://mark:@example.com"
 1:7:
   |
@@ -1070,7 +1069,7 @@ expecting end of input
 Certainly the parse error could be better! What to do? The easiest way to
 figure out what's going on is to use the built-in `dbg` helper:
 
-```
+```haskell
 dbg :: (Stream s, ShowToken (Token s), ShowErrorComponent e, Show a)
   => String            -- ^ Debugging label
   -> ParsecT e s m a   -- ^ Parser to debug
@@ -1079,7 +1078,7 @@ dbg :: (Stream s, ShowToken (Token s), ShowErrorComponent e, Show a)
 
 Let's use it in `pUri`:
 
-```
+```haskell
 pUri :: Parser Uri
 pUri = do
   uriScheme <- dbg "scheme" pScheme
@@ -1165,13 +1164,12 @@ scheme:[//[user:password@]host[:port]][/]path[?query][#fragment]
 What are we looking for? Something that would allow us to commit to certain
 branch of parsing. Just like with port where when we see column `:` we're
 sure port number must follow. If you look carefully, you'll see that the
-double slash `//` is a certain sign that we have the authority part is our
-URI. Since we match `//` with an <<atomic>> parser (`string`), matching on
-it backtracks automatically, and after we have matched `//`, we can be
-fearless and demand the authority part. Let's remove the first `try` from
-`pUri`:
+double slash `//` is a certain sign that we have the authority part in our
+URI. Since we match `//` with an “atomic” parser (`string`), matching on it
+backtracks automatically, and after we have matched `//`, we can be fearless
+and demand the authority part. Let's remove the first `try` from `pUri`:
 
-```
+```haskell
 pUri :: Parser Uri
 pUri = do
   uriScheme <- pScheme
@@ -1192,7 +1190,7 @@ pUri = do
 
 Now we get a nicer parse error:
 
-```
+```haskell
 λ> parseTest' (pUri <* eof) "https://mark:@example.com"
 1:14:
   |
@@ -1210,7 +1208,7 @@ picked. Lots of `optional`s.
 Sometimes the list of expected items may get rather long. Remember what we
 get when we try to use a non-recognized scheme?
 
-```
+```haskell
 λ> parseTest' (pUri <* eof) "foo://example.com"
 1:1:
   |
@@ -1221,18 +1219,17 @@ expecting "data", "file", "ftp", "http", "https", "irc", or "mailto"
 ```
 
 Megaparsec provides a way to override expected items with something custom,
-typically called a [def](label). This is done with help of (unsurprisingly)
-the `label` primitive (which has a synonym in the form of the `(<?>)`
-operator):
+typically called a *label*. This is done with help of (unsurprisingly) the
+`label` primitive (which has a synonym in the form of the `(<?>)` operator):
 
-```
+```haskell
 pUri :: Parser Uri
 pUri = do
   uriScheme <- pScheme <?> "valid scheme"
   -- the rest stays the same
 ```
 
-```
+```haskell
 λ> parseTest' (pUri <* eof) "foo://example.com"
 1:1:
   |
@@ -1245,7 +1242,7 @@ expecting valid scheme
 We can go on and add more labels to make errors messages more
 human-readable:
 
-```
+```haskell
 pUri :: Parser Uri
 pUri = do
   uriScheme <- pScheme <?> "valid scheme"
@@ -1266,7 +1263,7 @@ pUri = do
 
 For example:
 
-```
+```haskell
 λ> parseTest' (pUri <* eof) "https://mark:@example.com"
 1:14:
   |
@@ -1279,7 +1276,7 @@ expecting port number
 Another primitive is called `hidden`. If `label` renames things, `hidden`
 just removes them altogether. Compare:
 
-```
+```haskell
 λ> parseTest' (many (char 'a') >> many (char 'b') >> eof :: Parser ()) "d"
 1:1:
   |
@@ -1298,7 +1295,7 @@ expecting 'a' or end of input
 
 `hidden` is useful when you want to make your error messages less noisy. For
 example, when parsing a programming language it's a good idea to drop
-<<expecting white space>> messages because usually there may be white space
+“expecting white space” messages because usually there may be white space
 after each token anyway.
 
 Finishing the `pUri` parser is left as an exercise for the reader, now that
@@ -1306,22 +1303,27 @@ all the tools that are necessary for this have been explained.
 
 ## Lexing
 
-[def](Lexing) is the process of transforming input stream into a stream of
+*Lexing* is the process of transforming input stream into a stream of
 tokens: integers, keywords, symbols, etc. which are easier to parse than raw
 input directly. Lexing can be performed in a separate pass with an external
-tool such as [package](alex), but Megaparsec also provides functions that
-should simplify writing a lexer in a seamless fashion, as part of your
-parser.
+tool such as [`alex`](https://hackage.haskell.org/package/alex), but
+Megaparsec also provides functions that should simplify writing a lexer in a
+seamless fashion, as part of your parser.
 
-There are two lexer modules [module](megaparsec:Text.Megaparsec.Char.Lexer)
-for character streams and [module](megaparsec:Text.Megaparsec.Byte.Lexer)
+There are two lexer modules
+[`Text.Megaparsec.Char.Lexer`](https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Char-Lexer.html)
+for character streams and
+[`Text.Megaparsec.Byte.Lexer`](https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Byte-Lexer.html)
 for byte streams. We'll be using
-[module](megaparsec:Text.Megaparsec.Char.Lexer) because we work with strict
-`Text` as input stream, but most functions are mirrored in
-[module](megaparsec:Text.Megaparsec.Byte.Lexer) as well if you wish to work
-with `ByteString`s.
+[`Text.Megaparsec.Char.Lexer`](https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Char-Lexer.html)
+because we work with strict `Text` as input stream, but most functions are
+mirrored in
+[`Text.Megaparsec.Byte.Lexer`](https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Byte-Lexer.html)
+as well if you wish to work with `ByteString`s.
 
 ### White space
+
+HEREHERE
 
 The first topic we need to cover is dealing with white space. It's helpful
 to consume white space in a consistent manner either before every token or

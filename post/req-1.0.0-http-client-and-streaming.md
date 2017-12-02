@@ -261,7 +261,7 @@ class HttpResponse response where
   makeResponseBodyPreview :: response -> ByteString
 ```
 
-In English: you can either made a request and consume/interpret the entire
+In English: you can either make a request and consume/interpret the entire
 response body or you can choose not to make a request. No third option. By
 now it should be clear that we would like to make a request and inspect (at
 least) response status code before we decide to consume the response body.
@@ -430,7 +430,7 @@ Let's see:
    from the last attempt, it's of no use by now). After that we can run
    `responseOpen` and then update the `IORef` writing the new value there.
 
-     Note that even throw we have interruptible masking here, it's OK.
+     Note that even though we have interruptible masking here, it's OK.
      `responseClose` and `responseOpen` are most probably blocking and thus
      inturruptible, so the mask can be pierced when we're running these
      actions, but immediately after them, it cannot be pierced, so `IORef`

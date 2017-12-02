@@ -1787,38 +1787,38 @@ situations, so it's a good idea to read it as well.
 
 ## Indentation-sensitive parsing
 
-HEREHERE
-
-The [module](megaparsec:Text.Megaparsec.Char.Lexer) module contains tools
-that should be helpful when parsing indentation-sensitive grammars. We are
-going to review the available combinators first, then put them into use by
-writing an indentation-sensitive parser.
+The
+[`Text.Megaparsec.Char.Lexer`](https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Char-Lexer.html)
+module contains tools that should be helpful when parsing
+indentation-sensitive grammars. We are going to review the available
+combinators first, then put them into use by writing an
+indentation-sensitive parser.
 
 ### `nonIndented` and `indentBlock`
 
-Let's start with the simplest thing -- `nonIndented`:
+Let's start with the simplest thing—`nonIndented`:
 
-```
+```haskell
 nonIndented :: MonadParsec e s m
   => m ()              -- ^ How to consume indentation (white space)
   -> m a               -- ^ Inner parser
   -> m a
 ```
 
-It allows to make sure that its inner parser consumes input that is
-[emph](not) indented. It's a part of a model behind high-level parsing of
+It allows to make sure that its inner parser consumes input that is *not*
+indented. It's a part of a model behind high-level parsing of
 indentation-sensitive input. We state that there are top-level items that
 are not indented and that all indented tokens are directly or indirectly
-<<children>> of those top-level definitions. In Megaparsec, we don't need
-any additional state to express this. Since indentation is always relative,
-our idea is to explicitly tie parsers for <<reference>> tokens and indented
+“children” of those top-level definitions. In Megaparsec, we don't need any
+additional state to express this. Since indentation is always relative, our
+idea is to explicitly tie parsers for “reference” tokens and indented
 tokens, thus defining indentation-sensitive grammar via pure combination of
 parsers.
 
 So, how do we define a parser for indented block? Let's take a look at the
 signature of `indentBlock`:
 
-```
+```haskell
 indentBlock :: (MonadParsec e s m, Token s ~ Char)
   => m ()              -- ^ How to consume indentation (white space)
   -> m (IndentOpt m a b) -- ^ How to parse “reference” token
@@ -1826,15 +1826,15 @@ indentBlock :: (MonadParsec e s m, Token s ~ Char)
 ```
 
 First, we specify how to consume indentation. An important thing to note
-here is that this space-consuming parser [emph](must) consume newlines as
-well, while tokens (reference token and indented tokens) should not normally
+here is that this space-consuming parser *must* consume newlines as well,
+while tokens (reference token and indented tokens) should not normally
 consume newlines after them.
 
 As you can see, the second argument allows us to parse reference token and
 return a data structure that tells `indentBlock` what to do next. There are
 several options:
 
-```
+```haskell
 data IndentOpt m a b
   = IndentNone a
     -- ^ Parse no indented tokens, just return the value
@@ -1848,18 +1848,17 @@ data IndentOpt m a b
     -- be present
 ```
 
-We can change our mind and parse no indented tokens, we can parse
-[emph](many) (that is, possibly zero) indented tokens or require [emph](at
-least one) such token. We can either allow `indentBlock` detect indentation
-level of the first indented token and use that, or manually specify
-indentation level.
+We can change our mind and parse no indented tokens, we can parse *many*
+(that is, possibly zero) indented tokens or require *at least one* such
+token. We can either allow `indentBlock` detect indentation level of the
+first indented token and use that, or manually specify indentation level.
 
 ### Parsing a simple indented list
 
 Let's parse a simple indented list of some items. Let's begin with the
 import section:
 
-```
+```haskell
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TupleSections     #-}
 
@@ -1879,7 +1878,7 @@ type Parser = Parsec Void Text
 We will need two kinds of space-consumers: one that consumes new lines `scn`
 and one that doesn't `sc` (actually it only parses spaces and tabs here):
 
-```
+```haskell
 lineComment :: Parser ()
 lineComment = L.skipLineComment "#"
 
@@ -1898,7 +1897,7 @@ Just for fun, we allow line comments that start with `#`.
 `pItemList` is a top-level form that itself is a combination of reference
 token (header of list) and indented tokens (list items), so:
 
-```
+```haskell
 pItemList :: Parser (String, [String]) -- header and list items
 pItemList = L.nonIndented scn (L.indentBlock scn p)
   where
@@ -1910,14 +1909,14 @@ pItemList = L.nonIndented scn (L.indentBlock scn p)
 For our purposes, an item is a sequence of alpha-numeric characters and
 dashes:
 
-```
+```haskell
 pItem :: Parser String
 pItem = lexeme (some (alphaNumChar <|> char '-')) <?> "list item"
 ```
 
 Let's load the code into GHCi and try it with help of `parseTest'` built-in:
 
-```
+```haskell
 λ> parseTest' (pItemList <* eof) ""
 1:1:
   |
@@ -1944,12 +1943,12 @@ expecting end of input
 
 Remember that we're using the `IndentMany` option, so empty lists are OK, on
 the other hand the built-in combinator `space` has hidden the phrase
-<<expecting more space>> from error messages, so this error message is
+*expecting more space* from error messages, so this error message is
 perfectly reasonable.
 
 Let's continue:
 
-```
+```haskell
 λ> parseTest' (pItemList <* eof) "something\n  one\n    two\n  three"
 3:5:
   |
@@ -1970,7 +1969,7 @@ This definitely seems to work. Let's replace `IndentMany` with `IndentSome`
 and `Nothing` with `Just (mkPos 5)` (indentation levels are counted from 1,
 so it will require 4 spaces before indented items):
 
-```
+```haskell
 pItemList :: Parser (String, [String])
 pItemList = L.nonIndented scn (L.indentBlock scn p)
   where
@@ -1981,7 +1980,7 @@ pItemList = L.nonIndented scn (L.indentBlock scn p)
 
 Now:
 
-```
+```haskell
 λ> parseTest' (pItemList <* eof) "something\n"
 2:1:
   |
@@ -2007,7 +2006,7 @@ which is incorrect, so it reports it.
 Let's allow list items to have sub-items. For this we will need a new
 parser, `pComplexItem`:
 
-```
+```haskell
 pComplexItem :: Parser (String, [String])
 pComplexItem = L.indentBlock scn p
   where
@@ -2025,7 +2024,7 @@ pItemList = L.nonIndented scn (L.indentBlock scn p)
 
 If I feed something like this:
 
-```
+```haskell
 first-chapter
   paragraph-one
       note-A # an important note here!
@@ -2038,7 +2037,7 @@ first-chapter
 
 …into our parser, I get:
 
-```
+```haskell
 Right
   ( "first-chapter"
   , [ ("paragraph-one",   ["note-A","note-B"])
@@ -2051,13 +2050,13 @@ without requiring additional state.
 
 ### Adding line folds
 
-A [def](line fold) consists of several elements that can be put on one line
-or on several lines as long as indentation level of subsequent items is
-greater than indentation level of the first item.
+A *line fold* consists of several elements that can be put on one line or on
+several lines as long as indentation level of subsequent items is greater
+than indentation level of the first item.
 
 Let's make use of another helper called `lineFold`:
 
-```
+```haskell
 pComplexItem :: Parser (String, [String])
 pComplexItem = L.indentBlock scn p
   where
@@ -2079,9 +2078,9 @@ of line fold (1) or our fold will have no end (this is also the reason we
 have to use `try` with `sc'`).
 
 Playing with the final version of our parser is left as an exercise for the
-reader. You can create <<items>> that consist of multiple words and as long
-as they are line-folded they will be parsed and concatenated with single
-space between them.
+reader. You can create “items” that consist of multiple words and as long as
+they are line-folded they will be parsed and concatenated with single space
+between them.
 
 ## Writing efficient parsers
 
@@ -2123,9 +2122,9 @@ Common pieces of advice:
   file and this facilitates specializing.
 
 * Use the fast primitives such as `takeWhileP`, `takeWhile1P`, and `takeP`
-  whenever you can.
-  [link=https://markkarpov.com/post/megaparsec-more-speed-more-power.html#there-is-hope](This
-  blog post) explains why they are so fast.
+  whenever you can. [This blog
+  post](https://markkarpov.com/post/megaparsec-more-speed-more-power.html#there-is-hope)
+  explains why they are so fast.
 
 * Avoid `oneOf` and `noneOf` preferring `satisfy` and `notChar` whenever
   possible.
@@ -2140,13 +2139,13 @@ stream, i.e. that `Tokens s` thing we have discussed previously.
 For example, recall that when we parsed URIs, we had this code for parsing
 username in the authority component:
 
-```
+```haskell
   user <- T.pack <$> some alphaNumChar
 ```
 
 We can replace it by `takeWhile1P`:
 
-```
+```haskell
   user <- takeWhile1P (Just "alpha num character") isAlphaNum
   --                  ^                            ^
   --                  |                            |
@@ -2160,7 +2159,7 @@ get `Text` directly from `takeWhile1P`.
 These equations should be helpful in understanding the `Maybe String`
 argument of `takeWhileP` and `takeWhile1P`:
 
-```
+```haskell
 takeWhileP  (Just "foo") f = many (satisfy f <?> "foo")
 takeWhileP  Nothing      f = many (satisfy f)
 takeWhile1P (Just "foo") f = some (satisfy f <?> "foo")
@@ -2175,7 +2174,7 @@ and how to process them inside a running parser.
 
 The `ParseError` type is defined like this:
 
-```
+```haskell
 data ParseError t e
   = TrivialError (NonEmpty SourcePos) (Maybe (ErrorItem t)) (Set (ErrorItem t))
     -- ^ Trivial errors, generated by Megaparsec's machinery. The data
@@ -2197,7 +2196,7 @@ unexpected item and a (possibly empty) collection of expected items or a
 
 `ErrorItem` is defined as:
 
-```
+```haskell
 data ErrorItem t
   = Tokens (NonEmpty t)      -- ^ Non-empty stream of tokens
   | Label (NonEmpty Char)    -- ^ Label (cannot be empty)
@@ -2207,7 +2206,7 @@ data ErrorItem t
 
 And here is `FancyError`:
 
-```
+```haskell
 data ErrorFancy e
   = ErrorFail String
     -- ^ 'fail' has been used in parser monad
@@ -2232,17 +2231,17 @@ supports out-of-the-box:
   out-of-the-box, we need a way to store well-typed information about
   problems with indentation.
 
-Finally, `ErrorCustom` is a sort of <<extension slot>> which allows to embed
-arbitrary data into the `ErrorFancy` type. When we don't need any custom
-data in our parse errors, we parametrize `ErrorFancy` by `Void`. Since
-`Void` is not inhabited by non-bottom values, `ErrorCustom` becomes
-<<cancelled>> or if we follow the analogy between algebraic data types and
-numbers, <<multiplied by zero>>.
+Finally, `ErrorCustom` is a sort of an “extension slot” which allows to
+embed arbitrary data into the `ErrorFancy` type. When we don't need any
+custom data in our parse errors, we parametrize `ErrorFancy` by `Void`.
+Since `Void` is not inhabited by non-bottom values, `ErrorCustom` becomes
+“cancelled” or if we follow the analogy between algebraic data types and
+numbers, “multiplied by zero”.
 
 Let's discuss different ways to signal a parse error. The simplest function
 for that is `fail`:
 
-```
+```haskell
 λ> parseTest' (fail "I'm failing, help me!" :: Parser ()) ""
 1:1:
   |
@@ -2259,21 +2258,21 @@ is where `String`s are certainly not very convenient.
 Trivial parse errors are usually generated by Megaparsec, but we can signal
 any such an error ourselves using the `failure` primitive:
 
-```
+```haskell
 failure :: MonadParsec e s m
   => Maybe (ErrorItem (Token s)) -- ^ Unexpected item (if any)
   -> Set (ErrorItem (Token s)) -- ^ Expected items
   -> m a
 ```
 
-```
+```haskell
 unfortunateParser :: Parser ()
 unfortunateParser = failure (Just EndOfInput) (Set.fromList es)
   where
     es = [Tokens (NE.fromList "a"), Tokens (NE.fromList "b")]
 ```
 
-```
+```haskell
 λ> parseTest' unfortunateParser ""
 1:1:
   |
@@ -2288,7 +2287,7 @@ on, inspect, and modify.
 
 For fancy errors we correspondingly have the `fancyFaliure` primitive:
 
-```
+```haskell
 fancyFailure :: MonadParsec e s m
   => Set (ErrorFancy e) -- ^ Fancy error components
   -> m a
@@ -2297,7 +2296,7 @@ fancyFailure :: MonadParsec e s m
 With `fancyFailure`, it's often desirable to define a helper like the one we
 have in the lexer modules instead of calling `fancyFailure` directly:
 
-```
+```haskell
 incorrectIndent :: MonadParsec e s m
   => Ordering  -- ^ Desired ordering between reference level and actual level
   -> Pos               -- ^ Reference indentation level
@@ -2314,34 +2313,34 @@ is not a keyword.
 First we need to define the data type with constructors representing
 scenarios we want to support:
 
-```
+```haskell
 data Custom = NotKeyword Text
   deriving (Eq, Show, Ord)
 ```
 
 And tell Megaparsec how to display it in parse errors:
 
-```
+```haskell
 instance ShowErrorComponent Custom where
   showErrorComponent (NotKeyword txt) = T.unpack txt ++ " is not a keyword"
 ```
 
 Next we update our `Parser` type synonym:
 
-```
+```haskell
 type Parser = Parsec Custom Text
 ```
 
 After that we can define the `notKeyword` helper:
 
-```
+```haskell
 notKeyword :: Text -> Parser a
 notKeyword = fancyFailure . Set.singleton . ErrorCustom . NotKeyword
 ```
 
 Finally, let's try it:
 
-```
+```haskell
 λ> parseTest' (notKeyword "foo" :: Parser ()) ""
 1:1:
   |
@@ -2363,11 +2362,11 @@ functions for that:
 
 Playing with these functions is left as an exercise for the reader.
 
-Another useful feature of Megaparsec is that it's possible to <<catch>> a
+Another useful feature of Megaparsec is that it's possible to “catch” a
 parse error, alter it in some way and then re-throw, just like with
 exceptions. This is enabled by the `observing` primitive:
 
-```
+```haskell
 -- | @'observing' p@ allows to “observe” failure of the @p@ parser, should
 -- it happen, without actually ending parsing, but instead getting the
 -- 'ParseError' in 'Left'. On success parsed value is returned in 'Right'
@@ -2382,7 +2381,7 @@ observing :: MonadParsec e s m
 
 Here is a complete program demonstrating typical usage of `observing`:
 
-```
+```haskell
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications  #-}
 
@@ -2450,7 +2449,7 @@ main = do
 
 If I run this program, I see the following output:
 
-```
+```haskell
 1:4:
   |
 1 | aaacc
@@ -2468,11 +2467,11 @@ in foo, in bar
 ```
 
 Thus, the feature can be used to attach location labels to parse errors, or
-define [def](regions) in which parse errors are processed in some way. The
-idiom is quite useful, so there is even a non-primitive helper called
-`region` built in terms of the `observing` primitive:
+define *regions* in which parse errors are processed in some way. The idiom
+is quite useful, so there is even a non-primitive helper called `region`
+built in terms of the `observing` primitive:
 
-```
+```haskell
 -- | Specify how to process 'ParseError's that happen inside of this
 -- wrapper. As a side effect of the current implementation changing
 -- 'errorPos' with this combinator will also change the final 'statePos' in
@@ -2507,14 +2506,15 @@ As an exercise, rewrite the `inside` function in the program above using
 
 Testing a parser is a practical task most people face sooner or later, so we
 are bound to cover it. The recommended way to test Megaparsec parsers (at
-the time of this writing) is using the [package](hspec-megaparsec) package.
-The package adds utility expectations such as `shouldParse`,
-`parseSatisfies`, etc. which work with the [package](hspec) testing
-framework.
+the time of this writing) is using the
+[`hspec-megaparsec`](https://hackage.haskell.org/package/hspec-megaparsec)
+package. The package adds utility expectations such as `shouldParse`,
+`parseSatisfies`, etc. which work with the
+[`hspec`](https://hackage.haskell.org/package/hspec) testing framework.
 
 Let's start with an example:
 
-```
+```haskell
 {-# LANGUAGE OverloadedStrings #-}
 
 module Main (main) where
@@ -2550,7 +2550,7 @@ predicate.
 Other simple expectations are `shouldSucceedOn` and `shouldFailOn` (although
 they are rather rarely used):
 
-```
+```haskell
     it "should parse 'a's all right" $
       parse myParser "" `shouldSucceedOn` "aaaa"
     it "should fail on 'b's" $
@@ -2561,7 +2561,7 @@ With Megaparsec we want to be precise about parse errors our parsers
 produce. To test parse errors there is `shouldFailWith`, which can be used
 like this:
 
-```
+```haskell
     it "fails on 'b's producing correct error message" $
       parse myParser "" "bbb" `shouldFailWith`
         TrivialError
@@ -2571,27 +2571,28 @@ like this:
 ```
 
 Writing out a `TrivialError` like this is tiresome. The definition of
-`ParseError` contains <<inconvenient>> types like `Set` and `NonEmpty` which
+`ParseError` contains “inconvenient” types like `Set` and `NonEmpty` which
 are not handy to enter directly as we have just seen. Fortunately,
-[module](hspec-megaparsec:Test.Hspec.Megaparsec) also re-exports the
-[module](megaparsec:Text.Megaparsec.Error.Builder) module which provides an
-API for easier construction of `ParserError`s. Let's instead use the `err`
-helper:
+[`Test.Hspec.Megaparsec`](https://hackage.haskell.org/package/hspec-megaparsec/docs/Test-Hspec-Megaparsec.html)
+also re-exports the
+[`Text.Megaparsec.Error.Builder`](https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Error-Builder.html)
+module which provides an API for easier construction of `ParserError`s.
+Let's instead use the `err` helper:
 
-```
+```haskell
     it "fails on 'b's producing correct error message" $
       parse myParser "" "bbb" `shouldFailWith` err posI (utok 'b' <> etok 'a')
 ```
 
 * The first argument of `err` controls position of parse error. `posI`
-  stands for <<initial position>>. This is what we want this time. Another
+  stands for “initial position”. This is what we want this time. Another
   option is to use `posN :: Stream s => Int -> s -> NonEmpty SourcePos`. The
   first argument is the number of tokens to consume `n` and the second
   argument is the input stream to consume `s`. Returned value is the
   position we arrive at after consuming `n` tokens from `s`.
 
-* `utok` stands for <<unexpected token>>, similarly `etok` means <<expected
-  token>>.
+* `utok` stands for “unexpected token”, similarly `etok` means “expected
+  token”.
 
 To construct fancy parse errors there is `errFancy` which should be easy to
 figure out, so we won't comment on it here.
@@ -2599,7 +2600,7 @@ figure out, so we won't comment on it here.
 Finally, it's possible to test which part of input remains unconsumed after
 parsing using `failsLeaving` and `succeedsLeaving`:
 
-```
+```haskell
     it "consumes all 'a's but doesn't touch 'b's" $
       runParser' myParser (initialState "aaabbb") `succeedsLeaving` "bbb"
     it "fails without consuming anything" $
@@ -2610,7 +2611,7 @@ These should by used with `runParser'` or `runParserT'` which accept custom
 initial state of parser and return its final state (this is what allows to
 check leftover of input stream after parsing):
 
-```
+```haskell
 runParser'
   :: Parsec e s a      -- ^ Parser to run
   -> State s           -- ^ Initial state
@@ -2625,26 +2626,31 @@ runParserT' :: Monad m
 The `initialState` takes input stream and returns initial state with that
 input stream and other record fields filled with default values.
 
-Other sources of inspiration for using [package](hspec-megaparsec) are:
+Other sources of inspiration for using
+[`hspec-megaparsec`](https://hackage.haskell.org/package/hspec) are:
 
-* [link=https://github.com/mrkkrp/megaparsec/tree/master/tests](Megaparsec's
-  own test suite) written using [package](hspec-megaparsec).
+* [Megaparsec's own test
+  suite](https://github.com/mrkkrp/megaparsec/tree/master/tests) written
+  using [`hspec-megaparsec`](https://hackage.haskell.org/package/hspec).
 
-* The
-  [link=https://github.com/mrkkrp/hspec-megaparsec/blob/master/tests/Main.hs](toy
-  test suite) that comes with [package](hspec-megaparsec) itself.
+* The [toy test
+  suite](https://github.com/mrkkrp/hspec-megaparsec/blob/master/tests/Main.hs)
+  that comes with
+  [`hspec-megaparsec`](https://hackage.haskell.org/package/hspec) itself.
 
 ## Working with custom input streams
 
+HEREHERE
+
 Megaparsec can be used to parse any input that is an instance of the
 `Stream` type class. This means that it may be used in conjunction with a
-lexing tool such as [package](alex).
+lexing tool such as [`alex`](https://hackage.haskell.org/package/alex).
 
 Not to digress from our main topic by presenting how a stream of tokens
-could be generated with [package](alex), we'll assume it in the following
-form:
+could be generated with [`alex`](https://hackage.haskell.org/package/alex),
+we'll assume it in the following form:
 
-```
+```haskell
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeFamilies      #-}
 
@@ -2671,7 +2677,7 @@ data MyToken
 To report parse errors though we need a way to know where token starts and
 ends, so let's add `WithPos`:
 
-```
+```haskell
 data WithPos a = WithPos
   { startPos :: SourcePos
   , endPos   :: SourcePos
@@ -2681,7 +2687,7 @@ data WithPos a = WithPos
 
 Then we can have a data type for our stream:
 
-```
+```haskell
 newtype MyStream = MyStream [WithPos MyToken]
 ```
 
@@ -2689,7 +2695,7 @@ Next, we need to make `MyStream` an instance of the `Stream` type class.
 This requires the `TypeFamilies` language extension because we want to
 define the associated type functions `Token` and `Tokens`:
 
-```
+```haskell
 instance Stream MyStream where
   type Token  MyStream = WithPos MyToken
   type Tokens MyStream = [WithPos MyToken]
@@ -2697,10 +2703,10 @@ instance Stream MyStream where
 ```
 
 `Stream` is well documented in the
-[module](megaparsec:Text.Megaparsec.Stream) module. Here we go straight to
-defining the missing methods:
+[`Text.Megaparsec.Stream`](https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Stream.html)
+module. Here we go straight to defining the missing methods:
 
-```
+```haskell
   -- …
   tokenToChunk Proxy x = [x]
   tokensToChunk Proxy xs = xs
@@ -2727,14 +2733,13 @@ defining the missing methods:
 ```
 
 More background information about the `Stream` type class (and why it looks
-like this) can be found in
-[link=https://markkarpov.com/post/megaparsec-more-speed-more-power.html](this
-blog post).
+like this) can be found in [this blog
+post](https://markkarpov.com/post/megaparsec-more-speed-more-power.html).
 
 Megaparsec also needs to know how to display tokens in parse errors. Thus we
 need to define a couple of instances:
 
-```
+```haskell
 instance ShowToken a => ShowToken (WithPos a) where
   showTokens = DL.intercalate ", "
     . NE.toList
@@ -2762,17 +2767,19 @@ method forces us to be able to handle more than one token.
 
 Now we can define `Parser` for our custom stream:
 
-```
+```haskell
 type Parser = Parsec Void MyStream
 ```
 
 The next step is to define basic parsers on top of `token` and (if it makes
 sense) `tokens` primitives. For the streams that are supported
-out-of-the-box we have [module](megaparsec:Text.Megaparsec.Byte) and
-[module](megaparsec:Text.Megaparsec.Char) modules, but if we are to work
-with custom tokens, we need custom helpers.
+out-of-the-box we have
+[`Text.Megaparsec.Byte`](https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Byte.html)
+and
+[`Text.Megaparsec.Char`](https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Char.html)
+modules, but if we are to work with custom tokens, we need custom helpers.
 
-```
+```haskell
 liftMyToken :: MyToken -> WithPos MyToken
 liftMyToken myToken = WithPos pos pos myToken
   where
@@ -2797,7 +2804,7 @@ pInt = token test Nothing <?> "integer"
 
 Finally let's have a test parser which parses a sum:
 
-```
+```haskell
 pSum :: Parser (Int, Int)
 pSum = do
   a <- pInt
@@ -2808,7 +2815,7 @@ pSum = do
 
 And example input for it:
 
-```
+```haskell
 exampleStream :: MyStream
 exampleStream = MyStream
   [ at 1 1 (Int 5)
@@ -2821,7 +2828,7 @@ exampleStream = MyStream
 
 Let's try it:
 
-```
+```haskell
 λ> parseTest (pSum <* eof) exampleStream
 (5,6)
 ```
@@ -2829,7 +2836,7 @@ Let's try it:
 If we change `Plus` on the line (1) to `Div`, we'll get the correct parse
 error:
 
-```
+```haskell
 λ> parseTest (pSum <* eof) exampleStream
 1:3:
 unexpected /
@@ -2841,11 +2848,11 @@ stream.
 
 ## Conclusion
 
-TODO: Rewrite the conclusion.
-
 This concludes our investigation of how to use Megaparsec for writing a
 parser in Haskell. Megaparsec strikes a nice balance between speed,
 flexibility, and good parse errors. While there are safer (and also
-less-powerful) solutions like [package](Earley), faster solution in the form
-of the [package](attoparsec) package, in most cases Megaparsec provides best
-overall value.
+less-powerful) solutions like
+[`Earley`](https://hackage.haskell.org/package/Earley), faster solution in
+the form of the
+[`attoparsec`](https://hackage.haskell.org/package/attoparsec) package, in
+most cases Megaparsec provides best overall value.

@@ -10,7 +10,7 @@ title: Resume
 
 ## Summary
 
-Haskell software developer with 3 years of experience, including 1 year of
+Haskell software developer with 3.5 years of experience, including 1 year of
 professional experience.
 
 ## Tech work experience
@@ -48,7 +48,7 @@ professional experience.
   `cryptonite`, `warp`, `HUnit`, `hspec`, `QuickCheck`, `test-framework`,
   `tasty`, `hedgehog`, `webdriver`, `optparse-applicative`, `path`,
   `path-io`, `stache`, `vector`, `containers`, `unordered-containers`,
-  `binary`, `cereal`, `store`, etc.
+  `binary`, `cereal`, `store`, `distributed-process`, etc.
 
 ## Open source
 
@@ -61,15 +61,8 @@ professional experience.
 * [Zip](https://github.com/mrkkrp/zip)—Efficient library for manipulating
   zip archives.
 
-* [Text Metrics](https://github.com/mrkkrp/text-metrics)—Calculate various
-  string metrics efficiently in Haskell.
-
-* [Stache](https://github.com/stackbuilders/stache)—Mustache templates for
-  Haskell.
-
-* [Path IO](https://github.com/mrkkrp/path-io)—Operations on files and
-  directories with well-typed paths. I'm also a contributor and
-  co-maintainer of `path` itself.
+* [MMark](https://github.com/mrkkrp/mmark)—Strict markdown processor for
+  writers.
 
 The full list can be found at https://markkarpov.com/oss.html.
 
@@ -81,8 +74,8 @@ The full list can be found at https://markkarpov.com/oss.html.
   the full list is available at https://markkarpov.com/learn-haskell.html.
 
 * Blog posts are available [here](https://markkarpov.com/posts.html), see
-  e.g. [Megaparsec: more speed, more
-  power](https://markkarpov.com/post/megaparsec-more-speed-more-power.html)
+  e.g. [Free monad considered
+  harmful](https://markkarpov.com/post/free-monad-considered-harmful.html)
   from the recent ones.
 
 * I've authored two chapters for the upcoming book [Intermediate

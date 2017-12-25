@@ -40,6 +40,12 @@ Let's list some uses of TH:
   (compared to TH-based solutions), so TH is still the preferred method of
   automatic instance deriving in libraries like `aeson` and `lens`.
 
+* *Creation of TH DSLs* that are integrated into systems built in Haskell.
+  Examples of such DLSs are the language for model declaration used in
+  [`persistent`](https://hackage.haskell.org/package/persistent), and
+  various other mini-languages used in the
+  [`yesod`](https://hackage.haskell.org/package/yesod) web framework.
+
 * *Compile-time construction of values of refined types* that turns invalid
   inputs into compilation failures.
 

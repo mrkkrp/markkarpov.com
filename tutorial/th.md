@@ -475,8 +475,8 @@ This `x_4` name was generated automatically for us. This is the same sort of
 name we introduced with the `newName :: String -> Q Name` function in the
 first implementation of `myFunc`. It's new and it cannot be captured.
 
-One way to introduce a capturable name is via the `mkName :: String -> Q
-Name` function:
+One way to introduce a capturable name is via the `mkName :: String -> Name`
+function:
 
 ```haskell
 λ> runQ [| $(varE (mkName "x")) + 1 |]
@@ -491,7 +491,7 @@ The
 [`Language.Haskell.TH.Lib`](https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH-Lib.html)
 module contains helper functions that take and return AST values in the `Q`
 monad, which sometimes helps produce shorter code, because these helpers
-compose well with quotation and splicing. Here we used `varE :: Q Name -> Q
+compose well with quotation and splicing. Here we used `varE :: Name -> Q
 Exp` instead of `VarE :: Name -> Exp`.
 
 Another way to introduce a capturable name is apparently by using an unbound

@@ -303,8 +303,8 @@ add2 = [| $myFunc . $myFunc |]
 
 This way we can write the code we want to generate almost as usual, using
 splicing just to vary pieces of code that need to change algorithmicly. Note
-though that as of GHC 8.2.2, splicing doesn't yet work inside *declaration*
-quoters.
+though that as of GHC 8.2.2, splicing of *declarations* inside *declaration*
+quoters does not work yet.
 
 Let's try `add2`:
 

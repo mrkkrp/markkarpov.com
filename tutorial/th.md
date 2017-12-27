@@ -3,6 +3,7 @@ title: Template Haskell tutorial
 desc: The tutorial explains how to use Template Haskell for metaprogramming in Haskell.
 date:
   published: December 24, 2017
+  updated: December 27, 2017
 ---
 
 The tutorial aims to introduce the reader to *Template Haskell* (TH)—the

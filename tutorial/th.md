@@ -411,8 +411,10 @@ First of all, there is the syntax for quoting names of functions and types
   `'id`.
 
 * To quote a type, add two single quotes in the front of it: `MyRecord` →
-  `''Record`. (I guess this is because quoting of types with one single
-  quote is already used in `DataKinds`.)
+  `''MyRecord`. The quoting convention follows from the fact that Haskell
+  has different name spaces for values and types, and so we must be able to
+  quote a data constructor `'MyRecord` as well as type constructor
+  `''MyRecord` without ambiguity.
 
 This method always produces names that refer to the thing that is currently
 in scope. We saw this in the example with `makeLenses :: Name -> Q [Dec]`

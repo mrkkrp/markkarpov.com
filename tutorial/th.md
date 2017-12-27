@@ -1198,4 +1198,10 @@ information refer directly to the Haddocks:
 
 https://hackage.haskell.org/package/template-haskell
 
+The new
+[`th-abstraction`](https://hackage.haskell.org/package/th-abstraction)
+package may also be of interest. It normalizes variations in the interface
+for inspecting datatype information between different versions of the
+`template-haskell` library.
+
 Good luck!

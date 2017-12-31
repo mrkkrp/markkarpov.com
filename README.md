@@ -46,6 +46,6 @@ But really Circle CI should be able to deploy for you from now on.
 
 ## License
 
-Copyright © 2017 Mark Karpov
+Copyright © 2017–2018 Mark Karpov
 
 All rights reserved.

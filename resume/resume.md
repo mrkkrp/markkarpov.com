@@ -61,7 +61,7 @@ professional experience.
 * [Zip](https://github.com/mrkkrp/zip)—Efficient library for manipulating
   zip archives.
 
-* [MMark](https://github.com/mrkkrp/mmark)—Strict markdown processor for
+* [MMark](https://github.com/mmark-md/mmark)—Strict markdown processor for
   writers.
 
 The full list can be found at https://markkarpov.com/oss.html.

@@ -143,47 +143,51 @@ cmnOut x = outdir </> x
 ----------------------------------------------------------------------------
 -- Post info
 
-data PostInfo = PostInfo
-  { postTitle      :: Text
-  , postPublished  :: Day
-  , postUpdated    :: Maybe Day
-  , postDesc       :: Text
-  , postDifficulty :: Maybe Int
-  , postFile       :: FilePath
-  } deriving (Eq, Show)
-
-instance FromJSON PostInfo where
-  parseJSON = withObject "post metadata" $ \o -> do
-    postTitle     <- o .: "title"
-    postPublished <- (o .: "date") >>= (.: "published") >>= parseDay
-    postUpdated   <- (o .: "date") >>= (.:? "updated")  >>=
-      maybe (pure Nothing) (fmap Just . parseDay)
-    postDesc      <- o .: "desc"
-    postDifficulty <- o .:? "difficulty"
-    let postFile = ""
-    return PostInfo {..}
-
-instance ToJSON PostInfo where
-  toJSON info@PostInfo {..} = object
-    [ "title"             .= postTitle
-    , "published"         .= renderDay postPublished
-    , "published_iso8601" .= renderIso8601 postPublished
-    , "updated"           .= fmap renderDay postUpdated
-    , "updated_iso8601"   .= renderIso8601 (normalizedUpdated info)
-    , "desc"              .= postDesc
-    , "file"              .= postFile ]
-
-data TutorialInfo
-  = InternalTutorial PostInfo      -- ^ 'PostInfo' injection
-  | ExternalTutorial Day Text Text -- ^ Published, title, URL
+data PostInfo
+  = InternalPost LocalInfo     -- ^ 'LocalInfo' injection
+  | ExternalPost Day Text Text -- ^ Published, title, URL
   deriving (Eq, Show)
 
-instance ToJSON TutorialInfo where
-  toJSON (InternalTutorial postInfo) = toJSON postInfo
-  toJSON (ExternalTutorial published title url) = object
-    [ "published" .= renderDay published
-    , "title"     .= title
-    , "url"       .= url ]
+instance ToJSON PostInfo where
+  toJSON (InternalPost localInfo) = toJSON localInfo
+  toJSON (ExternalPost published title url) = object
+    [ "title"             .= title
+    , "published"         .= renderDay published
+    , "published_iso8601" .= renderIso8601 published
+    , "updated"           .= renderDay published
+    , "updated_iso8601"   .= renderIso8601 published
+    , "desc"              .= ("" :: Text)
+    , "url"               .= url ]
+
+data LocalInfo = LocalInfo
+  { localTitle      :: !Text
+  , localPublished  :: !Day
+  , localUpdated    :: !(Maybe Day)
+  , localDesc       :: !Text
+  , localDifficulty :: !(Maybe Int)
+  , localFile       :: !FilePath
+  } deriving (Eq, Show)
+
+instance FromJSON LocalInfo where
+  parseJSON = withObject "local post metadata" $ \o -> do
+    localTitle     <- o .: "title"
+    localPublished <- (o .: "date") >>= (.: "published") >>= parseDay
+    localUpdated   <- (o .: "date") >>= (.:? "updated")  >>=
+      maybe (pure Nothing) (fmap Just . parseDay)
+    localDesc      <- o .: "desc"
+    localDifficulty <- o .:? "difficulty"
+    let localFile = ""
+    return LocalInfo {..}
+
+instance ToJSON LocalInfo where
+  toJSON info@LocalInfo {..} = object
+    [ "title"             .= localTitle
+    , "published"         .= renderDay localPublished
+    , "published_iso8601" .= renderIso8601 localPublished
+    , "updated"           .= fmap renderDay localUpdated
+    , "updated_iso8601"   .= renderIso8601 (localNormalizedUpdated info)
+    , "desc"              .= localDesc
+    , "file"              .= localFile ]
 
 ----------------------------------------------------------------------------
 -- Menu items
@@ -272,18 +276,28 @@ main = shakeArgs shakeOptions $ do
       [menuItem Posts env, v, mkLocation out]
       out
 
+  let gatherPosts = do
+        env <- commonEnv ()
+        ips <- fmap InternalPost
+          <$> gatherLocalInfo @'PostR Proxy (Down . localPublished)
+        let ets = parseExternalPosts "external_posts" env
+        return $
+          sortBy (comparing (Down . postInfoPublished)) (ips ++ ets)
+
   cmnOut postsFile %> \out -> do
     env <- commonEnv ()
     ts  <- templates ()
-    ps  <- gatherPostInfo @'PostR Proxy (Down . postPublished)
+    ps  <- gatherPosts
     renderAndWrite ts ["posts","default"] Nothing
-      [menuItem Posts env, provideAs "post" ps, mkTitle Posts]
+      [ menuItem Posts env
+      , provideAs "post" ps
+      , mkTitle Posts ]
       out
 
   cmnOut atomFile %> \out -> do
     env <- commonEnv ()
     ts  <- templates ()
-    ps  <- gatherPostInfo @'PostR Proxy (Down . postPublished)
+    ps  <- gatherPosts
     let feedUpdated = renderIso8601 $ maximum (normalizedUpdated <$> ps)
     renderAndWrite ts ["atom-feed"] Nothing
       [ env
@@ -328,17 +342,15 @@ main = shakeArgs shakeOptions $ do
   cmnOut learnFile %> \out -> do
     env <- commonEnv ()
     ts  <- templates ()
-    mts <- gatherPostInfo @'MTutorialR Proxy postDifficulty
-    its <- fmap InternalTutorial <$> gatherPostInfo @'TutorialR  Proxy (Down . postPublished)
-    let ets = fromMaybe [] $ env
-          ^? key "external_tutorials"
-          . _Array
-          . to (mapMaybe parseExternalTutorial . V.toList)
+    mts <- gatherLocalInfo @'MTutorialR Proxy localDifficulty
+    its <- fmap InternalPost <$>
+      gatherLocalInfo @'TutorialR  Proxy (Down . localPublished)
+    let ets = parseExternalPosts "external_tutorials" env
     renderAndWrite ts ["learn-haskell","default"] Nothing
       [ menuItem LearnHaskell env
       , provideAs "megaparsec_tutorials" mts
       , provideAs "generic_tutorials"
-          (sortBy (comparing (Down . tutorialInfoPublished)) (its ++ ets))
+          (sortBy (comparing (Down . postInfoPublished)) (its ++ ets))
       , mkTitle LearnHaskell ]
       out
 
@@ -426,22 +438,28 @@ mkLocation = provideAs "location" . dropDirectory1
 provideAs :: ToJSON v => Text -> v -> Value
 provideAs k v = Object (HM.singleton k (toJSON v))
 
-gatherPostInfo :: forall r a. (Route r, Ord a)
+gatherLocalInfo :: forall r a. (Route r, Ord a)
   => Proxy r
-  -> (PostInfo -> a)
-  -> Action [PostInfo]
-gatherPostInfo Proxy f = do
+  -> (LocalInfo -> a)
+  -> Action [LocalInfo]
+gatherLocalInfo Proxy f = do
   ps' <- getDirFiles (pat @r)
   fmap (sortBy (comparing f)) . forM ps' $ \post -> do
     need [post]
     v <- fst <$> getPost post
-    return v { postFile = dropDirectory1 (unTagged (mapOut @r) post) }
+    return v { localFile = dropDirectory1 (unTagged (mapOut @r) post) }
 
 parseDay :: Monad m => Text -> m Day
 parseDay = parseTimeM True defaultTimeLocale "%B %e, %Y" . T.unpack
 
+localNormalizedUpdated :: LocalInfo -> Day
+localNormalizedUpdated LocalInfo {..} =
+  fromMaybe localPublished localUpdated
+
 normalizedUpdated :: PostInfo -> Day
-normalizedUpdated PostInfo {..} = fromMaybe postPublished postUpdated
+normalizedUpdated = \case
+  InternalPost localInfo -> localNormalizedUpdated localInfo
+  ExternalPost published _ _  -> published
 
 renderDay :: Day -> String
 renderDay = formatTime defaultTimeLocale "%B %e, %Y"
@@ -451,13 +469,18 @@ renderIso8601 = formatTime defaultTimeLocale fmt
   where
     fmt = iso8601DateFormat (Just "00:00:00Z")
 
-parseExternalTutorial :: Value -> Maybe TutorialInfo
-parseExternalTutorial o = do
+parseExternalPosts :: Text -> Value -> [PostInfo]
+parseExternalPosts k v = fromMaybe [] $
+  v ^? key k . _Array . to (mapMaybe parseExternalPost . V.toList)
+
+parseExternalPost :: Value -> Maybe PostInfo
+parseExternalPost o = do
   published <- (o ^? key "published" . _String) >>= parseDay
   title     <- o ^? key "title" . _String
   url       <- o ^? key "url" . _String
-  return (ExternalTutorial published title url)
+  return (ExternalPost published title url)
 
-tutorialInfoPublished :: TutorialInfo -> Day
-tutorialInfoPublished (InternalTutorial postInfo) = postPublished postInfo
-tutorialInfoPublished (ExternalTutorial published _ _) = published
+postInfoPublished :: PostInfo -> Day
+postInfoPublished = \case
+ InternalPost localInfo     -> localPublished localInfo
+ ExternalPost published _ _ -> published

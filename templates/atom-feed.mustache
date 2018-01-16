@@ -12,8 +12,14 @@
   {{# entry }}
   <entry>
     <title>{{ title }}</title>
+    {{# url }}
+    <link href="{{ . }}" />
+    <id>{{ . }}</id>
+    {{/ url }}
+    {{^ url }}
     <link href="{{ host }}{{ file }}" />
     <id>{{ host }}{{ file }}</id>
+    {{/ url }}
     <published>{{ published_iso8601 }}</published>
     <updated>{{ updated_iso8601 }}</updated>
     <summary type="html"><![CDATA[{{ desc }}]]></summary>

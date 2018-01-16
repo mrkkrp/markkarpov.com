@@ -8,7 +8,15 @@
   {{# post }}
   <tr>
     <td>{{ published }}</td>
-    <td><a href="{{ file }}">{{ title }}</a></td>
+    <td>
+      {{# url }}
+      <a href="{{ . }}" target="_blank">{{ title }}</a>
+      <span class="fa fa-external-link"></span>
+      {{/ url }}
+      {{^ url }}
+      <a href="{{ file }}">{{ title }}</a>
+      {{/ url }}
+    </td>
   </tr>
   {{/ post }}
 </table>

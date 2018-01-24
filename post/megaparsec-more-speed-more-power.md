@@ -37,7 +37,7 @@ class to achieve four goals:
 
 We're going to need some benchmarks. I have made the repo with the code I
 used for comparison public, it can be found here:
-https://github.com/mrkkrp/parsers-bench.
+<https://github.com/mrkkrp/parsers-bench>.
 
 It contains 3 pairs of parsers:
 
@@ -674,20 +674,20 @@ And here are the benchmarks (made with current Megaparsec master):
 
 Memory:
 
-Case                        | Allocated  | GCs |   Max
-----------------------------|------------|-----|-------
-manyTill (string)/500       |   160,312  |  0  | 12,024
-manyTill (string)/1000      |   320,312  |  0  | 24,024
-manyTill (string)/2000      |   640,312  |  1  | 48,024
-manyTill (string)/4000      | 1,280,312  |  2  | 96,024
-manyTill (text)/500         |   233,832  |  0  |  1,192
-manyTill (text)/1000        |   466,832  |  0  |  2,192
-manyTill (text)/2000        |   932,832  |  1  |  4,192
-manyTill (text)/4000        | 1,864,832  |  3  |  8,192
-manyTill (byte string)/500  |   164,536  |  0  |    104
-manyTill (byte string)/1000 |   328,536  |  0  |    104
-manyTill (byte string)/2000 |   659,136  |  1  |    104
-manyTill (byte string)/4000 | 1,320,600  |  2  |  4,136
+Case                        | Allocated | GCs |   Max
+----------------------------|----------:|----:|------:
+manyTill (string)/500       |   160,312 |  0  | 12,024
+manyTill (string)/1000      |   320,312 |  0  | 24,024
+manyTill (string)/2000      |   640,312 |  1  | 48,024
+manyTill (string)/4000      | 1,280,312 |  2  | 96,024
+manyTill (text)/500         |   233,832 |  0  |  1,192
+manyTill (text)/1000        |   466,832 |  0  |  2,192
+manyTill (text)/2000        |   932,832 |  1  |  4,192
+manyTill (text)/4000        | 1,864,832 |  3  |  8,192
+manyTill (byte string)/500  |   164,536 |  0  |    104
+manyTill (byte string)/1000 |   328,536 |  0  |    104
+manyTill (byte string)/2000 |   659,136 |  1  |    104
+manyTill (byte string)/4000 | 1,320,600 |  2  |  4,136
 
 Note how even though max residency with `String` is higher, it allocates
 less than `Text`.
@@ -710,8 +710,8 @@ Attoparsec does not make a secret as to where the source of its speed lies
 [the docs](https://hackage.haskell.org/package/attoparsec/docs/Data-Attoparsec-Text.html)):
 
 > Use the `Text`-oriented parsers whenever possible, e.g. `takeWhile1`
-> instead of `many1 anyChar`. There is about a factor of 100 difference in
-> performance between the two kinds of parser.
+  instead of `many1 anyChar`. There is about a factor of 100 difference in
+  performance between the two kinds of parser.
 
 *This is important.* Let me show you a picture:
 
@@ -720,15 +720,11 @@ Attoparsec does not make a secret as to where the source of its speed lies
 And allocations:
 
 Case             | Allocated | GCs |   Max
------------------|-----------|-----|------
+-----------------|----------:|----:|-----:
 string/500       |    21,760 |   0 | 1,072
 string/1000      |    42,744 |   0 | 2,072
 string/2000      |    84,744 |   0 | 4,072
 string/4000      |   168,744 |   0 | 8,072
-string'/500      |   127,856 |   0 | 1,072
-string'/1000     |   254,840 |   0 | 2,072
-string'/2000     |   508,840 |   0 | 4,072
-string'/4000     | 1,016,840 |   1 | 8,072
 many/500         |   201,928 |   0 | 1,120
 many/1000        |   402,912 |   0 | 2,120
 many/2000        |   804,912 |   1 | 4,120
@@ -805,7 +801,7 @@ functions as in Attoparsec's JSON parser. I also followed the good advice
 from Attoparsec's docs:
 
 > For very simple character-testing predicates, write them by hand instead
-> of using `inClass` or `notInClass`.
+  of using `inClass` or `notInClass`.
 
 (“By hand” means with `satisfy`. `inClass` in called `oneOf` in Megaparsec
 and `notInClass`—`noneOf`.)
@@ -829,8 +825,8 @@ produces valid results, i.e. it works. The style is not most natural, but
 that's the style Attoparsec uses so it's only fair to preserve it (we
 compare libraries, not styles). It may be some sort of mistake on my part,
 and I hope someone clever will point out what it is as soon as I publish the
-post. Again, all the code is here: https://github.com/mrkkrp/parsers-bench,
-so please be my guest.
+post. Again, all the code is here:
+<https://github.com/mrkkrp/parsers-bench>, so please be my guest.
 
 ## Conclusion
 

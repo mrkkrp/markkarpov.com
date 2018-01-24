@@ -311,25 +311,25 @@ re-write of `(<*>)`, and careful use of strictness allowed me to improve the
 situation. Here are simplified results of comparison on my laptop:
 
 Benchmark (size 1000)                | Parsec 3.1.9 | Megaparsec 5.0.0
--------------------------------------|--------------|-----------------
-`string/match`                       | 74.59 μs     | 48.65 μs
-`string/nomatch_early`               | 374.0 ns     | 59.06 ns
-`string/nomatch_late`                | 69.80 μs     | 31.51 μs
-`try-string/match`                   | 76.60 μs     | 48.15 μs
-`try-string/nomatch_early`           | 383.5 ns     | 61.93 ns
-`try-string/nomatch_late`            | 70.88 μs     | 31.72 μs
-`lookahead-string/match`             | 76.78 μs     | 47.07 μs
-`lookahead-string/nomatch_early`     | 389.5 ns     | 60.13 ns
-`lookahead-string/nomatch_late`      | 77.80 μs     | 29.73 μs
-`notfollowedby-string/match`         | 79.46 μs     | 48.54 μs
-`notfollowedby-string/nomatch_early` | 418.8 ns     | 47.17 ns
-`notfollowedby-string/nomatch_late`  | 79.46 μs     | 30.56 μs
-`manual-string`                      | 328.8 μs     | 57.15 μs
-`choice/match`                       | 355.5 μs     | 232.6 μs
-`choice/nomatch`                     | 523.8 μs     | 289.2 μs
-`count`                              | 260.8 μs     | 48.85 μs
-`sepBy1`                             | 357.8 μs     | 100.6 μs
-`manyTill`                           | 464.7 μs     | 139.7 μs
+-------------------------------------|-------------:|----------------:
+`string/match`                       |     74.59 μs |         48.65 μs
+`string/nomatch_early`               |     374.0 ns |         59.06 ns
+`string/nomatch_late`                |     69.80 μs |         31.51 μs
+`try-string/match`                   |     76.60 μs |         48.15 μs
+`try-string/nomatch_early`           |     383.5 ns |         61.93 ns
+`try-string/nomatch_late`            |     70.88 μs |         31.72 μs
+`lookahead-string/match`             |     76.78 μs |         47.07 μs
+`lookahead-string/nomatch_early`     |     389.5 ns |         60.13 ns
+`lookahead-string/nomatch_late`      |     77.80 μs |         29.73 μs
+`notfollowedby-string/match`         |     79.46 μs |         48.54 μs
+`notfollowedby-string/nomatch_early` |     418.8 ns |         47.17 ns
+`notfollowedby-string/nomatch_late`  |     79.46 μs |         30.56 μs
+`manual-string`                      |     328.8 μs |         57.15 μs
+`choice/match`                       |     355.5 μs |         232.6 μs
+`choice/nomatch`                     |     523.8 μs |         289.2 μs
+`count`                              |     260.8 μs |         48.85 μs
+`sepBy1`                             |     357.8 μs |         100.6 μs
+`manyTill`                           |     464.7 μs |         139.7 μs
 
 `tokens` (that influences performance of `string`) is coded differently than
 in Parsec because I wanted to have a bit different error messages that show

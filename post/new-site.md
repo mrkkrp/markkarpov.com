@@ -5,13 +5,14 @@ date:
   published: June 6, 2017
 ---
 
-Finally I have set up my new web site here, at https://markkarpov.com. I
+Finally I have set up my new web site here, at <https://markkarpov.com>. I
 plan to post more often than before and also I have the plans to publish new
 tutorials and probably other sort of content as well, such as screencasts.
 
-So far I have migrated my old posts (located at https://mrkkrp.github.io),
-[collected links to all my tutorials](/learn-haskell.html), and made an
-[overview of my active open source projects](/oss.html).
+So far I have migrated my old posts (previously located at
+<https://mrkkrp.github.io>), [collected links to all my
+tutorials](/learn-haskell.html), and made an [overview of my active open
+source projects](/oss.html).
 
 You may certainly expect some posts related to optimization of my existing
 projects, such as [`text-metrics`](https://github.com/mrkkrp/text-metrics),

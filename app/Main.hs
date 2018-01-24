@@ -3,6 +3,7 @@
 {-# LANGUAGE LambdaCase          #-}
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE PolyKinds           #-}
+{-# LANGUAGE QuasiQuotes         #-}
 {-# LANGUAGE RankNTypes          #-}
 {-# LANGUAGE RecordWildCards     #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -15,8 +16,8 @@ import Control.Monad
 import Control.Monad.IO.Class
 import Data.Aeson
 import Data.Aeson.Lens
-import Data.Default.Class
 import Data.List (sortBy, foldl1')
+import Data.List.NonEmpty (NonEmpty (..))
 import Data.Maybe (fromMaybe, mapMaybe)
 import Data.Ord (comparing, Down (..))
 import Data.Proxy
@@ -25,18 +26,23 @@ import Data.Text (Text)
 import Data.Time
 import Development.Shake
 import Development.Shake.FilePath
-import Text.Blaze.Html.Renderer.Text
+import Skylighting (defaultFormatOpts)
 import Text.Mustache
-import Text.Pandoc hiding (Template, Null)
-import qualified Data.HashMap.Strict as HM
-import qualified Data.Set            as S
-import qualified Data.Text           as T
-import qualified Data.Text.Encoding  as TE
-import qualified Data.Text.IO        as T
-import qualified Data.Text.Lazy      as TL
-import qualified Data.Text.Lazy.IO   as TL
-import qualified Data.Vector         as V
-import qualified Data.Yaml           as Y
+import Text.URI (URI)
+import Text.URI.Lens (uriPath)
+import Text.URI.QQ (scheme)
+import qualified Data.HashMap.Strict  as HM
+import qualified Data.Text            as T
+import qualified Data.Text.IO         as T
+import qualified Data.Text.Lazy       as TL
+import qualified Data.Text.Lazy.IO    as TL
+import qualified Data.Vector          as V
+import qualified Data.Yaml            as Y
+import qualified Lucid                as L
+import qualified Text.MMark           as MMark
+import qualified Text.MMark.Extension as Ext
+import qualified Text.MMark.Extension.Common as Ext
+import qualified Text.URI             as URI
 
 ----------------------------------------------------------------------------
 -- Settings
@@ -84,6 +90,7 @@ data Routes
   | TutorialR
   | ResumeHtmlR
   | ResumePdfR
+  | AboutR
 
 instance Route 'PostR where
   pat    = Pat "post/*.md"
@@ -126,6 +133,11 @@ instance Route 'ResumePdfR where
   pat    = Pat "resume/resume.pdf"
   mapIn  = Tagged (\x -> "resume" </> dropDirectory1 x)
   mapOut = Tagged (\x -> outdir </> dropDirectory1 x)
+
+instance Route 'AboutR where
+  pat    = Pat "about.md"
+  mapIn  = Tagged (\x -> dropDirectory1 x -<.> "md")
+  mapOut = Tagged (\x -> outdir </> x -<.> "html")
 
 -- | TODO Find a way to abstract working with these files.
 
@@ -271,7 +283,7 @@ main = shakeArgs shakeOptions $ do
     ts  <- templates ()
     let src = unTagged (mapIn @'PostR) out
     need [src]
-    (v, content) <- getPost src
+    (v, content) <- getPost env src
     renderAndWrite ts ["post","default"] (Just content)
       [menuItem Posts env, v, mkLocation out]
       out
@@ -311,7 +323,7 @@ main = shakeArgs shakeOptions $ do
     ts  <- templates ()
     let src = unTagged (mapIn @'MTutorialR) out
     need [src]
-    (v, content) <- getPost src
+    (v, content) <- getPost env src
     renderAndWrite ts ["post","default"] (Just content)
       [menuItem LearnHaskell env, v, mkLocation out]
       out
@@ -321,7 +333,7 @@ main = shakeArgs shakeOptions $ do
     ts  <- templates ()
     let src = unTagged (mapIn @'TutorialR) out
     need [src]
-    (v, content) <- getPost src
+    (v, content) <- getPost env src
     renderAndWrite ts ["post","default"] (Just content)
       [menuItem LearnHaskell env, v, mkLocation out]
       out
@@ -331,7 +343,7 @@ main = shakeArgs shakeOptions $ do
     ts  <- templates ()
     let src = unTagged (mapIn @'ResumeHtmlR) out
     need [src]
-    (v, content) <- getPost src
+    (v, content) <- getPost env src
     renderAndWrite ts ["post","default"] (Just content)
       [menuItem Resume env, v]
       out
@@ -354,6 +366,16 @@ main = shakeArgs shakeOptions $ do
       , mkTitle LearnHaskell ]
       out
 
+  unPat (outPattern @'AboutR) %> \out -> do
+    env <- commonEnv ()
+    ts  <- templates ()
+    let src = unTagged (mapIn @'AboutR) out
+    need [src]
+    (v, content) <- getPost env src
+    renderAndWrite ts ["about", "default"] (Just content)
+      [menuItem About env, v]
+      out
+
   let justFromTemplate :: Either Text MenuItem -> PName -> FilePath -> Action ()
       justFromTemplate etitle template out = do
         env <- commonEnv ()
@@ -364,7 +386,6 @@ main = shakeArgs shakeOptions $ do
           out
 
   cmnOut ossFile      %> justFromTemplate (Right OSS)            "oss"
-  cmnOut aboutFile    %> justFromTemplate (Right About)          "about"
   cmnOut notFoundFile %> justFromTemplate (Left "404 Not Found") "404"
 
 ----------------------------------------------------------------------------
@@ -399,29 +420,43 @@ menuItem item = over (key "main_menu" . _Array) . V.map $ \case
       else m
   v -> v
 
-getPost :: (MonadIO m, FromJSON v) => FilePath -> m (v, TL.Text)
-getPost path = do
-  (yaml', doc') <- T.breakOn "\n---\n" <$> liftIO (T.readFile path)
-  yaml <-
-    case Y.decodeEither' (TE.encodeUtf8 yaml') of
-      Left err -> fail (Y.prettyPrintParseException err)
-      Right value -> return value
-  let r = writeHtml pandocWriterOpts . handleError $
-        readMarkdown pandocReaderOpts (T.unpack (T.drop 5 doc'))
-  return (yaml, renderHtml r)
+getPost :: (MonadIO m, FromJSON v) => Value -> FilePath -> m (v, TL.Text)
+getPost env path = do
+  txt <- liftIO (T.readFile path)
+  case MMark.parse path txt of
+    Left errs -> fail (MMark.parseErrorsPretty txt errs)
+    Right doc -> do
+      let toc = MMark.runScanner doc (Ext.tocScanner (\x -> x > 1 && x < 5))
+          r   = MMark.useExtensions
+            [ Ext.fontAwesome
+            , Ext.footnotes
+            , Ext.kbd
+            , Ext.linkTarget
+            , Ext.mathJax (Just '$')
+            , Ext.obfuscateEmail "protected-email"
+            , Ext.punctuationPrettifier
+            , Ext.skylighting defaultFormatOpts
+            , Ext.toc "toc" toc
+            , addTableClasses
+            , addImageClass
+            , provideSocialUrls env
+            ]
+            doc
+      v <-
+        case fromJSON $ fromMaybe (object []) (MMark.projectYaml doc) of
+          Error str -> fail str
+          Success a -> return a
+      return (v, L.renderText (MMark.render r))
 
-pandocReaderOpts :: ReaderOptions
-pandocReaderOpts = def
-  { readerExtensions = S.union pandocExtensions $ S.fromList
-    [ Ext_autolink_bare_uris
-    , Ext_lists_without_preceding_blankline ]
-  ,  readerSmart = True }
-
-pandocWriterOpts :: WriterOptions
-pandocWriterOpts = def
-  { writerHtml5          = True
-  , writerHighlight      = True
-  , writerHTMLMathMethod = MathJax "" }
+getPost' :: (MonadIO m, FromJSON v) => FilePath -> m v
+getPost' path = do -- TODO reduce repetition here
+  txt <- liftIO (T.readFile path)
+  case MMark.parse path txt of
+    Left errs -> fail (MMark.parseErrorsPretty txt errs)
+    Right doc ->
+      case fromJSON $ fromMaybe (object []) (MMark.projectYaml doc) of
+        Error str -> fail str
+        Success a -> return a
 
 mkContext :: [Value] -> Value
 mkContext = foldl1' f
@@ -446,7 +481,7 @@ gatherLocalInfo Proxy f = do
   ps' <- getDirFiles (pat @r)
   fmap (sortBy (comparing f)) . forM ps' $ \post -> do
     need [post]
-    v <- fst <$> getPost post
+    v <- getPost' post
     return v { localFile = dropDirectory1 (unTagged (mapOut @r) post) }
 
 parseDay :: Monad m => Text -> m Day
@@ -484,3 +519,37 @@ postInfoPublished :: PostInfo -> Day
 postInfoPublished = \case
  InternalPost localInfo     -> localPublished localInfo
  ExternalPost published _ _ -> published
+
+----------------------------------------------------------------------------
+-- Custom MMark extensions
+
+addTableClasses :: MMark.Extension
+addTableClasses = Ext.blockRender $ \old block ->
+  case block of
+    t@(Ext.Table _ _) -> L.with (old t) [L.class_ "table table-striped"]
+    other -> old other
+
+addImageClass :: MMark.Extension
+addImageClass = Ext.inlineRender $ \old inline ->
+  case inline of
+    i@(Ext.Image _ _ _) -> L.with (old i) [L.class_ "img-fluid"]
+    other -> old other
+
+provideSocialUrls :: Value -> MMark.Extension
+provideSocialUrls v = Ext.inlineTrans $ \case
+  l@(Ext.Link inner uri mtitle) ->
+    if URI.uriScheme uri == Just [scheme|social|]
+      then case uri ^. uriPath of
+             [x] ->
+               case v ^? key "social" . key (URI.unRText x) . _String . getURI of
+                 Nothing -> Ext.Plain "!lookup failed!"
+                 Just t  ->
+                   if Ext.asPlainText inner == "x"
+                     then Ext.Link (Ext.Plain (URI.render t) :| []) t mtitle
+                     else Ext.Link inner t mtitle
+             _ -> l
+      else l
+  other -> other
+
+getURI :: Traversal' Text URI
+getURI f txt = maybe txt URI.render <$> traverse f (URI.mkURI txt :: Maybe URI)

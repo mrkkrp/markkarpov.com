@@ -35,7 +35,7 @@ After a month I got to my previous speed 60 wpm. This was my top speed with
 QWERTY—when I really tried to type fast, that's what I got. I thought that I
 won't be able to ever beat this personal record. Well, I have to say yes,
 *not with QWERTY*. Now, after another 15 days I type 70 wpm and I feel like
-I will be able to do 80 and maybe 100 someday [^1].
+I will be able to do 80 and maybe 100 someday[1](footnote:1).
 
 But the main thing about Dvorak is comfort, of course. It just feels so much
 better. You know, like proper mechanical keyboard feels better. Like modal
@@ -46,6 +46,9 @@ I can type a lot and I cannot reach the point when my hands are tired. Old
 weird sensations in my hands have gone. Now I just see how *proper* touch
 typing is done.
 
-[^1]:
-And yes, now in 2017, I do type 80 wpm and I feel I have not reached my
-maximal speed yet.
+***
+
+> footnotes
+
+  1. And yes, now in 2017, I do type 80 wpm and I feel I have not reached my
+     maximal speed yet.

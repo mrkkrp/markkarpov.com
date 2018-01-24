@@ -3,8 +3,11 @@ title: Template Haskell tutorial
 desc: The tutorial explains how to use Template Haskell for metaprogramming in Haskell.
 date:
   published: December 24, 2017
-  updated: December 27, 2017
+  updated: January 25, 2018
 ---
+
+```toc
+```
 
 The tutorial aims to introduce the reader to *Template Haskell* (TH)—the
 language extension that adds meta-programming capabilities to the Haskell
@@ -190,18 +193,17 @@ Using TH currently has some limitations:
 * TH often makes you order your definitions in a particular way. To quote
   the GHC user manual:
 
-    > Top-level declaration splices break up a source file into *declaration
-    > groups*. A *declaration group* is the group of declarations created by
-    > a top-level declaration splice, plus those following it, down to but
-    > not including the next top-level declaration splice. N.B. only
-    > top-level splices delimit declaration groups, not expression splices.
-    > *The first declaration group in a module includes all top-level
-    > definitions down to but not including the first top-level declaration
-    > splice.*
-    >
-    > Each declaration group is mutually recursive only within the group.
-    > Declaration groups can refer to definitions within previous groups,
-    > but not later ones.
+  > Top-level declaration splices break up a source file into *declaration
+    groups*. A *declaration group* is the group of declarations created by a
+    top-level declaration splice, plus those following it, down to but not
+    including the next top-level declaration splice. N.B. only top-level
+    splices delimit declaration groups, not expression splices. *The first
+    declaration group in a module includes all top-level definitions down to
+    but not including the first top-level declaration splice.*
+
+    Each declaration group is mutually recursive only within the group.
+    Declaration groups can refer to definitions within previous groups, but
+    not later ones.
 
 Let see an example of this. Suppose we want to use the `lens` library to
 generate some lenses. We could have code like this:
@@ -261,7 +263,7 @@ Luckily, there is a way to get AST of arbitrary Haskell code by using
 `TemplateHaskell` language extension:
 
 Thing produced | Quotation syntax | Type
----------------|------------------|----------
+---------------|:----------------:|:--------:
 Declaration    | `[d| … |]`       | `Q [Dec]`
 Expression     | `[e| … |]`       | `Q Exp`
 Type           | `[t| … |]`       | `Q Type`
@@ -397,13 +399,13 @@ When we generate or manipulate code, we work with two types of names:
   if we generate a lambda expression, we may want to bind its arguments and
   for that we need such “new” names.
 
-    This second group of names can be divided into two subgroups:
+  This second group of names can be divided into two subgroups:
 
-    * Names that can be captured. This means that that after we do splicing
-      we end up with generated code that contains *capturable* names that
-      can be actually bound or used in the enclosing lexical context.
+  * Names that can be captured. This means that that after we do splicing we
+    end up with generated code that contains *capturable* names that can be
+    actually bound or used in the enclosing lexical context.
 
-    * Names that cannot be captured.
+  * Names that cannot be captured.
 
 First of all, there is the syntax for quoting names of functions and types
 (it's also enabled by the `TemplateHaskell` extension):
@@ -1197,7 +1199,7 @@ functions were not covered. Still, the tutorial should get you on the speed
 and give a taste of what meta-programming in Haskell looks like. For further
 information refer directly to the Haddocks:
 
-https://hackage.haskell.org/package/template-haskell
+<https://hackage.haskell.org/package/template-haskell>
 
 The new
 [`th-abstraction`](https://hackage.haskell.org/package/th-abstraction)

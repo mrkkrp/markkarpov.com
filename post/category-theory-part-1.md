@@ -6,6 +6,9 @@ date:
   updated:   June 1, 2017
 ---
 
+```toc
+```
+
 When you do Haskell on daily basis (simply put, earn a living writing
 Haskell code), sooner or later you start to regret you don't have background
 in advanced math (unless you have such background, of course, and in that
@@ -27,15 +30,16 @@ more-or-less proper understanding of what some things like “isomorphism”
 mean, I decided to read a book that describes all the concepts in order and
 using simple language.
 
-The book I found is called
-[“Conceptual Mathematics—A First Introduction to Categories”](http://fef.ogu.edu.tr/matbil/eilgaz/kategori.pdf) by
-F. William Lawvere and Stephen H. Schanuel. The book does not assume math
-background of any sort and *anyone* can understand concepts described in it.
-You can give it a try, but the books in not short—376 pages, and it does not
-even get you to monads (probably will need something else after it if I
-decide that I haven't got enough). So this post is the first in a series of
-blog posts[^1] that I want to write as a sort of overgrown cheat sheets that
-highlight important ideas from category theory in a concise form.
+The book I found is called [“Conceptual Mathematics—A First Introduction to
+Categories”](http://fef.ogu.edu.tr/matbil/eilgaz/kategori.pdf) by F. William
+Lawvere and Stephen H. Schanuel. The book does not assume math background of
+any sort and *anyone* can understand concepts described in it. You can give
+it a try, but the books in not short—376 pages, and it does not even get you
+to monads (probably will need something else after it if I decide that I
+haven't got enough). So this post is the first in a series of blog
+posts[1](footnote:1) that I want to write as a sort of overgrown cheat
+sheets that highlight important ideas from category theory in a concise
+form.
 
 I hope that working on the blog posts will help me better organize the ideas
 from the book in my head, and may be useful for others who may not
@@ -62,16 +66,17 @@ object is probably *finite set* (just a collection of things), and it will
 be discussed in the next section.
 
 **Maps** have **domain** (an object), **codomain** (an object again), and a
-rule assigning to each element[^2] $a$ in the domain, an element $b$ in the
-codomain. This $b$ is denoted by $f \circ a$ (or sometimes $f(a)$), read
-“$f$ of $a$”. Simply put, domain contains all possible arguments of the
-mapping function and codomain contains output values.
+rule assigning to each element[2](footnote:2) `$a$` in the domain, an
+element `$b$` in the codomain. This `$b$` is denoted by `$f \circ a$` (or
+sometimes `$f(a)$`), read “`$f$` of `$a$`”. Simply put, domain contains all
+possible arguments of the mapping function and codomain contains output
+values.
 
-An important thing here is that if we say that object $A$ is domain and
-object $B$ is codomain of some map, then the map should be defined for every
-value $a$ in $A$ (i.e. it should “use” all input values), but not
-necessarily it should map to all values in $B$. This may seem obvious, but I
-want to put it here explicitly, because I found this “rule” useful for
+An important thing here is that if we say that object `$A$` is domain and
+object `$B$` is codomain of some map, then the map should be defined for
+every value `$a$` in `$A$` (i.e. it should “use” all input values), but not
+necessarily it should map to all values in `$B$`. This may seem obvious, but
+I want to put it here explicitly, because I found this “rule” useful for
 understanding some conclusions in the book many times. Of course, there can
 be only one element in codomain corresponding to a given element in domain,
 because otherwise the whole mapping would be ambiguous.
@@ -95,12 +100,12 @@ their mappings, than about abstract categories. We will be using the
 category of finite sets to explain most concepts here, and to visualize
 them, we will draw pictures of the sets and maps between them.
 
-The set $\{John, Mary, Sam\}$ may be drawn just as:
+The set `$\{John, Mary, Sam\}$` may be drawn just as:
 
 ![Internal diagram of a set](/static/img/ct1-01.svg)
 
 where a dot represents each element. We can also leave off the labels if
-then are irrelevant to discussion. Such picture, labelled or not, is called
+they are irrelevant to discussion. Such picture, labelled or not, is called
 **internal diagram** of the set.
 
 We can picture a map as collection of arrows that go from elements of one
@@ -111,9 +116,9 @@ set to element of another set:
 There are also **external diagrams** for the cases when we do not care about
 concrete elements of objects:
 
-$$
+```mathjax
 A \xrightarrow{f} B
-$$
+```
 
 ## Endomaps and identity maps
 
@@ -125,17 +130,18 @@ special form of internal diagram:
 ![Internal diagram of an endomap](/static/img/ct1-03.svg)
 
 It turns out that in every category, for each object, we have a map that
-maps elements of an object $A$ to themselves. This map is called **identity
-map** and is denoted as $1_\text{A}$. Here is an example of internal diagram
-of an identity map (taken from the book, like the pictures above):
+maps elements of an object `$A$` to themselves. This map is called
+**identity map** and is denoted as `$1_\text{A}$`. Here is an example of
+internal diagram of an identity map (taken from the book, like the pictures
+above):
 
 ![Internal diagram of an identity map](/static/img/ct1-04.svg)
 
-The $1_\text{A}$ notation will make more sense once we learn about
+The `$1_\text{A}$` notation will make more sense once we learn about
 *composition of maps* in the next section.
 
-**Definition:** *An endomap $e$ is called **idempotent** if $e \circ e =
-e$.*
+**Definition:** *An endomap `$e$` is called **idempotent** if `$e \circ e =
+e$`.*
 
 ## Composition
 
@@ -143,46 +149,52 @@ The final, fourth (after objects, maps, and identity maps) thing that a
 category should have (or support) is the ability to *compose maps*. That's
 where all the fun begins.
 
-**Composition** of two maps $f$ and $g$, written as $f \circ g$ (read as
-“$f$ after $g$”) is another map with the same domain as domain of $g$ and
-the same codomain as codomain of $f$. To find output value for an input $a$
-we first “apply” (or follow arrows) of map $g$ and then take the result,
-feed it as input to map $f$ and get the final result. Obviously, to feed
-result of $g$ as input to $f$, domain of $f$ should be the same of codomain
-of $g$.
+**Composition** of two maps `$f$` and `$g$`, written as `$f \circ g$` (read
+as “`$f$` after `$g$`”) is another map with the same domain as domain of
+`$g$` and the same codomain as codomain of `$f$`. To find output value for
+an input `$a$` we first “apply” (or follow arrows) of map `$g$` and then
+take the result, feed it as input to map `$f$` and get the final result.
+Obviously, to feed result of `$g$` as input to `$f$`, domain of `$f$` should
+be the same of codomain of `$g$`.
 
 In a more familiar notation:
 
-$$
+```mathjax
 f \circ g = f(g(a))
-$$
+```
 
 That equation also explains why composition “works” from right to left (with
-respect to the $f \circ g$ notation), it's from the desire to preserve order
-of functions when we go from a more explicit notation on the right hand side
-to notation on the left hand side.
+respect to the `$f \circ g$` notation), it's from the desire to preserve
+order of functions when we go from a more explicit notation on the right
+hand side to notation on the left hand side.
 
-Once we have the $f \circ g$ map we can forget how we got it and treat it
+Once we have the `$f \circ g$` map we can forget how we got it and treat it
 just as an ordinary map, which it is, of course:
 
-$$
+```mathjax
 A \xrightarrow{g} B \xrightarrow{f} C = A \xrightarrow{f \circ g} C
-$$
+```
 
 Not only the composition of maps should be possible, but it should satisfy
 these laws so objects and maps “fit together nicely”:
 
 1. The **identity laws**:
 
-    $$A \xrightarrow{1_\text{A}} A \xrightarrow{g} B \Rightarrow A \xrightarrow{g \circ 1_\text{A} = g} B$$
+   ```mathjax
+   A \xrightarrow{1_\text{A}} A \xrightarrow{g} B \Rightarrow A \xrightarrow{g \circ 1_\text{A} = g} B
+   ```
 
-    and
+   and
 
-    $$A \xrightarrow{f} B \xrightarrow{1_\text{B}} B \Rightarrow A \xrightarrow{1_\text{B} \circ f = f} B$$
+   ```mathjax
+   A \xrightarrow{f} B \xrightarrow{1_\text{B}} B \Rightarrow A \xrightarrow{1_\text{B} \circ f = f} B
+   ```
 
 2. The **associative law**:
 
-    $$A \xrightarrow{f} B \xrightarrow{g} C \xrightarrow{h} D \Rightarrow A \xrightarrow{h \circ (g \circ f) = (h \circ g) \circ f} D$$
+   ```mathjax
+   A \xrightarrow{f} B \xrightarrow{g} C \xrightarrow{h} D \Rightarrow A \xrightarrow{h \circ (g \circ f) = (h \circ g) \circ f} D
+   ```
 
 These rules make composition of maps work similarly to multiplication of
 numbers. The identity laws ensure that identity maps work indeed like number
@@ -195,15 +207,15 @@ their inputs and outputs are sort of “typed” by domain and codomain objects.
 ## Isomorphisms
 
 One of simplest and ubiquitous things in category theory is **isomorphism**.
-A map $A \xrightarrow{f} B$ is called an **isomorphism**, or **invertable
-map**, if there is a map $B \xrightarrow{g} A$ for which $g \circ f =
-1_\text{A}$ and $f \circ g = 1_\text{B}$. Two objects $A$ and $B$ are said
-to be **isomorphic** if there is at least one isomorphism $A \xrightarrow{f}
-B$.
+A map `$A \xrightarrow{f} B$` is called an **isomorphism**, or **invertable
+map**, if there is a map `$B \xrightarrow{g} A$` for which `$g \circ f =
+1_\text{A}$` and `$f \circ g = 1_\text{B}$`. Two objects `$A$` and `$B$` are
+said to be **isomorphic** if there is at least one isomorphism `$A
+\xrightarrow{f} B$`.
 
-What does $g \circ f = 1_\text{A}$ mean? It means that if we apply $f$ to
-any $a$ from $A$, feed the result into $g$, then we get the same value $a$
-we started with. Pretty easy, right?
+What does `$g \circ f = 1_\text{A}$` mean? It means that if we apply `$f$`
+to any `$a$` from `$A$`, feed the result into `$g$`, then we get the same
+value `$a$` we started with. Pretty easy, right?
 
 Isomorphisms are cool. They allow to move freely from one representation of
 object to another. For example, Cartesian system of coordinates is based on
@@ -213,128 +225,144 @@ work from that.
 There are a few properties of isomophisms that come directly from the
 associative and identity laws of maps:
 
-* *Reflexive*: $A$ is isomorphic to $A$ (follows from existence of identity
-  maps).
+* *Reflexive*: `$A$` is isomorphic to `$A$` (follows from the existence of
+  identity maps).
 
-* *Symmetric*: if $A$ is isomorphic to $B$, then $B$ is isomorphic to $A$.
-  This simply follows from the definition of isomorphism.
+* *Symmetric*: if `$A$` is isomorphic to `$B$`, then `$B$` is isomorphic to
+  `$A$`. This simply follows from the definition of isomorphism.
 
-* *Transitive* if $A$ is isomorphic to $B$, and $B$ is isomorphic to $C$,
-  then $A$ is isomorphic to $C$ (see the proof below).
+* *Transitive* if `$A$` is isomorphic to `$B$`, and `$B$` is isomorphic to
+  `$C$`, then `$A$` is isomorphic to `$C$` (see the proof below).
 
-**Notation**: if $A \xrightarrow{f} B$ has an inverse, then the (one and
-only) inverse for $f$ is denoted by the symbol $f^{-1}$ (read “$f$-inverse”,
-or “the inverse of $f$”). Yes, again we have the analogies with numbers!
+**Notation**: if `$A \xrightarrow{f} B$` has an inverse, then the (one and
+only) inverse for `$f$` is denoted by the symbol `$f^{-1}$` (read
+“`$f$`-inverse”, or “the inverse of `$f$`”). Yes, again we have the
+analogies with numbers!
 
-$$
+```mathjax
 f^{-1} \circ f = 1_\text{A}, f \circ f^{-1} = 1_\text{B}
-$$
+```
 
 Let's prove the transitive property now as an exercise. We are given that:
 
-$$A \xrightarrow{f} B, B \xrightarrow{f^{-1}} A, f^{-1} \circ f = 1_\text{A}, f \circ f^{-1} = 1_\text{B}$$
-$$B \xrightarrow{k} C, C \xrightarrow{k^{-1}} B, k^{-1} \circ k = 1_\text{B}, k \circ k^{-1} = 1_\text{C}$$
+```mathjax
+A \xrightarrow{f} B, B \xrightarrow{f^{-1}} A, f^{-1} \circ f = 1_\text{A}, f \circ f^{-1} = 1_\text{B}
+B \xrightarrow{k} C, C \xrightarrow{k^{-1}} B, k^{-1} \circ k = 1_\text{B}, k \circ k^{-1} = 1_\text{C}
+```
 
-In order to show that $A$ is isomorphic to $C$, we need to show that the $k
-\circ f$ map (the only map that takes us from $A$ to $C$) has an inverse
-$g$. Replacing $f$ with $k \circ f$ in the definition of isomorphism we
-have:
+In order to show that `$A$` is isomorphic to `$C$`, we need to show that the
+`$k \circ f$` map (the only map that takes us from `$A$` to `$C$`) has an
+inverse `$g$`. Replacing `$f$` with `$k \circ f$` in the definition of
+isomorphism we have:
 
-$$g \circ (k \circ f) = 1_\text{A}$$
-$$(k \circ f) \circ g = 1_\text{C}$$
+```mathjax
+g \circ (k \circ f) = 1_\text{A}
+(k \circ f) \circ g = 1_\text{C}
+```
 
-To go back from $C$ to $A$ we have the only way: $C \xrightarrow{f^{-1}
-\circ k^{-1}} A$, let's show that it actually an inverse for $k \circ f$:
+To go back from `$C$` to `$A$` we have the only way: `$C \xrightarrow{f^{-1}
+\circ k^{-1}} A$`, let's show that it actually an inverse for `$k \circ f$`:
 
-$$(f^{-1} \circ k^{-1}) \circ (k \circ f) = 1_\text{A}$$
-$$f^{-1} \circ (k^{-1} \circ k) \circ f = 1_\text{A}$$
-$$f^{-1} \circ 1_\text{B} \circ f = 1_\text{A}$$
-$$f^{-1} \circ f = 1_\text{A}$$
-$$1_\text{A} = 1_\text{A}$$
+```mathjax
+(f^{-1} \circ k^{-1}) \circ (k \circ f) = 1_\text{A}
+f^{-1} \circ (k^{-1} \circ k) \circ f = 1_\text{A}
+f^{-1} \circ 1_\text{B} \circ f = 1_\text{A}
+f^{-1} \circ f = 1_\text{A}
+1_\text{A} = 1_\text{A}
+```
 
 This makes use of identity laws and associative law we discussed previously.
 The second equation can be proved the same way.
 
-If $f$ has an inverse, then $f$ satisfies two cancellation laws:
+If `$f$` has an inverse, then `$f$` satisfies two cancellation laws:
 
-* If $f \circ h = f \circ k$, then $h = k$.
-* If $h \circ f = k \circ f$, then $h = k$.
+* If `$f \circ h = f \circ k$`, then `$h = k$`.
+* If `$h \circ f = k \circ f$`, then `$h = k$`.
 
-Let prove the first one. We assume that $f$ has an inverse and that $f \circ
-h = f \circ k$ and we try to show that $h = k$. Since $f \circ h$ and $f
-\circ k$ are the same map, $f^{-1} \circ (f \circ h)$ and $f^{-1} \circ (f
-\circ k)$ are also the same. But now we can use the rules we already know:
+Let prove the first one. We assume that `$f$` has an inverse and that `$f
+\circ h = f \circ k$` and we try to show that `$h = k$`. Since `$f \circ h$`
+and `$f \circ k$` are the same map, `$f^{-1} \circ (f \circ h)$` and
+`$f^{-1} \circ (f \circ k)$` are also the same. But now we can use the rules
+we already know:
 
-$$f^{-1} \circ (f \circ h) = f^{-1} \circ (f \circ k)$$
-$$(f^{-1} \circ f) \circ h = (f^{-1} \circ f) \circ k$$
-$$1_\text{A} \circ h = 1_\text{A} \circ k$$
-$$h = k$$
+```mathjax
+f^{-1} \circ (f \circ h) = f^{-1} \circ (f \circ k)
+(f^{-1} \circ f) \circ h = (f^{-1} \circ f) \circ k
+1_\text{A} \circ h = 1_\text{A} \circ k
+h = k
+```
 
 ## Sections and retractions
 
 Let's give names to some special relations of maps that will be very useful
-to us later. If $A \xrightarrow{f} B$, then
+to us later. If `$A \xrightarrow{f} B$`, then
 
-* a **retraction** for $f$ is a map $B \xrightarrow{r} A$ for which $r \circ
-  f = 1_\text{A}$;
+* a **retraction** for `$f$` is a map `$B \xrightarrow{r} A$` for which `$r
+  \circ f = 1_\text{A}$`;
 
-* a **section** for $f$ is a map $B \xrightarrow{s} A$ for which $f \circ s
-  = 1_\text{B}$.
+* a **section** for `$f$` is a map `$B \xrightarrow{s} A$` for which `$f
+  \circ s = 1_\text{B}$`.
 
-The first thing to note is that we cannot say that some map $r$ is a
-retraction *by itself*, it only makes sense to say that $r$ is retraction
-for another map $f$. The same for sections. So if we have $r \circ s =
-1_\text{A}$, then $r$ is retraction for $s$ and $s$ is section for $r$.
+The first thing to note is that we cannot say that some map `$r$` is a
+retraction *by itself*, it only makes sense to say that `$r$` is retraction
+for another map `$f$`. The same for sections. So if we have `$r \circ s =
+1_\text{A}$`, then `$r$` is retraction for `$s$` and `$s$` is section for
+`$r$`.
 
 Useful mnemonics for retraction is that it retracts values “back from where
 they come”. While the name “section” is a little trickier.
 
-We can think of a section $B \xrightarrow{s} A$ as a way to select a
-“B-section” in a (possibly) bigger object $A$:
+We can think of a section `$B \xrightarrow{s} A$` as a way to select a
+“B-section” in a (possibly) bigger object `$A$`:
 
 ![Internal diagram with a section](/static/img/ct1-05.svg)
 
-This picture also shows an important idea that in order for $f$ to have a
-section, its domain $A$ should be at least as big as codomain $B$, not
-smaller. (Make sure that this makes sense to you now, imagine $A$ having
-only two dots in it and try to travel from dots in $B$ to values in $A$ and
-back arriving to the same dots—that's impossible.)
+This picture also shows the important idea that in order for `$f$` to have a
+section, its domain `$A$` should be at least as big as codomain `$B$`, not
+smaller. (Make sure that this makes sense to you now, imagine `$A$` having
+only two dots in it and try to travel from dots in `$B$` to values in `$A$`
+and back arriving to the same dots—that's impossible.)
 
-On the other hand, for $f$ to have a retraction, its codomain $B$ should be
-at least as big as its domain $A$ (the logic is exactly the same, so I won't
-repeat it here).
+On the other hand, for `$f$` to have a retraction, its codomain `$B$` should
+be at least as big as its domain `$A$` (the logic is exactly the same, so I
+won't repeat it here).
 
 ## Monomorphism and epimorphism
 
-*Suppose a map $A \xrightarrow{f} B$ has a retraction. Then for any set $T$
-and for any pair of maps $T \xrightarrow{x_\text{1}} A$, $T
-\xrightarrow{x_\text{2}} A$ from $T$ to $A$*
+*Suppose a map `$A \xrightarrow{f} B$` has a retraction. Then for any set
+`$T$` and for any pair of maps `$T \xrightarrow{x_\text{1}} A$`, `$T
+\xrightarrow{x_\text{2}} A$` from `$T$` to `$A$`.*
 
-$$\text{if } f \circ x_\text{1} = f \circ x_\text{2} \text{ then } x_\text{1} = x_\text{2}$$
+```mathjax
+\text{if } f \circ x_\text{1} = f \circ x_\text{2} \text{ then } x_\text{1} = x_\text{2}
+```
 
 **Proof:** Looking at the definition, we see that the assumption means that
-we have a map $r$ for which $r \circ f = 1_\text{A}$. Using the assumption
-that $x_\text{1}$ and $x_\text{2}$ are such that f composes with them to get
-the same $T \to B$, we can compose further with $r$ as follows:
+we have a map `$r$` for which `$r \circ f = 1_\text{A}$`. Using the
+assumption that `$x_\text{1}$` and `$x_\text{2}$` are such that `$f$`
+composes with them to get the same `$T \to B$`, we can compose further with
+`$r$` as follows:
 
 ![Injective map](/static/img/ct1-06.svg)
 
-$$x_\text{1} = 1_\text{A} \circ x_\text{1} = (r \circ f) \circ x_\text{1} = r \circ (f \circ x_\text{1}) = r \circ (f \circ x_\text{2}) $$
-$$= (r \circ f) \circ x_\text{2} = 1_\text{A} \circ x_\text{2} = x_\text{2}$$
+```mathjax
+x_\text{1} = 1_\text{A} \circ x_\text{1} = (r \circ f) \circ x_\text{1} = r \circ (f \circ x_\text{1}) = r \circ (f \circ x_\text{2})
+= (r \circ f) \circ x_\text{2} = 1_\text{A} \circ x_\text{2} = x_\text{2}
+```
 
-**Definitions:** *A map $f$ satisfying the conclusion “for any pair of maps
-$T \xrightarrow{x_\text{1}} A$ and $T \xrightarrow{x_\text{2}} A$, if $f
-\circ x_\text{1} = f \circ x_\text{2}$ then $x_\text{1} = x_\text{2}$” is
-said to be **injective for maps from** $T$.*
+**Definitions:** *A map `$f$` satisfying the conclusion “for any pair of
+maps `$T \xrightarrow{x_\text{1}} A$` and `$T \xrightarrow{x_\text{2}} A$`,
+if `$f \circ x_\text{1} = f \circ x_\text{2}$` then `$x_\text{1} =
+x_\text{2}$`” is said to be **injective for maps from** `$T$`.*
 
-*If $f$ is injective for maps from $T$ for every $T$, one says that $f$ is
-**injective**, or is a **monomorphism**.*
+*If `$f$` is injective for maps from `$T$` for every `$T$`, one says that
+`$f$` is **injective**, or is a **monomorphism**.*
 
-What does all this stuff mean anyway? Simply put, if you can “cancel” $f$ by
-having a way (retraction) to go back, then when you apply $f$ after other
-maps and get the same results, then those maps are the same. I.e. you can
-cancel application of $f$ and tell if we were given the same maps or
-different ones. *After application of $f$ we can still reason of what
+What does all this stuff mean anyway? Simply put, if you can “cancel” `$f$`
+by having a way (retraction) to go back, then when you apply `$f$` after
+other maps and get the same results, then those maps are the same. I.e. you
+can cancel application of `$f$` and tell if we were given the same maps or
+different ones. *After application of `$f$` we can still reason of what
 happened before the application.* That's the cancellation.
 
 For example, when GHC gets into a situation when it has only result of
@@ -343,50 +371,53 @@ that function was, it complains that the type-level function may be not
 injective. Fair enough! (In GHC 8.0, there is a way to annotate type-level
 functions telling that they are injective.)
 
-Remember that if $f$ has a retraction, then $f$ satisfies the cancelation
-law:
+Remember that if `$f$` has a retraction, then `$f$` satisfies the
+cancelation law:
 
-* If $f \circ h = f \circ k$, then $h = k$.
+* If `$f \circ h = f \circ k$`, then `$h = k$`.
 
-And if $f$ has a section, then $f$ satisfies another cancelation law:
+And if `$f$` has a section, then `$f$` satisfies another cancelation law:
 
-* If $h \circ f = k \circ f$, then $h = k$.
+* If `$h \circ f = k \circ f$`, then `$h = k$`.
 
-(We talked about $f$ having an inverse, but if $f$ as an inverse, then it
-happens to be *both retraction and section for $f$*, we will prove this
+(We talked about `$f$` having an inverse, but if `$f$` as an inverse, then
+it happens to be *both retraction and section for `$f$`*, we will prove this
 later in the post.)
 
-*Suppose a map $A \xrightarrow{f} B$ has a section. Then for any set $T$ and
-any pair of maps $B \xrightarrow{t_\text{1}} T$, $B \xrightarrow{t_\text{2}}
-T$ from $B$ to $T$*
+*Suppose a map `$A \xrightarrow{f} B$` has a section. Then for any set `$T$`
+and any pair of maps `$B \xrightarrow{t_\text{1}} T$`, `$B
+\xrightarrow{t_\text{2}} T$` from `$B$` to `$T$`.*
 
-$$\text{if } t_\text{1} \circ f = t_\text{2} \circ f \text{ then } t_\text{1} = t_\text{2}$$
+```mathjax
+\text{if } t_\text{1} \circ f = t_\text{2} \circ f \text{ then } t_\text{1} = t_\text{2}
+```
 
-**Definition:** *A map $f$ with this cancellation property (if $t_\text{1}
-\circ f = t_\text{2} \circ f$ then $t_\text{1}=t_\text{2}$) for every $T$ is
-called **epimorphism**.*
+**Definition:** *A map `$f$` with this cancellation property (if
+`$t_\text{1} \circ f = t_\text{2} \circ f$` then `$t_\text{1}=t_\text{2}$`)
+for every `$T$` is called **epimorphism**.*
 
-What happens here? Now we apply $f$ *before* some maps $t_\text{1}$ and
-$t_\text{2}$, and we conclude that if the results we get are the same, then
-those $t_\text{1}$ and $t_\text{2}$ are also the same. Intuitively, given a
-value $b$ from $B$ that goes as an input to $t_\text{1}$ and $t_\text{2}$,
-we should be able to “cancel” previous application of $f$ and tell which
-value $a$ from $A$ was given to $f$ so that it produced that particular $b$.
-The condition that $f$ has a section is exactly the condition that there is
-a way to go from values from $B$ (result of $f$) “back” to values from $A$
-(inputs for $f$). Note however that $A$ may be “bigger” than $B$ and the
-condition does not forbid $A$ from having several $a$ going to the same $b$.
+What happens here? Now we apply `$f$` *before* some maps `$t_\text{1}$` and
+`$t_\text{2}$`, and we conclude that if the results we get are the same,
+then those `$t_\text{1}$` and `$t_\text{2}$` are also the same. Intuitively,
+given a value `$b$` from `$B$` that goes as an input to `$t_\text{1}$` and
+`$t_\text{2}$`, we should be able to “cancel” previous application of `$f$`
+and tell which value `$a$` from `$A$` was given to `$f$` so that it produced
+that particular `$b$`. The condition that `$f$` has a section is exactly the
+condition that there is a way to go from values from `$B$` (result of `$f$`)
+“back” to values from `$A$` (inputs for `$f$`). Note however that `$A$` may
+be “bigger” than `$B$` and the condition does not forbid `$A$` from having
+several `$a$` going to the same `$b$`.
 
 ## Composing sections and retractions
 
 Now we are going to consider two really simple propositions.
 
-**Proposition:** *If $A \xrightarrow{f} B$ has a retraction and if $B
-\xrightarrow{g} C$ has a retraction, then $A \xrightarrow{g \circ f} C$ has
-a retraction.*
+**Proposition:** *If `$A \xrightarrow{f} B$` has a retraction and if `$B
+\xrightarrow{g} C$` has a retraction, then `$A \xrightarrow{g \circ f} C$`
+has a retraction.*
 
-**Proof:** Let $r_\text{1} \circ f = 1_\text{A}$ and $r_\text{2} \circ g =
-1_\text{B}$. Then a good guess for a retraction of the composite would be
+**Proof:** Let `$r_\text{1} \circ f = 1_\text{A}$` and `$r_\text{2} \circ g
+= 1_\text{B}$`. Then a good guess for a retraction of the composite would be
 the composite of the retractions *in the opposite order* (which is anyway
 the only order in which they can be composed).
 
@@ -394,50 +425,60 @@ the only order in which they can be composed).
 
 Using familiar tricks:
 
-$$r \circ (g \circ f) = (r_\text{1} \circ r_\text{2}) \circ (g \circ f) = r_\text{1} \circ (r_\text{2} \circ g) \circ f = r_\text{1} \circ 1_\text{B} \circ f$$
-$$= r_\text{1} \circ f = 1_\text{A}$$
+```mathjax
+r \circ (g \circ f) = (r_\text{1} \circ r_\text{2}) \circ (g \circ f) = r_\text{1} \circ (r_\text{2} \circ g) \circ f = r_\text{1} \circ 1_\text{B} \circ f
+= r_\text{1} \circ f = 1_\text{A}
+```
 
-This proves that $r$ is a retraction for $g \circ f$.
+This proves that `$r$` is a retraction for `$g \circ f$`.
 
 Proving that the composite of two maps each having sections, has itself a
 section is left as an exercise for the reader.
 
 ## Theorem of uniqueness of inverses
 
-**Theorem (uniqueness of inverses)**: *If $f$ has both a retraction $r$ and
-a section $s$, then $r = s$*.
+**Theorem (uniqueness of inverses\)**: *If `$f$` has both a retraction `$r$`
+and a section `$s$`, then `$r = s$`*.
 
-**Proof:** From the definition we have, if $A \xrightarrow{f} B$, both of
+**Proof:** From the definition we have, if `$A \xrightarrow{f} B$`, both of
 the equations
 
-$$r \circ f = 1_\text{A} \text{ and } f \circ s = 1_\text{B}$$
+```mathjax
+r \circ f = 1_\text{A} \text{ and } f \circ s = 1_\text{B}
+```
 
 Then by identity and associative law
 
-$$r = r \circ 1_\text{B} = r \circ (f \circ s) = (r \circ f) \circ s = 1_\text{A} \circ s = s$$
+```mathjax
+r = r \circ 1_\text{B} = r \circ (f \circ s) = (r \circ f) \circ s = 1_\text{A} \circ s = s
+```
 
 ## Another definition of isomorphism, automorphism
 
 Using the notions of “section” and “retraction” we can rephrase the
 definition of “isomorphism”.
 
-**Definitions:** *A map $f$ is called an **isomorphism** if there exists
-another map $f^{-1}$ which is both a retraction and a section for $f$*:
+**Definitions:** *A map `$f$` is called an **isomorphism** if there exists
+another map `$f^{-1}$` which is both a retraction and a section for `$f$`*:
 
-$$A \xrightarrow{f} B, f \circ f^{-1} = 1_\text{B}$$
-$$A \xleftarrow{f^{-1}} B, f^{-1} \circ f = 1_\text{A}$$
+```mathjax
+A \xrightarrow{f} B, f \circ f^{-1} = 1_\text{B}
+A \xleftarrow{f^{-1}} B, f^{-1} \circ f = 1_\text{A}
+```
 
-*Such a map $f^{-1}$ is called **the inverse map for** $f$; since both of
-the two equations are required, the theorem of uniqueness of inverses shows
-that there is only one inverse.*
+*Such a map `$f^{-1}$` is called **the inverse map for** `$f$`; since both
+of the two equations are required, the theorem of uniqueness of inverses
+shows that there is only one inverse.*
 
-**Definition:** *A map that is an endomap and at the same time an isomorphism is usually
-called by the one word **automorphism**.*
+**Definition:** *A map that is an endomap and at the same time an
+isomorphism is usually called by the one word **automorphism**.*
 
-[^1]:
-Sorry, I must admit I've abandoned the series as of 1st of July, 2017.
+***
 
-[^2]:
-OK, as one my friend noticed, from now on we rather discuss category of
-sets, not category theory (which is more abstract, there are no *elemenets*
-in objects for example). Too late for me to rewrite everything, though!
+> footnotes
+
+  1. Sorry, I must admit I've abandoned the series as of 1st of July, 2017.
+  2. OK, as one my friend noticed, from now on we rather discuss category of
+     sets, not category theory (which is more abstract, there are no
+     *elemenets* in objects for example). Too late for me to rewrite
+     everything, though!

@@ -21,14 +21,16 @@ executable mk-com
   hs-source-dirs:     app
   build-depends:      aeson
                     , base
-                    , blaze-html
                     , containers
-                    , data-default-class
                     , lens
                     , lens-aeson
+                    , lucid
+                    , mmark
+                    , mmark-ext
+                    , modern-uri
                     , mtl
-                    , pandoc
                     , shake
+                    , skylighting
                     , stache
                     , tagged
                     , text

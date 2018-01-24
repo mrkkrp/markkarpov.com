@@ -23,17 +23,17 @@ observing :: MonadParsec e s m
 ```
 
 As you may have guessed from the signature alone, it allows to “observe”
-parser failure without actually ending the parsing. It does not backtrack or
+parser failure without actually ending parsing. It does not backtrack or
 change behavior of `m a` parser in any way, but allows you to do something
 after failure.
 
 [This issue](https://github.com/mrkkrp/megaparsec/issues/111) shows why we
 decided to add this. Thanks to [Mike Ledger](https://github.com/mikeplus64)
-for opening it, as I myself didn't think about such use case. In short, Mike
-wanted to annotate `ParseError`s and “label expected items by the parser
-that they came from”. After some discussion we came to this new primitive
-that is a bit more general than a labelling helper. The following program
-demonstrates its main use case:
+for opening it, as I myself didn't think about such a use case. In short,
+Mike wanted to annotate `ParseError`s and “label expected items by the
+parser that they came from”. After some discussion we came to this new
+primitive that is a bit more general than a labelling helper. The following
+program demonstrates its main use case:
 
 ```haskell
 {-# LANGUAGE RecordWildCards #-}

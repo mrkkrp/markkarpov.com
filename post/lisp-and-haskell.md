@@ -7,9 +7,9 @@ date:
 ---
 
 Lisp and Haskell are arguably the most peculiar languages out there, at
-least they are from my experience. It's always interesting to compare tools
-of that level, so let me entertain you a bit with a story how I finally
-decided which of them is better (IMO).
+least they are from my experience. It's always interesting to compare such
+tools, so let me entertain you a bit with a story how I finally decided
+which of them is better (IMO).
 
 When I first found out about Common Lisp, it took my breath away. Seriously,
 Lisp has unmatched consistency in syntax and good design as well as unique
@@ -246,18 +246,18 @@ languages but with one huge type including all possible values. Here is a
 paragraph I find important:
 
 > And this is precisely what is wrong with dynamically typed languages:
-> rather than affording the *freedom* to ignore types, they instead impose
-> the *bondage* of restricting attention to a *single* type! Every single
-> value has to be a value of that type, you have no choice! Even if in a
-> particular situation we are absolutely certain that a particular value is,
-> say, an integer, we have no choice but to regard it as a value of the “one
-> true type” that is *classified*, not typed, as an integer. Conceptually,
-> this is just rubbish, but it has serious, tangible penalties. For one, you
-> are depriving yourself of the ability to state and enforce the *invariant*
-> that the value at a particular program point must be an integer. For
-> another, you are imposing a serious bit of run-time overhead to represent
-> the class itself (a tag of some sort) and to check and remove and apply
-> the class tag on the value each time it is used.
+  rather than affording the *freedom* to ignore types, they instead impose
+  the *bondage* of restricting attention to a *single* type! Every single
+  value has to be a value of that type, you have no choice! Even if in a
+  particular situation we are absolutely certain that a particular value is,
+  say, an integer, we have no choice but to regard it as a value of the “one
+  true type” that is *classified*, not typed, as an integer. Conceptually,
+  this is just rubbish, but it has serious, tangible penalties. For one, you
+  are depriving yourself of the ability to state and enforce the *invariant*
+  that the value at a particular program point must be an integer. For
+  another, you are imposing a serious bit of run-time overhead to represent
+  the class itself (a tag of some sort) and to check and remove and apply
+  the class tag on the value each time it is used.
 
 The lack of the immense power to express meaning of your program on type
 level is another downside of Lisp. (Yes, you can specify types in Common

@@ -66,8 +66,8 @@ data ShortByteString = SBS ByteArray#
 Let's refresh what `ByteArray#` is:
 
 > A `ByteArray#` is a just a region of raw memory in the garbage-collected
-> heap, which is not scanned for pointers. It carries its own size (in
-> bytes).
+  heap, which is not scanned for pointers. It carries its own size (in
+  bytes).
 
 Not only we do not have to worry about memory fragmentation, but
 `ByteArray#` takes care of storing its own size, so the representation is
@@ -80,10 +80,10 @@ operations as `ByteString`. Here goes a quote about where to use
 `ShortByteString`:
 
 > It is suitable for use as an internal representation for code that needs
-> to keep many short strings in memory, but it should not be used as an
-> interchange type. That is, it should not generally be used in public APIs.
-> The `ByteString` type is usually more suitable for use in interfaces; it
-> is more flexible and it supports a wide range of operations.
+  to keep many short strings in memory, but it should not be used as an
+  interchange type. That is, it should not generally be used in public APIs.
+  The `ByteString` type is usually more suitable for use in interfaces; it
+  is more flexible and it supports a wide range of operations.
 
 It's also worth remembering that conversion between `ShortByteString` and
 `ByteString` is an *O(n)* operation involving copying of payload.

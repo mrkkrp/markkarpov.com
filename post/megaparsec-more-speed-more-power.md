@@ -864,6 +864,6 @@ extra-deps:
 - parser-combinators-0.1.0
 ```
 
-I'm thankful for any feedback you may have. You can
-open [issues on GitHub](https://github.com/mrkkrp/megaparsec/issues) or
-reach [me on Twitter](https://twitter.com/mrkkrp).
+I'm thankful for any feedback you may have. You can open [issues on
+GitHub](https://github.com/mrkkrp/megaparsec/issues) or reach [me on
+Twitter](social:twitter).

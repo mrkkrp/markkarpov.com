@@ -229,7 +229,7 @@ More formally, this approach is called *final tagless encoding*, you can
 read more about it
 [here](http://okmij.org/ftp/tagless-final/course/lecture.pdf).
 
-### Efficiency
+### More efficient
 
 Now we can have a very efficient implementation in terms of `IO`:
 
@@ -270,7 +270,7 @@ case GHC is able to specialize by itself).
 Free monads can't possibly compete with this approach in terms of
 performance.
 
-### Inspection
+### Still inspectable
 
 The second reason to prefer writing in polymorphic monads to writing in free
 monads is that this approach is *strictly more powerful* in the sense that
@@ -295,7 +295,7 @@ Let's see:
 * still we can do everything that we could do if we wrote `myProgram` in
   free monad directly.
 
-### Composability
+### Composable
 
 If we want to combine actions from two different type classes, we just need
 to merge the constraints:

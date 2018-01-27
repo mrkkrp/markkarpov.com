@@ -26,7 +26,6 @@ import Data.Text (Text)
 import Data.Time
 import Development.Shake
 import Development.Shake.FilePath
-import Skylighting (defaultFormatOpts)
 import Text.Mustache
 import Text.URI (URI)
 import Text.URI.Lens (uriPath)
@@ -435,7 +434,7 @@ getPost env path = do
             , Ext.mathJax (Just '$')
             , Ext.obfuscateEmail "protected-email"
             , Ext.punctuationPrettifier
-            , Ext.skylighting defaultFormatOpts
+            , Ext.skylighting
             , Ext.toc "toc" toc
             , addTableClasses
             , addImageClass

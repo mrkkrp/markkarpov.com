@@ -126,20 +126,20 @@ itself, but I decided to keep them there, just in case.
 
 Let's see if we are close to the C implementation with this:
 
-Case                  | Allocated | GCs |   Max
-----------------------|----------:|----:|-----:
-hamming (C)/5         |     1,360 |  0  |   400
-hamming (C)/10        |     2,408 |  0  |   688
-hamming (C)/20        |     4,056 |  0  | 1,096
-hamming (C)/40        |     6,056 |  0  | 1,368
-hamming (C)/80        |     8,504 |  0  | 1,464
-hamming (C)/160       |    13,384 |  0  | 1,656
-hamming (Haskell)/5   |     1,344 |  0  |   400
-hamming (Haskell)/10  |     2,392 |  0  |   688
-hamming (Haskell)/20  |     4,040 |  0  | 1,096
-hamming (Haskell)/40  |     6,040 |  0  | 1,368
-hamming (Haskell)/80  |     8,488 |  0  | 1,464
-hamming (Haskell)/160 |    13,368 |  0  | 1,656
+Case                  | Allocated |   Max
+----------------------|----------:|-----:
+hamming (C)/5         |     1,360 |   400
+hamming (C)/10        |     2,408 |   688
+hamming (C)/20        |     4,056 | 1,096
+hamming (C)/40        |     6,056 | 1,368
+hamming (C)/80        |     8,504 | 1,464
+hamming (C)/160       |    13,384 | 1,656
+hamming (Haskell)/5   |     1,344 |   400
+hamming (Haskell)/10  |     2,392 |   688
+hamming (Haskell)/20  |     4,040 | 1,096
+hamming (Haskell)/40  |     6,040 | 1,368
+hamming (Haskell)/80  |     8,488 | 1,464
+hamming (Haskell)/160 |    13,368 | 1,656
 
 The weigh report shows that memory consumption is essentially the same.
 And here is a Criterion benchmark:
@@ -267,20 +267,20 @@ Some observations:
    Even though the inner `Char` and `Int` in `Iter` are unboxed, the `Iter`
    itself is a box, so forcing it proved to be a good thing.
 
-Case                  | Allocated | GCs |   Max
-----------------------|----------:|----:|-----:
-jaro (C)/5            |     4,592 |  0  |   400
-jaro (C)/10           |     5,640 |  0  |   688
-jaro (C)/20           |     7,288 |  0  | 1,096
-jaro (C)/40           |     9,288 |  0  | 1,368
-jaro (C)/80           |    11,736 |  0  | 1,464
-jaro (C)/160          |    16,616 |  0  | 1,656
-jaro (Haskell)/5      |     5,680 |  0  |   400
-jaro (Haskell)/10     |     7,480 |  0  |   688
-jaro (Haskell)/20     |    10,696 |  0  | 1,096
-jaro (Haskell)/40     |    15,832 |  0  | 1,368
-jaro (Haskell)/80     |    24,560 |  0  | 1,464
-jaro (Haskell)/160    |    42,000 |  0  | 1,656
+Case                  | Allocated |   Max
+----------------------|----------:|-----:
+jaro (C)/5            |     4,592 |   400
+jaro (C)/10           |     5,640 |   688
+jaro (C)/20           |     7,288 | 1,096
+jaro (C)/40           |     9,288 | 1,368
+jaro (C)/80           |    11,736 | 1,464
+jaro (C)/160          |    16,616 | 1,656
+jaro (Haskell)/5      |     5,680 |   400
+jaro (Haskell)/10     |     7,480 |   688
+jaro (Haskell)/20     |    10,696 | 1,096
+jaro (Haskell)/40     |    15,832 | 1,368
+jaro (Haskell)/80     |    24,560 | 1,464
+jaro (Haskell)/160    |    42,000 | 1,656
 
 Memory consumption looks OK. Our Haskell implementation allocates more but
 residency is the same as with C version (you can track max residency with
@@ -406,20 +406,20 @@ example apply to `levenshtein` as well. Note that `v0` and `v1` are merged
 into one vector `v`. So I just add offset equal to length of a single vector
 to switch to `v1`, which is as efficient as swapping pointers.
 
-Case                      | Allocated | GCs |   Max
---------------------------|----------:|----:|-----:
-levenshtein (C)/5         |     1,208 |  0  |   400
-levenshtein (C)/10        |     2,256 |  0  |   688
-levenshtein (C)/20        |     3,904 |  0  | 1,096
-levenshtein (C)/40        |     5,904 |  0  | 1,368
-levenshtein (C)/80        |     8,352 |  0  | 1,464
-levenshtein (C)/160       |    13,232 |  0  | 1,656
-levenshtein (Haskell)/5   |     2,208 |  0  |   400
-levenshtein (Haskell)/10  |     4,096 |  0  |   688
-levenshtein (Haskell)/20  |     7,424 |  0  | 1,096
-levenshtein (Haskell)/40  |    12,784 |  0  | 1,368
-levenshtein (Haskell)/80  |    21,952 |  0  | 1,464
-levenshtein (Haskell)/160 |    40,272 |  0  | 1,656
+Case                      | Allocated |   Max
+--------------------------|----------:|-----:
+levenshtein (C)/5         |     1,208 |   400
+levenshtein (C)/10        |     2,256 |   688
+levenshtein (C)/20        |     3,904 | 1,096
+levenshtein (C)/40        |     5,904 | 1,368
+levenshtein (C)/80        |     8,352 | 1,464
+levenshtein (C)/160       |    13,232 | 1,656
+levenshtein (Haskell)/5   |     2,208 |   400
+levenshtein (Haskell)/10  |     4,096 |   688
+levenshtein (Haskell)/20  |     7,424 | 1,096
+levenshtein (Haskell)/40  |    12,784 | 1,368
+levenshtein (Haskell)/80  |    21,952 | 1,464
+levenshtein (Haskell)/160 |    40,272 | 1,656
 
 Similarly to `jaro`, Haskell version allocates more but the max residency
 stays the same for both C and Haskell implementations.

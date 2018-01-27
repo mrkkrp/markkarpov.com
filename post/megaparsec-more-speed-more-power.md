@@ -674,20 +674,20 @@ And here are the benchmarks (made with current Megaparsec master):
 
 Memory:
 
-Case                        | Allocated | GCs |   Max
-----------------------------|----------:|----:|------:
-manyTill (string)/500       |   160,312 |  0  | 12,024
-manyTill (string)/1000      |   320,312 |  0  | 24,024
-manyTill (string)/2000      |   640,312 |  1  | 48,024
-manyTill (string)/4000      | 1,280,312 |  2  | 96,024
-manyTill (text)/500         |   233,832 |  0  |  1,192
-manyTill (text)/1000        |   466,832 |  0  |  2,192
-manyTill (text)/2000        |   932,832 |  1  |  4,192
-manyTill (text)/4000        | 1,864,832 |  3  |  8,192
-manyTill (byte string)/500  |   164,536 |  0  |    104
-manyTill (byte string)/1000 |   328,536 |  0  |    104
-manyTill (byte string)/2000 |   659,136 |  1  |    104
-manyTill (byte string)/4000 | 1,320,600 |  2  |  4,136
+Case                        | Allocated |   Max
+----------------------------|----------:|------:
+manyTill (string)/500       |   160,312 | 12,024
+manyTill (string)/1000      |   320,312 | 24,024
+manyTill (string)/2000      |   640,312 | 48,024
+manyTill (string)/4000      | 1,280,312 | 96,024
+manyTill (text)/500         |   233,832 |  1,192
+manyTill (text)/1000        |   466,832 |  2,192
+manyTill (text)/2000        |   932,832 |  4,192
+manyTill (text)/4000        | 1,864,832 |  8,192
+manyTill (byte string)/500  |   164,536 |    104
+manyTill (byte string)/1000 |   328,536 |    104
+manyTill (byte string)/2000 |   659,136 |    104
+manyTill (byte string)/4000 | 1,320,600 |  4,136
 
 Note how even though max residency with `String` is higher, it allocates
 less than `Text`.
@@ -719,40 +719,40 @@ Attoparsec does not make a secret as to where the source of its speed lies
 
 And allocations:
 
-Case             | Allocated | GCs |   Max
------------------|----------:|----:|-----:
-string/500       |    21,760 |   0 | 1,072
-string/1000      |    42,744 |   0 | 2,072
-string/2000      |    84,744 |   0 | 4,072
-string/4000      |   168,744 |   0 | 8,072
-many/500         |   201,928 |   0 | 1,120
-many/1000        |   402,912 |   0 | 2,120
-many/2000        |   804,912 |   1 | 4,120
-many/4000        | 1,608,912 |   3 | 8,120
-some/500         |   221,856 |   0 | 1,120
-some/1000        |   442,840 |   0 | 2,120
-some/2000        |   884,840 |   1 | 4,120
-some/4000        | 1,768,840 |   3 | 8,120
-manyTill/500     |   246,096 |   0 | 1,184
-manyTill/1000    |   491,080 |   0 | 2,184
-manyTill/2000    |   981,080 |   1 | 4,184
-manyTill/4000    | 1,961,080 |   3 | 8,184
-someTill/500     |   337,648 |   0 | 1,184
-someTill/1000    |   674,632 |   1 | 2,184
-someTill/2000    | 1,348,632 |   2 | 4,184
-someTill/4000    | 2,696,632 |   5 | 8,184
-takeWhileP/500   |    21,696 |   0 | 1,072
-takeWhileP/1000  |    42,680 |   0 | 2,072
-takeWhileP/2000  |    84,680 |   0 | 4,072
-takeWhileP/4000  |   168,680 |   0 | 8,072
-takeWhile1P/500  |    21,696 |   0 | 1,072
-takeWhile1P/1000 |    42,680 |   0 | 2,072
-takeWhile1P/2000 |    84,680 |   0 | 4,072
-takeWhile1P/4000 |   168,680 |   0 | 8,072
-takeP/500        |    21,728 |   0 | 1,072
-takeP/1000       |    42,712 |   0 | 2,072
-takeP/2000       |    84,712 |   0 | 4,072
-takeP/4000       |   168,712 |   0 | 8,072
+Case             | Allocated |   Max
+-----------------|----------:|-----:
+string/500       |    21,760 | 1,072
+string/1000      |    42,744 | 2,072
+string/2000      |    84,744 | 4,072
+string/4000      |   168,744 | 8,072
+many/500         |   201,928 | 1,120
+many/1000        |   402,912 | 2,120
+many/2000        |   804,912 | 4,120
+many/4000        | 1,608,912 | 8,120
+some/500         |   221,856 | 1,120
+some/1000        |   442,840 | 2,120
+some/2000        |   884,840 | 4,120
+some/4000        | 1,768,840 | 8,120
+manyTill/500     |   246,096 | 1,184
+manyTill/1000    |   491,080 | 2,184
+manyTill/2000    |   981,080 | 4,184
+manyTill/4000    | 1,961,080 | 8,184
+someTill/500     |   337,648 | 1,184
+someTill/1000    |   674,632 | 2,184
+someTill/2000    | 1,348,632 | 4,184
+someTill/4000    | 2,696,632 | 8,184
+takeWhileP/500   |    21,696 | 1,072
+takeWhileP/1000  |    42,680 | 2,072
+takeWhileP/2000  |    84,680 | 4,072
+takeWhileP/4000  |   168,680 | 8,072
+takeWhile1P/500  |    21,696 | 1,072
+takeWhile1P/1000 |    42,680 | 2,072
+takeWhile1P/2000 |    84,680 | 4,072
+takeWhile1P/4000 |   168,680 | 8,072
+takeP/500        |    21,728 | 1,072
+takeP/1000       |    42,712 | 2,072
+takeP/2000       |    84,712 | 4,072
+takeP/4000       |   168,712 | 8,072
 
 Now that Megaparsec has grown the same sort of “muscle” as Attoparsec, will
 it make a difference?

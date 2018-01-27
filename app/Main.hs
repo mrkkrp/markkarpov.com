@@ -249,7 +249,7 @@ main = shakeArgs shakeOptions $ do
     putNormal ("Cleaning files in " ++ outdir)
     removeFilesAfter outdir ["//*"]
 
-  commonEnv <- newCache $ \() -> do
+  commonEnv <- fmap ($ ()) . newCache $ \() -> do
     let commonEnvFile = "config/env.yaml"
     need [commonEnvFile]
     r <- liftIO (Y.decodeFileEither commonEnvFile)
@@ -257,10 +257,14 @@ main = shakeArgs shakeOptions $ do
       Left  err   -> fail (Y.prettyPrintParseException err)
       Right value -> return value
 
-  templates <- newCache $ \() -> do
+  templates <- fmap ($ ()) . newCache $ \() -> do
     let templateP = "templates/*.mustache"
     getDirFiles (Pat templateP) >>= need
     liftIO (compileMustacheDir "default" (takeDirectory templateP))
+
+  getPost <- newCache $ \path -> do
+    env <- commonEnv
+    getPostHelper env path
 
   unPat (outPattern @'CssR) %> \out ->
     copyFile' (unTagged (mapIn @'CssR) out) out
@@ -278,17 +282,27 @@ main = shakeArgs shakeOptions $ do
     copyFile' (unTagged (mapIn @'AttachmentR) out) out
 
   unPat (outPattern @'PostR) %> \out -> do
-    env <- commonEnv ()
-    ts  <- templates ()
+    env <- commonEnv
+    ts  <- templates
     let src = unTagged (mapIn @'PostR) out
     need [src]
-    (v, content) <- getPost env src
+    (v, content) <- getPost src
     renderAndWrite ts ["post","default"] (Just content)
       [menuItem Posts env, v, mkLocation out]
       out
 
-  let gatherPosts = do
-        env <- commonEnv ()
+  let gatherLocalInfo :: forall r a. (Route r, Ord a)
+        => Proxy r
+        -> (LocalInfo -> a)
+        -> Action [LocalInfo]
+      gatherLocalInfo Proxy f = do
+        ps' <- getDirFiles (pat @r)
+        fmap (sortBy (comparing f)) . forM ps' $ \post -> do
+          need [post]
+          v <- getPost post >>= interpretValue . fst
+          return v { localFile = dropDirectory1 (unTagged (mapOut @r) post) }
+      gatherPosts = do
+        env <- commonEnv
         ips <- fmap InternalPost
           <$> gatherLocalInfo @'PostR Proxy (Down . localPublished)
         let ets = parseExternalPosts "external_posts" env
@@ -296,8 +310,8 @@ main = shakeArgs shakeOptions $ do
           sortBy (comparing (Down . postInfoPublished)) (ips ++ ets)
 
   cmnOut postsFile %> \out -> do
-    env <- commonEnv ()
-    ts  <- templates ()
+    env <- commonEnv
+    ts  <- templates
     ps  <- gatherPosts
     renderAndWrite ts ["posts","default"] Nothing
       [ menuItem Posts env
@@ -306,8 +320,8 @@ main = shakeArgs shakeOptions $ do
       out
 
   cmnOut atomFile %> \out -> do
-    env <- commonEnv ()
-    ts  <- templates ()
+    env <- commonEnv
+    ts  <- templates
     ps  <- gatherPosts
     let feedUpdated = renderIso8601 $ maximum (normalizedUpdated <$> ps)
     renderAndWrite ts ["atom-feed"] Nothing
@@ -318,31 +332,31 @@ main = shakeArgs shakeOptions $ do
       out
 
   unPat (outPattern @'MTutorialR) %> \out -> do
-    env <- commonEnv ()
-    ts  <- templates ()
+    env <- commonEnv
+    ts  <- templates
     let src = unTagged (mapIn @'MTutorialR) out
     need [src]
-    (v, content) <- getPost env src
+    (v, content) <- getPost src
     renderAndWrite ts ["post","default"] (Just content)
       [menuItem LearnHaskell env, v, mkLocation out]
       out
 
   unPat (outPattern @'TutorialR) %> \out -> do
-    env <- commonEnv ()
-    ts  <- templates ()
+    env <- commonEnv
+    ts  <- templates
     let src = unTagged (mapIn @'TutorialR) out
     need [src]
-    (v, content) <- getPost env src
+    (v, content) <- getPost src
     renderAndWrite ts ["post","default"] (Just content)
       [menuItem LearnHaskell env, v, mkLocation out]
       out
 
   unPat (outPattern @'ResumeHtmlR) %> \out -> do
-    env <- commonEnv ()
-    ts  <- templates ()
+    env <- commonEnv
+    ts  <- templates
     let src = unTagged (mapIn @'ResumeHtmlR) out
     need [src]
-    (v, content) <- getPost env src
+    (v, content) <- getPost src
     renderAndWrite ts ["post","default"] (Just content)
       [menuItem Resume env, v]
       out
@@ -351,8 +365,8 @@ main = shakeArgs shakeOptions $ do
     copyFile' (unTagged (mapIn @'ResumePdfR) out) out
 
   cmnOut learnFile %> \out -> do
-    env <- commonEnv ()
-    ts  <- templates ()
+    env <- commonEnv
+    ts  <- templates
     mts <- gatherLocalInfo @'MTutorialR Proxy localDifficulty
     its <- fmap InternalPost <$>
       gatherLocalInfo @'TutorialR  Proxy (Down . localPublished)
@@ -366,19 +380,19 @@ main = shakeArgs shakeOptions $ do
       out
 
   unPat (outPattern @'AboutR) %> \out -> do
-    env <- commonEnv ()
-    ts  <- templates ()
+    env <- commonEnv
+    ts  <- templates
     let src = unTagged (mapIn @'AboutR) out
     need [src]
-    (v, content) <- getPost env src
+    (v, content) <- getPost src
     renderAndWrite ts ["post", "default"] (Just content)
       [menuItem About env, v]
       out
 
   let justFromTemplate :: Either Text MenuItem -> PName -> FilePath -> Action ()
       justFromTemplate etitle template out = do
-        env <- commonEnv ()
-        ts  <- templates ()
+        env <- commonEnv
+        ts  <- templates
         renderAndWrite ts [template,"default"] Nothing
           [ either (const env) (`menuItem` env) etitle
           , provideAs "title" (either id menuItemTitle etitle) ]
@@ -419,8 +433,8 @@ menuItem item = over (key "main_menu" . _Array) . V.map $ \case
       else m
   v -> v
 
-getPost :: (MonadIO m, FromJSON v) => Value -> FilePath -> m (v, TL.Text)
-getPost env path = do
+getPostHelper :: Value -> FilePath -> Action (Value, TL.Text)
+getPostHelper env path = do
   txt <- liftIO (T.readFile path)
   case MMark.parse path txt of
     Left errs -> fail (MMark.parseErrorsPretty txt errs)
@@ -441,21 +455,14 @@ getPost env path = do
             , provideSocialUrls env
             ]
             doc
-      v <-
-        case fromJSON $ fromMaybe (object []) (MMark.projectYaml doc) of
-          Error str -> fail str
-          Success a -> return a
+          v = fromMaybe (object []) (MMark.projectYaml doc)
       return (v, L.renderText (MMark.render r))
 
-getPost' :: (MonadIO m, FromJSON v) => FilePath -> m v
-getPost' path = do -- TODO reduce repetition here
-  txt <- liftIO (T.readFile path)
-  case MMark.parse path txt of
-    Left errs -> fail (MMark.parseErrorsPretty txt errs)
-    Right doc ->
-      case fromJSON $ fromMaybe (object []) (MMark.projectYaml doc) of
-        Error str -> fail str
-        Success a -> return a
+interpretValue :: FromJSON v => Value -> Action v
+interpretValue v =
+  case fromJSON v of
+    Error str -> fail str
+    Success a -> return a
 
 mkContext :: [Value] -> Value
 mkContext = foldl1' f
@@ -471,17 +478,6 @@ mkLocation = provideAs "location" . dropDirectory1
 
 provideAs :: ToJSON v => Text -> v -> Value
 provideAs k v = Object (HM.singleton k (toJSON v))
-
-gatherLocalInfo :: forall r a. (Route r, Ord a)
-  => Proxy r
-  -> (LocalInfo -> a)
-  -> Action [LocalInfo]
-gatherLocalInfo Proxy f = do
-  ps' <- getDirFiles (pat @r)
-  fmap (sortBy (comparing f)) . forM ps' $ \post -> do
-    need [post]
-    v <- getPost' post
-    return v { localFile = dropDirectory1 (unTagged (mapOut @r) post) }
 
 parseDay :: Monad m => Text -> m Day
 parseDay = parseTimeM True defaultTimeLocale "%B %e, %Y" . T.unpack

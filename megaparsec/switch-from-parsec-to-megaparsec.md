@@ -7,6 +7,9 @@ date:
   updated: September 22, 2017
 ---
 
+```toc
+```
+
 This tutorial explains the practical differences between the two libraries
 that you will need to address if you choose to undertake the switch.
 Remember, all the functionality available in Parsec is available in

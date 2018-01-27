@@ -3,7 +3,7 @@ title: Free monad considered harmful
 desc: Before you start writing your code using free monads read this, you may change your mind.
 date:
   published: September 27, 2017
-  updated: September 29, 2017
+  updated: January 25, 2018
 ---
 
 Now and then blog posts explaining and promoting use of free monads pop up,
@@ -23,9 +23,9 @@ in free monads, I can assume that the reader is already familiar with the
 concept. Nevertheless, let's reiterate quickly some points, so we have a
 proper continuous narrative here.
 
-So free monad is a data type that given a functor `f` gives us a monad `Free
-f` “for free” (or the most “unconstrained” monad we can get for that
-functor), like this:
+Free monad is a data type that given a functor `f` gives us a monad `Free f`
+“for free” (or the most “unconstrained” monad we can get for that functor),
+like this:
 
 ```haskell
 data Free f a
@@ -138,11 +138,24 @@ instance Functor f => Monad (Free f) where
 What does it mean? Every time we use `(>>=)` (and with `do` notation it's
 all the time), the whole structure accumulated so far needs to be traversed
 with `fmap` and then at the end (where `Pure` thing hangs) `(>>= f)` will be
-applied and chances are the “snake” will grow by one layer. This is
-obviously inefficient.
+applied and chances are the “snake” will grow by one layer. With `(>>=)`
+being left-associative, this is obviously inefficient.
 
-There are efforts to improve the situation, for example in the paper [“Freer
-monads, more extensible
+There is a way to deal with this though. Since the reason why
+*left-associative* `(>>=)` is inefficient is pretty much the same why
+*left-associative* `(++)` would be inefficient, we could use an analogue of
+difference lists for monads which is called *codensity monad*, and is best
+explained in the paper [“Asymptotic Improvement of Computations over Free
+Monads”](http://www.janis-voigtlaender.eu/papers/AsymptoticImprovementOfComputationsOverFreeMonads.pdf).
+This approach makes construction of free monads more efficient, but when we
+want to inspect the resulting data structure we still must “build” it, just
+like we must apply all the composed functions with difference lists to get a
+“normal” list out of it. See a ready-to-use solution is the
+[`Control.Monad.Condensity`](https://hackage.haskell.org/package/kan-extensions/docs/Control-Monad-Codensity.html)
+module.
+
+Similarly, there are other efforts to improve the situation, for example in
+the paper [“Freer monads, more extensible
 effects”](http://okmij.org/ftp/Haskell/extensible/more.pdf) the authors
 introduce *freer monads* which further lighten prerequisites on the type
 `f`, so it doesn't even need to be a `Functor`. The solution involves
@@ -212,7 +225,11 @@ myProgram = do
   printLine (a ++ b)
 ```
 
-### Efficiency
+More formally, this approach is called *final tagless encoding*, you can
+read more about it
+[here](http://okmij.org/ftp/tagless-final/course/lecture.pdf).
+
+### More efficient
 
 Now we can have a very efficient implementation in terms of `IO`:
 
@@ -253,7 +270,7 @@ case GHC is able to specialize by itself).
 Free monads can't possibly compete with this approach in terms of
 performance.
 
-### Inspection
+### Still inspectable
 
 The second reason to prefer writing in polymorphic monads to writing in free
 monads is that this approach is *strictly more powerful* in the sense that
@@ -278,7 +295,7 @@ Let's see:
 * still we can do everything that we could do if we wrote `myProgram` in
   free monad directly.
 
-### Composability
+### Composable
 
 If we want to combine actions from two different type classes, we just need
 to merge the constraints:
@@ -331,5 +348,5 @@ representation quite straightforwardly.
 Of course the title is a click bait and I do not mean to be so categorical.
 Free monads do have their uses, but in most cases I'd think twice before
 committing to that style of programming because it's somewhat tedious and
-inefficient. So the post is just a fair warning and a demonstration of
-alternative solutions.
+inefficient (unless you're careful). So the post is just a fair warning and
+a demonstration of alternative solutions.

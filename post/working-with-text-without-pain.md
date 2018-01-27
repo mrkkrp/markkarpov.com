@@ -37,15 +37,14 @@ dangerous for health. In retrospect, I can name the following flaws:
   to reach keys that are not in the home row. Why do those completely
   unnatural movements? This decreases accuracy too.
 
-* As an Emacs user, I had to use the <kbd>⎈ Ctrl</kbd> key a lot and so I
-  followed the popular advice to make <kbd>⇪ Caps Lock</kbd> to function as
-  the left <kbd>⎈ Ctrl</kbd>. This looked like a win at first (certainly
-  better than the default position of the left <kbd>⎈ Ctrl</kbd>). Only
-  later I realized that it makes my poor left pinkie do even more work.
-  Also, this introduces an additional asymmetry because I did not make my
-  <kbd>↵ Enter</kbd> to function as the right <kbd>⎈ Ctrl</kbd>. So I
-  quickly started to use the <kbd>⇪ Caps Lock</kbd> in lieu of both <kbd>⎈
-  Ctrl</kbd> keys: left and right.
+* As an Emacs user, I had to use the [⎈ Ctrl][kbd] key a lot and so I
+  followed the popular advice to make [⇪ Caps Lock][kbd] to function as the
+  left [⎈ Ctrl][kbd]. This looked like a win at first (certainly better than
+  the default position of the left [⎈ Ctrl][kbd]). Only later I realized
+  that it makes my poor left pinkie do even more work. Also, this introduces
+  an additional asymmetry because I did not make my [↵ Enter][kbd] to
+  function as the right [⎈ Ctrl][kbd]. So I quickly started to use the [⇪
+  Caps Lock][kbd] in lieu of both [⎈ Ctrl][kbd] keys: left and right.
 
 It did not take long before strange sensations in my left pinkie started to
 undermine my productivity as a keyboard user. Because of all those
@@ -63,9 +62,9 @@ follows that “a better keyboard” should:
 
 * Should have straight layout of keys for each hand so they form a “matrix”.
 
-* Should have all modifier keys (<kbd>⇧ Shift</kbd>, <kbd>⎈ Ctrl</kbd>, and
-  <kbd>⎇ Alt</kbd>) in symmetric positions for each hand, to help divide
-  work load evenly between the hands.
+* Should have all modifier keys ([⇧ Shift][kbd], [⎈ Ctrl][kbd], and [⎇
+  Alt][kbd]) in symmetric positions for each hand, to help divide work load
+  evenly between hands.
 
 * It should be mechanical, since mechanical keyboards feel better and
   hopefully, last longer.
@@ -107,23 +106,22 @@ starting key sequences. How long should every such a key sequence be? Of
 course, we want it to be as short as possible, but we cannot use only one
 key after the introducing key, because the total number of combinations
 won't be satisfactory. But we can use two keys after the introducing key
-(<kbd>Page Down</kbd> in my case), then we get 26 × 26 = 676 combinations!
-(In practice, we get even more because of punctuation and numbers.) Not bad
-at all. There are enough combinations for us to prefer those that have some
+([Page Down][kbd] in my case), then we get 26 × 26 = 676 combinations! (In
+practice, we get even more because of punctuation and numbers.) Not bad at
+all. There are enough combinations for us to prefer those that have some
 mnemonic value. For example, when I need to invoke `grep` from Emacs I just
-type <kbd>Page Down</kbd> <kbd>g</kbd> <kbd>r</kbd>.
+type [Page Down][kbd] [g][kbd] [r][kbd].
 
 ## Sticky keys
 
 As a continuation of the previous point about key sequences being better
 than key chords, here comes the “sticky keys” feature. This feature is
 provided by all major operating systems and desktop environments and allows
-to type modifier keys like <kbd>⇧ Shift</kbd> and <kbd>⎈ Ctrl</kbd> *before*
-the key you want to add them to. So to type a capital “A” I hit <kbd>⇧
-Shift</kbd> without holding it I then type “a” and here we go—an easier,
-better typing experience. Another benefit is *increased accuracy*, as it's
-virtually impossible to “apply” <kbd>⇧ Shift</kbd> to more key strokes than
-intended.
+to type modifier keys like [⇧ Shift][kbd] and [⎈ Ctrl][kbd] *before* the key
+you want to add them to. So to type a capital “A” I hit [⇧ Shift][kbd]
+without holding it I then type “a” and here we go—an easier, better typing
+experience. Another benefit is *increased accuracy*, as it's virtually
+impossible to “apply” [⇧ Shift][kbd] to more key strokes than intended.
 
 I started to use this technique in 2015 and now if it's disabled for some
 reason I just don't bother to type capital letters at all because it
@@ -139,14 +137,14 @@ try!
 ## Modal editing
 
 Even with “sticky keys” and sequential key bindings for most tasks, common,
-intensive editing commands like “go to beginning of the line” (<kbd>⎈
-Ctrl</kbd>+<kbd>a</kbd> by default in Emacs) still require holding a
-modifier key. “Sticky keys” is not exactly a win in this case, as
-combinations like <kbd>⎈ Ctrl</kbd>+<kbd>n</kbd> may need to be pressed
-several times in a row. The fact that the number of keys located in
-convenient positions is limited suggests that we must use different “layers”
-for editing: one layer would input keys as usual while another layer would
-run various common editing commands using the same keys.
+intensive editing commands like “go to beginning of the line” ([⎈
+Ctrl][kbd]+[a][kbd] by default in Emacs) still require holding a modifier
+key. “Sticky keys” is not exactly a win in this case, as combinations like
+[⎈ Ctrl][kbd]+[n][kbd] may need to be pressed several times in a row. The
+fact that the number of keys located in convenient positions is limited
+suggests that we must use different “layers” for editing: one layer would
+input keys as usual while another layer would run various common editing
+commands using the same keys.
 
 The idea is nothing new, of course, this is how Vi works. The technique is
 called *modal editing* because we sort of have (at least) two modes of
@@ -172,9 +170,9 @@ have a good keyboard and do not ever hold any keys/use key chords.
 
 However, Dvorak will make typing more comfortable. I can confirm this as a
 person [who switched a year ago](/post/dvorak-rocks.html). I still remember
-the difference. If you don't want to take my word for it, here
-is [this article](http://infohost.nmt.edu/~shipman/ergo/parkinson.html)
-which explains why Dvorak is objectively better for typing English.
+the difference. If you don't want to take my word for it, here is [this
+article](http://infohost.nmt.edu/~shipman/ergo/parkinson.html) which
+explains why Dvorak is objectively better for typing English.
 
 ## Conclusion
 
@@ -184,3 +182,5 @@ combination of hardware and settings that allows me to be an efficient
 keyboard user and avoid any discomfort now and later. Hearing stories about
 pains in hands from others, I usually try to convince them to at least buy
 an ergonomic keyboard. Now I have the whole article to send them to!
+
+[kbd]: kbd:

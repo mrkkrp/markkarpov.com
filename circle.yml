@@ -14,6 +14,8 @@ dependencies:
 
   override:
     - (curl -sSL https://get.haskellstack.org/ | sh) || true
+    - stack upgrade
+    - stack --version
     - stack setup
     - stack build
 
@@ -22,7 +24,7 @@ test:
     - stack test
     - stack exec mk-com -- clean
     - stack exec mk-com
-    - html5validator --root _build/ --show-warnings --ignore-re 'Section lacks heading.'
+    - html5validator --root _build/ --show-warnings
 
 deployment:
   production:

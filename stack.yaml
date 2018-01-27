@@ -1,6 +1,9 @@
-resolver: lts-9.0
+resolver: lts-10.3
 packages:
 - '.'
 extra-deps:
-- megaparsec-6.0.2
-- stache-1.1.1
+- megaparsec-6.4.0
+- mmark-0.0.5.3
+- mmark-ext-0.2.0.0
+- modern-uri-0.2.0.0
+- parser-combinators-0.4.0

@@ -409,6 +409,4 @@ be handy:
 
 ----
 
-Original Parsec tutorial in Haskell Wiki:
-
-[https://wiki.haskell.org/Parsing_a_simple_imperative_language](https://wiki.haskell.org/Parsing_a_simple_imperative_language)
+* [Original Parsec tutorial in Haskell Wiki](https://wiki.haskell.org/Parsing_a_simple_imperative_language)

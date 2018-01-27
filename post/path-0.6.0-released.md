@@ -5,10 +5,12 @@ date:
    published: June 16, 2017
 ---
 
-As a co-maintainer of [`path`](https://hackage.haskell.org/package/path) and the author/maintainer of its companion
-package [`path-io`](https://hackage.haskell.org/package/path-io), I'm happy to announce new releases of these
-libraries. In this post I'm going to quickly remind you what the package is
-about and then explain important fixes and changes in the latest versions.
+As a co-maintainer of [`path`](https://hackage.haskell.org/package/path) and
+the author/maintainer of its companion package
+[`path-io`](https://hackage.haskell.org/package/path-io), I'm happy to
+announce new releases of these libraries. In this post I'm going to quickly
+remind you what the package is about and then explain important fixes and
+changes in the latest versions.
 
 ## Quick intro
 

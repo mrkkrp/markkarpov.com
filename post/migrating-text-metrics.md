@@ -68,13 +68,17 @@ first of all we need an efficient way to traverse `Text` values character by
 character. We should remember that `Text` is a lot like a list of `Word16`
 values internally. As I mentioned, some characters are represented as two
 consecutive `Word16` values, and most characters are just one `Word16`. So
-we don't know which is which, and that essentially makes
-it [impossible to have indexing](https://hackage.haskell.org/package/text/docs/Data-Text.html#v:index) in *O(1)*.
+we don't know which is which, and that essentially makes it [impossible to
+have
+indexing](https://hackage.haskell.org/package/text/docs/Data-Text.html#v:index)
+in *O(1\)*.
 
 So we can't access a character at a certain offset (as in `*(a + i)`), we
 should perform something like synchronous unconsing on both `Text` values
 (good that they are of the same length!). The `text` package provides tools
-for this in [`Data.Text.Unsafe`](https://hackage.haskell.org/package/text/docs/Data-Text-Unsafe.html). The `Iter` data type is our friend:
+for this in
+[`Data.Text.Unsafe`](https://hackage.haskell.org/package/text/docs/Data-Text-Unsafe.html).
+The `Iter` data type is our friend:
 
 ```haskell
 data Iter = Iter {-# UNPACK #-} !Char {-# UNPACK #-} !Int
@@ -123,7 +127,7 @@ itself, but I decided to keep them there, just in case.
 Let's see if we are close to the C implementation with this:
 
 Case                  | Allocated | GCs |   Max
-----------------------|-----------|-----|------
+----------------------|----------:|----:|-----:
 hamming (C)/5         |     1,360 |  0  |   400
 hamming (C)/10        |     2,408 |  0  |   688
 hamming (C)/20        |     4,056 |  0  | 1,096
@@ -149,20 +153,22 @@ implementation we avoid the copying.
 
 ## Jaro distance
 
-The Jaro distance $d_\text{j}$ of two given strings $s_\text{1}$ and
-$s_\text{2}$ is
+The Jaro distance `$d_\text{j}$` of two given strings `$s_\text{1}$` and
+`$s_\text{2}$` is
 
-$$ d_\text{j} = \begin{cases} 0 & \quad \text{if } m = 0 \\ \frac{1}{3} \left(\frac{m}{|s_\text{1}|} + \frac{m}{|s_\text{2}|} + \frac{m-t}{m}\right) & \quad \text{otherwise} \\ \end{cases}$$
+```mathjax
+d_\text{j} = \begin{cases} 0 & \quad \text{if } m = 0 \\ \frac{1}{3} \left(\frac{m}{|s_\text{1}|} + \frac{m}{|s_\text{2}|} + \frac{m-t}{m}\right) & \quad \text{otherwise} \\ \end{cases}
+```
 
 Where
 
-* $|s_\text{i}|$ means the length of the string $s_\text{i}$;
-* $m$ is the number of matching characters;
-* $t$ is half the number of transpositions.
+* `$|s_\text{i}|$` means the length of the string `$s_\text{i}$`;
+* `$m$` is the number of matching characters;
+* `$t$` is half the number of transpositions.
 
-Two characters from $s_\text{1}$ and $s_\text{2}$ respectively are
+Two characters from `$s_\text{1}$` and `$s_\text{2}$` respectively are
 considered matching only if they are the same and not farther than
-$\left\lfloor\frac{max(|s_\text{1}|,|s_\text{2}|)}{2}\right\rfloor - 1$.
+`$\left\lfloor\frac{max(|s_\text{1}|,|s_\text{2}|)}{2}\right\rfloor - 1$`.
 
 A matching pair is counted as a transposition also if the characters are
 close enough but in the opposite order. See more about this
@@ -262,7 +268,7 @@ Some observations:
    itself is a box, so forcing it proved to be a good thing.
 
 Case                  | Allocated | GCs |   Max
-----------------------|-----------|-----|------
+----------------------|----------:|----:|-----:
 jaro (C)/5            |     4,592 |  0  |   400
 jaro (C)/10           |     5,640 |  0  |   688
 jaro (C)/20           |     7,288 |  0  | 1,096
@@ -300,7 +306,8 @@ calculates the [Levenshtein distance](https://en.wikipedia.org/wiki/Levenshtein_
 this:
 
 ```c
-unsigned int tmetrics_levenshtein (unsigned int la, uint16_t *a, unsigned int lb, uint16_t *b)
+unsigned int tmetrics_levenshtein
+  (unsigned int la, uint16_t *a, unsigned int lb, uint16_t *b)
 {
   if (la == 0) return lb;
   if (lb == 0) return la;
@@ -400,7 +407,7 @@ into one vector `v`. So I just add offset equal to length of a single vector
 to switch to `v1`, which is as efficient as swapping pointers.
 
 Case                      | Allocated | GCs |   Max
---------------------------|-----------|-----|------
+--------------------------|----------:|----:|-----:
 levenshtein (C)/5         |     1,208 |  0  |   400
 levenshtein (C)/10        |     2,256 |  0  |   688
 levenshtein (C)/20        |     3,904 |  0  | 1,096

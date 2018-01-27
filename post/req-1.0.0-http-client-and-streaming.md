@@ -206,7 +206,7 @@ withResponse req man = bracket (responseOpen req man) responseClose
 The documentation says:
 
 > It is recommended that you use this function in place of explicit calls to
-> `responseOpen` and `responseClose`.
+  `responseOpen` and `responseClose`.
 
 We'll see however that we'll have to resort to manual messing with
 `responseOpen` and `responseClose` to support retrying properly.
@@ -398,16 +398,16 @@ Let's see:
    (which in turn will be wrapped once more by `wrapVanilla`). And
    `HttpExceptionContentWrapper` is thrown via `LI.throwHttp` from (8).
 
-     If you're wondering WTF (like I did), here a quote of the docs of
-     `HttpExceptionContentWrapper`:
+   If you're wondering WTF (like I did), here a quote of the docs of
+   `HttpExceptionContentWrapper`:
 
-     > A newtype wrapper which is not exported from this library but is an
-     > instance of `Exception`. This allows `HttpExceptionContent` to be
-     > thrown (via this wrapper), but users of the library can't accidentally
-     > try to catch it (when they *should* be trying to catch
-     > `HttpException`).
+   > A newtype wrapper which is not exported from this library but is an
+     instance of `Exception`. This allows `HttpExceptionContent` to be
+     thrown (via this wrapper), but users of the library can't accidentally
+     try to catch it (when they *should* be trying to catch
+     `HttpException`).
 
-     Ah, exceptions…
+   Ah, exceptions…
 
 4. We're going to use `IORef` to keep track of currently open response,
    because there is no way to use `withResponse` with `retrying` (5) or pass
@@ -430,12 +430,12 @@ Let's see:
    from the last attempt, it's of no use by now). After that we can run
    `responseOpen` and then update the `IORef` writing the new value there.
 
-     Note that even though we have interruptible masking here, it's OK.
-     `responseClose` and `responseOpen` are most probably blocking and thus
-     inturruptible, so the mask can be pierced when we're running these
-     actions, but immediately after them, it cannot be pierced, so `IORef`
-     stays up-to-date. The enclosed `bracket` thus always gets a chance to
-     release the connection.
+   Note that even though we have interruptible masking here, it's OK.
+   `responseClose` and `responseOpen` are most probably blocking and thus
+   inturruptible, so the mask can be pierced when we're running these
+   actions, but immediately after them, it cannot be pierced, so `IORef`
+   stays up-to-date. The enclosed `bracket` thus always gets a chance to
+   release the connection.
 
 7. `grabPreview` uses `BodyReader` to get first 1024 bytes of response body
    without streaming more than that. It also returns the updated response

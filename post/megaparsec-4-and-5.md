@@ -7,13 +7,13 @@ date:
 ---
 
 This post is an attempt to summarize progress made by the Megaparsec project
-from its initial release 25 September 2015 to present day and discuss
+from its initial release 25 September 2015 to present day and discuss the
 planned improvements in version 5.
 
 ## Questions and answers
 
-Upon release Megaparsec got quite positive reception and it's obviously used
-now by people, there are some projects on Hackage that depend on it and
+Upon release Megaparsec received quite positive reception and it's obviously
+used now by people, there are some projects on Hackage that depend on it and
 steady feedback of propositions on issue tracker. Of course it didn't
 replace Parsec and I doubt it will ever succeed at this, which is OK.
 
@@ -29,12 +29,11 @@ Some people had doubts that are summarized in this list:
 
 Here are my answers:
 
-1. Megaparsec has a site now, where
-   [several tutorials](https://mrkkrp.github.io/megaparsec/tutorials.html)
-   are published. This, combined with documentation, which is quite good and
-   is kept up-to-date, should be enough to start with most parsing tasks.
-   The tutorials will be updated as Megaparsec becomes more advanced in
-   future versions.
+1. Megaparsec has a site now, where [several
+   tutorials](/learn-haskell.html#megaparsec-tutorials) are published. This,
+   combined with documentation, which is quite good and is kept up-to-date,
+   should be enough to start with most parsing tasks. The tutorials will be
+   updated as Megaparsec becomes more advanced in future versions.
 
 2. I dare to say that Megaparsec can be considered robust and reliable
    now. Since its initial release, only one bug was reported and it was
@@ -82,19 +81,20 @@ implemented the following features without accumulating any technical debt
 * Added native higher-level primitives for indentation-sensitive parsing:
   `indentLevel`, `nonIndented`, and `indentBlock`. These do not require any
   additional state to work. They use only internal state of Megaparsec to
-  get current position. Quoting our tutorial:
+  get current position. Quoting [our
+  tutorial](/megaparsec/indentation-sensitive-parsing.html):
 
   > We state that there are top-level items that are not indented
-  > (`nonIndented` helps to define parsers for them), and all indented
-  > tokens are directly or indirectly are “children” of those top-level
-  > definitions. In Megaparsec, we don’t need any additional state to
-  > express this. Since all indentation is always relative, our idea is to
-  > explicitly tie parsers for “reference” tokens and indented tokens, thus
-  > defining indentation-sensitive grammar via pure combination of parsers,
-  > just like all the other tools in Megaparsec work. This is different from
-  > old solutions built on top of Parsec, where you had to deal with ad-hoc
-  > state. It’s also more robust and safer, because the less state you have,
-  > the better.
+    (`nonIndented` helps to define parsers for them), and all indented
+    tokens are directly or indirectly are “children” of those top-level
+    definitions. In Megaparsec, we don’t need any additional state to
+    express this. Since all indentation is always relative, our idea is to
+    explicitly tie parsers for “reference” tokens and indented tokens, thus
+    defining indentation-sensitive grammar via pure combination of parsers,
+    just like all the other tools in Megaparsec work. This is different from
+    old solutions built on top of Parsec, where you had to deal with ad-hoc
+    state. It’s also more robust and safer, because the less state you have,
+    the better.
 
   This works, but parsing of indentation-sensitive grammars is not solved
   completely as of version 4.4.0 because line-folding is still not
@@ -112,7 +112,7 @@ implemented the following features without accumulating any technical debt
 * `withRecovery` primitive parser was added. This allows to recover from
   parsing errors “on-the-fly” and continue parsing. The errors are not lost,
   you can get them when parsing is finished or even ignore. Read how to use
-  it [in our tutorial](https://mrkkrp.github.io/megaparsec/tutorials/fun-with-the-recovery-feature.html).
+  it [in our tutorial](/megaparsec/fun-with-the-recovery-feature.html).
 
 ## What to expect from Megaparsec 5?
 
@@ -124,9 +124,9 @@ are planned (it will grow and change, of course):
 * Improved error messages for indentation-sensitive parsers. Instead of
   “incorrect indentation” phrase, errors will indicate if it's too small or
   excessive and if precise required indentation is known, it will be
-  displayed, like “incorrect indentation (needed 5, but got 7)”.
+  displayed, like “incorrect indentation (expected 5, but got 7)”.
 
-* Above-mentioned line-folds will be implemented.
+* The above-mentioned line-folds will be implemented.
 
 * Functions to advance textual position for given token will be moved from
   arguments of `token` and `tokens` to the `Stream` type class.
@@ -145,8 +145,8 @@ are planned (it will grow and change, of course):
   inclusion of `semigroups` in `base-4.9.0.0`.
 
 * Some people think that printing a line with `^^^^` showing where parse
-  error happened somehow makes for better error messages. Well, it's trivial
-  to implement as an (optional) utility.
+  error happened results for better error messages. Well, it's trivial to
+  implement as an (optional) utility.
 
 If you would like to propose something incompatible but cool,
 [now is the time](https://github.com/mrkkrp/megaparsec/issues).

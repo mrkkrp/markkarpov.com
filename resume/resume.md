@@ -2,11 +2,12 @@
 title: Resume
 ---
 
-* Email: markkarpov92 at gmail dot com
-* Twitter: https://twitter.com/mrkkrp
-* GitHub: https://github.com/mrkkrp
-* StackOverflow: https://stackoverflow.com/users/3687048/mark
-* This document is also available in PDF format: https://markkarpov.com/resume.pdf
+* <fa:envelope> [x](social:email)
+* <fa:github> [x](social:github)
+* <fa:twitter> [x](social:twitter)
+* <fa:linkedin> [x](social:linkedin)
+* <fa:stack-overflow> [x](social:stackoverflow)
+* <fa:file-pdf-o> [PDF version of the resume](/resume.pdf)
 
 ## Summary
 
@@ -64,14 +65,14 @@ professional experience.
 * [MMark](https://github.com/mmark-md/mmark)—Strict markdown processor for
   writers.
 
-The full list can be found at https://markkarpov.com/oss.html.
+The full list can be found at <https://markkarpov.com/oss.html>.
 
 ## Writing
 
 * I've authored a number of tutorials as part of my job and on my own, see
   e.g. [GHC optimization and
   fusion](https://www.stackbuilders.com/tutorials/haskell/ghc-optimization-and-fusion/),
-  the full list is available at https://markkarpov.com/learn-haskell.html.
+  the full list is available at <https://markkarpov.com/learn-haskell.html>.
 
 * Blog posts are available [here](https://markkarpov.com/posts.html), see
   e.g. [Free monad considered

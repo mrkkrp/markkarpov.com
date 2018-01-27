@@ -3,6 +3,7 @@
 {-# LANGUAGE LambdaCase          #-}
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE PolyKinds           #-}
+{-# LANGUAGE QuasiQuotes         #-}
 {-# LANGUAGE RankNTypes          #-}
 {-# LANGUAGE RecordWildCards     #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -15,8 +16,8 @@ import Control.Monad
 import Control.Monad.IO.Class
 import Data.Aeson
 import Data.Aeson.Lens
-import Data.Default.Class
 import Data.List (sortBy, foldl1')
+import Data.List.NonEmpty (NonEmpty (..))
 import Data.Maybe (fromMaybe, mapMaybe)
 import Data.Ord (comparing, Down (..))
 import Data.Proxy
@@ -25,18 +26,22 @@ import Data.Text (Text)
 import Data.Time
 import Development.Shake
 import Development.Shake.FilePath
-import Text.Blaze.Html.Renderer.Text
 import Text.Mustache
-import Text.Pandoc hiding (Template, Null)
-import qualified Data.HashMap.Strict as HM
-import qualified Data.Set            as S
-import qualified Data.Text           as T
-import qualified Data.Text.Encoding  as TE
-import qualified Data.Text.IO        as T
-import qualified Data.Text.Lazy      as TL
-import qualified Data.Text.Lazy.IO   as TL
-import qualified Data.Vector         as V
-import qualified Data.Yaml           as Y
+import Text.URI (URI)
+import Text.URI.Lens (uriPath)
+import Text.URI.QQ (scheme)
+import qualified Data.HashMap.Strict  as HM
+import qualified Data.Text            as T
+import qualified Data.Text.IO         as T
+import qualified Data.Text.Lazy       as TL
+import qualified Data.Text.Lazy.IO    as TL
+import qualified Data.Vector          as V
+import qualified Data.Yaml            as Y
+import qualified Lucid                as L
+import qualified Text.MMark           as MMark
+import qualified Text.MMark.Extension as Ext
+import qualified Text.MMark.Extension.Common as Ext
+import qualified Text.URI             as URI
 
 ----------------------------------------------------------------------------
 -- Settings
@@ -84,6 +89,7 @@ data Routes
   | TutorialR
   | ResumeHtmlR
   | ResumePdfR
+  | AboutR
 
 instance Route 'PostR where
   pat    = Pat "post/*.md"
@@ -126,6 +132,11 @@ instance Route 'ResumePdfR where
   pat    = Pat "resume/resume.pdf"
   mapIn  = Tagged (\x -> "resume" </> dropDirectory1 x)
   mapOut = Tagged (\x -> outdir </> dropDirectory1 x)
+
+instance Route 'AboutR where
+  pat    = Pat "about.md"
+  mapIn  = Tagged (\x -> dropDirectory1 x -<.> "md")
+  mapOut = Tagged (\x -> outdir </> x -<.> "html")
 
 -- | TODO Find a way to abstract working with these files.
 
@@ -238,7 +249,7 @@ main = shakeArgs shakeOptions $ do
     putNormal ("Cleaning files in " ++ outdir)
     removeFilesAfter outdir ["//*"]
 
-  commonEnv <- newCache $ \() -> do
+  commonEnv <- fmap ($ ()) . newCache $ \() -> do
     let commonEnvFile = "config/env.yaml"
     need [commonEnvFile]
     r <- liftIO (Y.decodeFileEither commonEnvFile)
@@ -246,10 +257,14 @@ main = shakeArgs shakeOptions $ do
       Left  err   -> fail (Y.prettyPrintParseException err)
       Right value -> return value
 
-  templates <- newCache $ \() -> do
+  templates <- fmap ($ ()) . newCache $ \() -> do
     let templateP = "templates/*.mustache"
     getDirFiles (Pat templateP) >>= need
     liftIO (compileMustacheDir "default" (takeDirectory templateP))
+
+  getPost <- newCache $ \path -> do
+    env <- commonEnv
+    getPostHelper env path
 
   unPat (outPattern @'CssR) %> \out ->
     copyFile' (unTagged (mapIn @'CssR) out) out
@@ -267,8 +282,8 @@ main = shakeArgs shakeOptions $ do
     copyFile' (unTagged (mapIn @'AttachmentR) out) out
 
   unPat (outPattern @'PostR) %> \out -> do
-    env <- commonEnv ()
-    ts  <- templates ()
+    env <- commonEnv
+    ts  <- templates
     let src = unTagged (mapIn @'PostR) out
     need [src]
     (v, content) <- getPost src
@@ -276,8 +291,18 @@ main = shakeArgs shakeOptions $ do
       [menuItem Posts env, v, mkLocation out]
       out
 
-  let gatherPosts = do
-        env <- commonEnv ()
+  let gatherLocalInfo :: forall r a. (Route r, Ord a)
+        => Proxy r
+        -> (LocalInfo -> a)
+        -> Action [LocalInfo]
+      gatherLocalInfo Proxy f = do
+        ps' <- getDirFiles (pat @r)
+        fmap (sortBy (comparing f)) . forM ps' $ \post -> do
+          need [post]
+          v <- getPost post >>= interpretValue . fst
+          return v { localFile = dropDirectory1 (unTagged (mapOut @r) post) }
+      gatherPosts = do
+        env <- commonEnv
         ips <- fmap InternalPost
           <$> gatherLocalInfo @'PostR Proxy (Down . localPublished)
         let ets = parseExternalPosts "external_posts" env
@@ -285,8 +310,8 @@ main = shakeArgs shakeOptions $ do
           sortBy (comparing (Down . postInfoPublished)) (ips ++ ets)
 
   cmnOut postsFile %> \out -> do
-    env <- commonEnv ()
-    ts  <- templates ()
+    env <- commonEnv
+    ts  <- templates
     ps  <- gatherPosts
     renderAndWrite ts ["posts","default"] Nothing
       [ menuItem Posts env
@@ -295,8 +320,8 @@ main = shakeArgs shakeOptions $ do
       out
 
   cmnOut atomFile %> \out -> do
-    env <- commonEnv ()
-    ts  <- templates ()
+    env <- commonEnv
+    ts  <- templates
     ps  <- gatherPosts
     let feedUpdated = renderIso8601 $ maximum (normalizedUpdated <$> ps)
     renderAndWrite ts ["atom-feed"] Nothing
@@ -307,8 +332,8 @@ main = shakeArgs shakeOptions $ do
       out
 
   unPat (outPattern @'MTutorialR) %> \out -> do
-    env <- commonEnv ()
-    ts  <- templates ()
+    env <- commonEnv
+    ts  <- templates
     let src = unTagged (mapIn @'MTutorialR) out
     need [src]
     (v, content) <- getPost src
@@ -317,8 +342,8 @@ main = shakeArgs shakeOptions $ do
       out
 
   unPat (outPattern @'TutorialR) %> \out -> do
-    env <- commonEnv ()
-    ts  <- templates ()
+    env <- commonEnv
+    ts  <- templates
     let src = unTagged (mapIn @'TutorialR) out
     need [src]
     (v, content) <- getPost src
@@ -327,8 +352,8 @@ main = shakeArgs shakeOptions $ do
       out
 
   unPat (outPattern @'ResumeHtmlR) %> \out -> do
-    env <- commonEnv ()
-    ts  <- templates ()
+    env <- commonEnv
+    ts  <- templates
     let src = unTagged (mapIn @'ResumeHtmlR) out
     need [src]
     (v, content) <- getPost src
@@ -340,8 +365,8 @@ main = shakeArgs shakeOptions $ do
     copyFile' (unTagged (mapIn @'ResumePdfR) out) out
 
   cmnOut learnFile %> \out -> do
-    env <- commonEnv ()
-    ts  <- templates ()
+    env <- commonEnv
+    ts  <- templates
     mts <- gatherLocalInfo @'MTutorialR Proxy localDifficulty
     its <- fmap InternalPost <$>
       gatherLocalInfo @'TutorialR  Proxy (Down . localPublished)
@@ -354,17 +379,26 @@ main = shakeArgs shakeOptions $ do
       , mkTitle LearnHaskell ]
       out
 
+  unPat (outPattern @'AboutR) %> \out -> do
+    env <- commonEnv
+    ts  <- templates
+    let src = unTagged (mapIn @'AboutR) out
+    need [src]
+    (v, content) <- getPost src
+    renderAndWrite ts ["post", "default"] (Just content)
+      [menuItem About env, v]
+      out
+
   let justFromTemplate :: Either Text MenuItem -> PName -> FilePath -> Action ()
       justFromTemplate etitle template out = do
-        env <- commonEnv ()
-        ts  <- templates ()
+        env <- commonEnv
+        ts  <- templates
         renderAndWrite ts [template,"default"] Nothing
           [ either (const env) (`menuItem` env) etitle
           , provideAs "title" (either id menuItemTitle etitle) ]
           out
 
   cmnOut ossFile      %> justFromTemplate (Right OSS)            "oss"
-  cmnOut aboutFile    %> justFromTemplate (Right About)          "about"
   cmnOut notFoundFile %> justFromTemplate (Left "404 Not Found") "404"
 
 ----------------------------------------------------------------------------
@@ -399,29 +433,36 @@ menuItem item = over (key "main_menu" . _Array) . V.map $ \case
       else m
   v -> v
 
-getPost :: (MonadIO m, FromJSON v) => FilePath -> m (v, TL.Text)
-getPost path = do
-  (yaml', doc') <- T.breakOn "\n---\n" <$> liftIO (T.readFile path)
-  yaml <-
-    case Y.decodeEither' (TE.encodeUtf8 yaml') of
-      Left err -> fail (Y.prettyPrintParseException err)
-      Right value -> return value
-  let r = writeHtml pandocWriterOpts . handleError $
-        readMarkdown pandocReaderOpts (T.unpack (T.drop 5 doc'))
-  return (yaml, renderHtml r)
+getPostHelper :: Value -> FilePath -> Action (Value, TL.Text)
+getPostHelper env path = do
+  txt <- liftIO (T.readFile path)
+  case MMark.parse path txt of
+    Left errs -> fail (MMark.parseErrorsPretty txt errs)
+    Right doc -> do
+      let toc = MMark.runScanner doc (Ext.tocScanner (\x -> x > 1 && x < 5))
+          r   = MMark.useExtensions
+            [ Ext.fontAwesome
+            , Ext.footnotes
+            , Ext.kbd
+            , Ext.linkTarget
+            , Ext.mathJax (Just '$')
+            , Ext.obfuscateEmail "protected-email"
+            , Ext.punctuationPrettifier
+            , Ext.skylighting
+            , Ext.toc "toc" toc
+            , addTableClasses
+            , addImageClasses
+            , provideSocialUrls env
+            ]
+            doc
+          v = fromMaybe (object []) (MMark.projectYaml doc)
+      return (v, L.renderText (MMark.render r))
 
-pandocReaderOpts :: ReaderOptions
-pandocReaderOpts = def
-  { readerExtensions = S.union pandocExtensions $ S.fromList
-    [ Ext_autolink_bare_uris
-    , Ext_lists_without_preceding_blankline ]
-  ,  readerSmart = True }
-
-pandocWriterOpts :: WriterOptions
-pandocWriterOpts = def
-  { writerHtml5          = True
-  , writerHighlight      = True
-  , writerHTMLMathMethod = MathJax "" }
+interpretValue :: FromJSON v => Value -> Action v
+interpretValue v =
+  case fromJSON v of
+    Error str -> fail str
+    Success a -> return a
 
 mkContext :: [Value] -> Value
 mkContext = foldl1' f
@@ -437,17 +478,6 @@ mkLocation = provideAs "location" . dropDirectory1
 
 provideAs :: ToJSON v => Text -> v -> Value
 provideAs k v = Object (HM.singleton k (toJSON v))
-
-gatherLocalInfo :: forall r a. (Route r, Ord a)
-  => Proxy r
-  -> (LocalInfo -> a)
-  -> Action [LocalInfo]
-gatherLocalInfo Proxy f = do
-  ps' <- getDirFiles (pat @r)
-  fmap (sortBy (comparing f)) . forM ps' $ \post -> do
-    need [post]
-    v <- fst <$> getPost post
-    return v { localFile = dropDirectory1 (unTagged (mapOut @r) post) }
 
 parseDay :: Monad m => Text -> m Day
 parseDay = parseTimeM True defaultTimeLocale "%B %e, %Y" . T.unpack
@@ -484,3 +514,43 @@ postInfoPublished :: PostInfo -> Day
 postInfoPublished = \case
  InternalPost localInfo     -> localPublished localInfo
  ExternalPost published _ _ -> published
+
+----------------------------------------------------------------------------
+-- Custom MMark extensions
+
+addTableClasses :: MMark.Extension
+addTableClasses = Ext.blockRender $ \old block ->
+  case block of
+    t@(Ext.Table _ _) -> L.with (old t) [L.class_ "table table-striped"]
+    other -> old other
+
+addImageClasses :: MMark.Extension
+addImageClasses = Ext.inlineRender $ \old inline ->
+  case inline of
+    (Ext.Image inner src (Just "my_photo")) -> L.with
+      (old $ Ext.Image inner src Nothing)
+      [ L.class_  "float-right d-none d-md-block ml-3"
+      , L.width_  "300"
+      , L.height_ "520"
+      ]
+    i@(Ext.Image _ _ _) -> L.with (old i) [L.class_ "img-fluid"]
+    other -> old other
+
+provideSocialUrls :: Value -> MMark.Extension
+provideSocialUrls v = Ext.inlineTrans $ \case
+  l@(Ext.Link inner uri mtitle) ->
+    if URI.uriScheme uri == Just [scheme|social|]
+      then case uri ^. uriPath of
+             [x] ->
+               case v ^? key "social" . key (URI.unRText x) . _String . getURI of
+                 Nothing -> Ext.Plain "!lookup failed!"
+                 Just t  ->
+                   if Ext.asPlainText inner == "x"
+                     then Ext.Link (Ext.Plain (URI.render t) :| []) t mtitle
+                     else Ext.Link inner t mtitle
+             _ -> l
+      else l
+  other -> other
+
+getURI :: Traversal' Text URI
+getURI f txt = maybe txt URI.render <$> traverse f (URI.mkURI txt :: Maybe URI)

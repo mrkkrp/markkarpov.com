@@ -193,7 +193,8 @@ these laws so objects and maps “fit together nicely”:
 2. The **associative law**:
 
    ```mathjax
-   A \xrightarrow{f} B \xrightarrow{g} C \xrightarrow{h} D \Rightarrow A \xrightarrow{h \circ (g \circ f) = (h \circ g) \circ f} D
+   A \xrightarrow{f} B \xrightarrow{g} C \xrightarrow{h} D \Rightarrow
+   A \xrightarrow{h \circ (g \circ f) = (h \circ g) \circ f} D
    ```
 
 These rules make composition of maps work similarly to multiplication of
@@ -246,8 +247,10 @@ f^{-1} \circ f = 1_\text{A}, f \circ f^{-1} = 1_\text{B}
 Let's prove the transitive property now as an exercise. We are given that:
 
 ```mathjax
-A \xrightarrow{f} B, B \xrightarrow{f^{-1}} A, f^{-1} \circ f = 1_\text{A}, f \circ f^{-1} = 1_\text{B}
-B \xrightarrow{k} C, C \xrightarrow{k^{-1}} B, k^{-1} \circ k = 1_\text{B}, k \circ k^{-1} = 1_\text{C}
+A \xrightarrow{f} B, B \xrightarrow{f^{-1}} A,
+f^{-1} \circ f = 1_\text{A}, f \circ f^{-1} = 1_\text{B}
+B \xrightarrow{k} C, C \xrightarrow{k^{-1}} B,
+k^{-1} \circ k = 1_\text{B}, k \circ k^{-1} = 1_\text{C}
 ```
 
 In order to show that `$A$` is isomorphic to `$C$`, we need to show that the
@@ -346,7 +349,8 @@ composes with them to get the same `$T \to B$`, we can compose further with
 ![Injective map](/static/img/ct1-06.svg)
 
 ```mathjax
-x_\text{1} = 1_\text{A} \circ x_\text{1} = (r \circ f) \circ x_\text{1} = r \circ (f \circ x_\text{1}) = r \circ (f \circ x_\text{2})
+x_\text{1} = 1_\text{A} \circ x_\text{1} = (r \circ f) \circ x_\text{1}
+= r \circ (f \circ x_\text{1}) = r \circ (f \circ x_\text{2})
 = (r \circ f) \circ x_\text{2} = 1_\text{A} \circ x_\text{2} = x_\text{2}
 ```
 
@@ -423,10 +427,11 @@ the only order in which they can be composed).
 
 ![Composition of retractions](/static/img/ct1-07.svg)
 
-Using familiar tricks:
+Using the familiar tricks:
 
 ```mathjax
-r \circ (g \circ f) = (r_\text{1} \circ r_\text{2}) \circ (g \circ f) = r_\text{1} \circ (r_\text{2} \circ g) \circ f = r_\text{1} \circ 1_\text{B} \circ f
+r \circ (g \circ f) = (r_\text{1} \circ r_\text{2}) \circ (g \circ f)
+= r_\text{1} \circ (r_\text{2} \circ g) \circ f = r_\text{1} \circ 1_\text{B} \circ f
 = r_\text{1} \circ f = 1_\text{A}
 ```
 
@@ -450,7 +455,8 @@ r \circ f = 1_\text{A} \text{ and } f \circ s = 1_\text{B}
 Then by identity and associative law
 
 ```mathjax
-r = r \circ 1_\text{B} = r \circ (f \circ s) = (r \circ f) \circ s = 1_\text{A} \circ s = s
+r = r \circ 1_\text{B} = r \circ (f \circ s)
+= (r \circ f) \circ s = 1_\text{A} \circ s = s
 ```
 
 ## Another definition of isomorphism, automorphism

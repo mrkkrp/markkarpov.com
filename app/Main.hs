@@ -371,7 +371,7 @@ main = shakeArgs shakeOptions $ do
     let src = unTagged (mapIn @'AboutR) out
     need [src]
     (v, content) <- getPost env src
-    renderAndWrite ts ["about", "default"] (Just content)
+    renderAndWrite ts ["post", "default"] (Just content)
       [menuItem About env, v]
       out
 
@@ -437,7 +437,7 @@ getPost env path = do
             , Ext.skylighting
             , Ext.toc "toc" toc
             , addTableClasses
-            , addImageClass
+            , addImageClasses
             , provideSocialUrls env
             ]
             doc
@@ -528,9 +528,15 @@ addTableClasses = Ext.blockRender $ \old block ->
     t@(Ext.Table _ _) -> L.with (old t) [L.class_ "table table-striped"]
     other -> old other
 
-addImageClass :: MMark.Extension
-addImageClass = Ext.inlineRender $ \old inline ->
+addImageClasses :: MMark.Extension
+addImageClasses = Ext.inlineRender $ \old inline ->
   case inline of
+    (Ext.Image inner src (Just "my_photo")) -> L.with
+      (old $ Ext.Image inner src Nothing)
+      [ L.class_  "float-right d-none d-md-block ml-3"
+      , L.width_  "300"
+      , L.height_ "520"
+      ]
     i@(Ext.Image _ _ _) -> L.with (old i) [L.class_ "img-fluid"]
     other -> old other
 

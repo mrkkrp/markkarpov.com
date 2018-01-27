@@ -2,6 +2,8 @@
 title: About me
 ---
 
+![Mark Karpov](/static/img/my-photo.png 'my_photo')
+
 Hey there! My name is Mark Karpov, I'm a professional Haskell developer.
 When I'm not coding or writing about Haskell, I like listening to music,
 travelling, and reading.

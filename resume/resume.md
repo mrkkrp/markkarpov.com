@@ -11,7 +11,7 @@ title: Resume
 
 ## Summary
 
-Software engineer specializing on functional programming using strong static
+Software engineer specializing in functional programming using strong static
 typing, in Haskell in particular.
 
 ## Tech work experience

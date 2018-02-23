@@ -8,8 +8,8 @@ dependencies:
     - ".stack-work"
 
   pre:
-    - sudo apt-get update
-    - sudo apt-get install rsync
+    - sudo apt-get --quiet update
+    - sudo apt-get --quiet install rsync texlive-latex-base texlive-latex-extra
     - sudo pip install html5validator
 
   override:
@@ -23,6 +23,7 @@ test:
   override:
     - stack test
     - stack exec mk-com -- clean
+    - pdflatex -output-directory resume/ resume/resume.tex
     - stack exec mk-com
     - html5validator --root _build/ --show-warnings
 

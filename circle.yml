@@ -28,7 +28,7 @@ jobs:
 
   deploy:
     docker:
-      - image: circleci/openjdk:latest-node-browsers
+      - image: mrkkrp/mk-com:0.1.0
     steps:
       - checkout
       - run:

@@ -19,6 +19,10 @@ jobs:
       - run: pdflatex -output-directory resume/ resume/resume.tex
       - run: stack exec mk-com
       - run: html5validator --root _build/ --show-warnings
+      - persist_to_workspace:
+          root: ~/project
+          paths:
+            - _build
       - save_cache:
           key: stack-home
           paths: "~/.stack"
@@ -30,10 +34,11 @@ jobs:
     docker:
       - image: mrkkrp/mk-com:0.1.0
     steps:
-      - checkout
+      - attach_workspace:
+          at: /tmp
       - run:
           name: Copy to the droplet with rsync
-          command: rsync -avz -e "ssh -p 2555 -i $HOME/.ssh/id_circleci_github" _build/ admin@markkarpov.com:/home/admin/markkarpov.com
+          command: rsync -avz -e "ssh -p 2555 -o \"StrictHostKeyChecking no\"" /tmp/_build/ admin@markkarpov.com:/home/admin/markkarpov.com
 
 workflows:
   version: 2

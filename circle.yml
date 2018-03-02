@@ -1,35 +1,48 @@
-machine:
-  java:
-    version: oraclejdk8
+version: 2
+jobs:
+  build:
+    docker:
+      - image: mrkkrp/mk-com:0.1.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - stack-home
+      - restore_cache:
+          keys:
+            - stack-work
+      - run: stack --version
+      - run: stack setup
+      - run: stack build
+      - run: stack test
+      - run: stack exec mk-com -- clean
+      - run: pdflatex -output-directory resume/ resume/resume.tex
+      - run: stack exec mk-com
+      - run: html5validator --root _build/ --show-warnings
+      - save_cache:
+          key: stack-home
+          paths: "~/.stack"
+      - save_cache:
+          key: stack-work
+          paths: ".stack-work"
 
-dependencies:
-  cache_directories:
-    - "~/.stack"
-    - ".stack-work"
+  deploy:
+    docker:
+      - image: circleci/openjdk:latest-node-browsers
+    steps:
+      - checkout
+      - run:
+          name: Copy to the droplet with rsync
+          command: rsync -avz -e "ssh -p 2555 -i $HOME/.ssh/id_circleci_github" _build/ admin@markkarpov.com:/home/admin/markkarpov.com
 
-  pre:
-    - sudo apt-get --quiet update
-    - sudo apt-get --quiet install rsync texlive-latex-base texlive-latex-extra
-    - sudo pip install html5validator
-
-  override:
-    - (curl -sSL https://get.haskellstack.org/ | sh) || true
-    - stack upgrade
-    - stack --version
-    - stack setup
-    - stack build
-
-test:
-  override:
-    - stack test
-    - stack exec mk-com -- clean
-    - pdflatex -output-directory resume/ resume/resume.tex
-    - stack exec mk-com
-    - html5validator --root _build/ --show-warnings
-
-deployment:
-  production:
-    branch: master
-    commands:
-      - stack exec mk-com
-      - rsync -avz -e "ssh -p 2555 -i $HOME/.ssh/id_circleci_github" _build/ admin@markkarpov.com:/home/admin/markkarpov.com
+workflows:
+  version: 2
+  build-and-deploy:
+    jobs:
+      - build
+      - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master

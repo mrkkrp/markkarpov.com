@@ -76,7 +76,7 @@ semi :: Parser String
 semi = symbol ";"
 
 rword :: String -> Parser ()
-rword w = lexeme (string w *> notFollowedBy alphaNumChar)
+rword w = (lexeme . try) (string w *> notFollowedBy alphaNumChar)
 
 rws :: [String] -- list of reserved words
 rws = ["if","then","else","while","do","skip","true","false","not","and","or"]

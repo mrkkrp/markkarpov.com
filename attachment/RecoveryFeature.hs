@@ -9,6 +9,7 @@ import Data.Void
 import Text.Megaparsec
 import Text.Megaparsec.Char
 import Text.Megaparsec.Expr
+import Data.Scientific (toRealFloat)
 import qualified Text.Megaparsec.Char.Lexer as L
 
 type Program = [Equation]
@@ -48,13 +49,16 @@ symbol = L.symbol sc
 name :: Parser String
 name = lexeme ((:) <$> letterChar <*> many alphaNumChar) <?> "name"
 
+float :: Parser Double
+float = lexeme (toRealFloat <$> L.scientific)
+
 expr :: Parser Expr
 expr = makeExprParser term table <?> "expression"
 
 term :: Parser Expr
 term = parens expr
   <|> (Reference <$> name)
-  <|> (Value     <$> L.float)
+  <|> (Value     <$> float)
 
 table :: [[Operator Parser Expr]]
 table =

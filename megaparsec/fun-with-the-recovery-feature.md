@@ -52,6 +52,7 @@ import Data.Void
 import Text.Megaparsec
 import Text.Megaparsec.Char
 import Text.Megaparsec.Expr
+import qualified Data.Scientific as Sci
 import qualified Text.Megaparsec.Char.Lexer as L
 ```
 
@@ -132,6 +133,17 @@ name :: Parser String
 name = lexeme ((:) <$> letterChar <*> many alphaNumChar) <?> "name"
 ```
 
+To accept integers as well as floating point numbers we use the `scientific`
+combinator. It returns `Scientific` number (arbitrary precision space
+efficient numbers provided by the
+[`scientific`](https://hackage.haskell.org/package/scientific) package)
+which we convert to `Double` using the `toRealFloat` function:
+
+```haskell
+float :: Parser Double
+float = lexeme (Sci.toRealFloat <$> L.scientific)
+```
+
 All too easy. Parsing of expressions could slow us down, but there is a
 solution out-of-box in `Text.Megaparsec.Expr` module:
 
@@ -142,7 +154,7 @@ expr = makeExprParser term table <?> "expression"
 term :: Parser Expr
 term = parens expr
   <|> (Reference <$> name)
-  <|> (Value     <$> L.float)
+  <|> (Value     <$> float)
 
 table :: [[Operator Parser Expr]]
 table =
@@ -172,7 +184,7 @@ Sum
   (Multiplication (Value 7.0) (Reference "z"))
 ```
 
-Power! What remains are the parsers for equations and entire program:
+What remains are the parsers for equations and entire program:
 
 ```haskell
 equation :: Parser Equation

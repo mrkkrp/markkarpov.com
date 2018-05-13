@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: mrkkrp/mk-com:0.1.0
+      - image: mrkkrp/mk-com:0.1.1
     steps:
       - checkout
       - restore_cache:
@@ -34,7 +34,7 @@ jobs:
 
   deploy:
     docker:
-      - image: mrkkrp/mk-com:0.1.0
+      - image: mrkkrp/mk-com:0.1.1
     steps:
       - attach_workspace:
           at: /tmp

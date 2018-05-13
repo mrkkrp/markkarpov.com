@@ -1,6 +1,6 @@
 ---
-title: Announcing GHC syntax highlihter
-desc: Announcing GHC syntax highlihter, a package that allows to highliht Haskell code using lexer of GHC itself.
+title: Announcing GHC syntax highlighter
+desc: Announcing GHC syntax highlighter, a package that allows to highlight Haskell code using lexer of GHC itself.
 date:
   published: May 13, 2018
 ---
@@ -178,7 +178,7 @@ capable of interpreting almost any text as some stream of GHC tokens.
 
 ## How to use it in your blog
 
-Depends on your markdown processor. If you're a [`mmark`][mmark] user, good
+Depends on your markdown processor. If you're an [`mmark`][mmark] user, good
 news, I just released version 0.2.1.0 of [`mmark-ext`][mmark-ext] which
 includes the `ghcSyntaxHighlighter` extension. Due to flexibility of MMark,
 I can use this highlighter for Haskell and [`skylighting`][skylighting] as a

@@ -7,10 +7,12 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - stack-home
+            - stack-home-{{ checksum "stack.yaml" }}
+            - stack-home-
       - restore_cache:
           keys:
-            - stack-work
+            - stack-work-{{ checksum "stack.yaml" }}
+            - stack-work-
       - run: stack --version
       - run: stack setup
       - run: stack build
@@ -24,10 +26,10 @@ jobs:
           paths:
             - _build
       - save_cache:
-          key: stack-home
+          key: stack-home-{{ checksum "stack.yaml" }}
           paths: "~/.stack"
       - save_cache:
-          key: stack-work
+          key: stack-work-{{ checksum "stack.yaml" }}
           paths: ".stack-work"
 
   deploy:

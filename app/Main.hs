@@ -448,6 +448,7 @@ getPostHelper env path = do
             , Ext.mathJax (Just '$')
             , Ext.obfuscateEmail "protected-email"
             , Ext.punctuationPrettifier
+            , Ext.ghcSyntaxHighlighter
             , Ext.skylighting
             , Ext.toc "toc" toc
             , addTableClasses

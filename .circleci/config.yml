@@ -2,19 +2,19 @@ version: 2
 jobs:
   build:
     docker:
-      - image: mrkkrp/mk-com:0.1.1
+      - image: mrkkrp/mk-com:0.2.0
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - stack-home-{{ checksum "stack.yaml" }}
-            - stack-home-
-      - restore_cache:
-          keys:
-            - stack-work-{{ checksum "stack.yaml" }}
-            - stack-work-
-      - run: stack --version
-      - run: stack setup
+      # - restore_cache:
+      #     keys:
+      #       - stack-home-{{ checksum "stack.yaml" }}
+      #       - stack-home-
+      # - restore_cache:
+      #     keys:
+      #       - stack-work-{{ checksum "stack.yaml" }}
+      #       - stack-work-
+      # - run: stack --version
+      # - run: stack setup
       - run: stack build
       - run: stack test
       - run: stack exec mk-com -- clean
@@ -25,16 +25,16 @@ jobs:
           root: ~/project
           paths:
             - _build
-      - save_cache:
-          key: stack-home-{{ checksum "stack.yaml" }}
-          paths: "~/.stack"
-      - save_cache:
-          key: stack-work-{{ checksum "stack.yaml" }}
-          paths: ".stack-work"
+      # - save_cache:
+      #     key: stack-home-{{ checksum "stack.yaml" }}
+      #     paths: "~/.stack"
+      # - save_cache:
+      #     key: stack-work-{{ checksum "stack.yaml" }}
+      #     paths: ".stack-work"
 
   deploy:
     docker:
-      - image: mrkkrp/mk-com:0.1.1
+      - image: mrkkrp/mk-com:0.2.0
     steps:
       - attach_workspace:
           at: /tmp

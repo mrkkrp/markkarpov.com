@@ -372,7 +372,7 @@ rLength :: Refined '[GreaterThan 5] Int
 rLength = followProp @Length rText1
 ```
 
-Notice how the ``` `Via` Text``` part disappeared.
+Notice how the ``` `Via` Length``` part disappeared.
 
 Just in case you're wondering if you can follow composite properties (with
 `Via` in them), the answer is “yes, you can”. ```t `Via` p``` will first

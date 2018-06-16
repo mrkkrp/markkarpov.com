@@ -216,7 +216,7 @@ With `TypeApplications` it's quite a nice thing to write:
 
 ```haskell
 myText :: Refined '[NotEmpty] Text
-myText = assumeProp @'[NotEmpty] (refined "foo")
+myText = assumeProp @NotEmpty (refined "foo")
 ```
 
 Sometimes it's a handy thing to do too, but needless to say, it's unsafe and

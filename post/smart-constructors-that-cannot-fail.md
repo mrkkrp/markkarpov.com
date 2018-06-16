@@ -73,12 +73,13 @@ Can we do better? Well, let's try an alternative design now.
 
 ## Basics
 
-The first I'd like to propose is to separate primitives for construction of
-`Refined` types and actual establishing of properties. Because well, we
-could establish some properties this morning and then establish some more in
-the afternoon. We should be able to! This also suggests that if we want to
-have many different properties we could actually store them in a phantom
-type that is a list on the type level, so here we go:
+The first thing I'd like to propose is to separate primitives for
+construction of `Refined` types and actual establishing of properties.
+Because well, we could establish some properties this morning and then
+establish some more in the afternoon. We should be able to! This also
+suggests that if we want to have many different properties we could actually
+store them in a phantom type that is a list on the type level, so here we
+go:
 
 ```haskell
 -- | @'Refined' ps a@ is a wrapper around @a@ proving that it has properties
@@ -402,7 +403,7 @@ constraints like `HasProps`. But I haven't decided on this yet.
 Now. Why not have ways to reason about stuff?
 
 ```haskell
--- | An @'Axiom' name vs qs p@ allows to prove property @p@ if properties
+-- | An @'Axiom' name vs qs p@ allows us to prove property @p@ if properties
 -- @qs@ are already proven. @name@ and arguments @vs@ determine both @qs@
 -- and @p@.
 
@@ -412,7 +413,7 @@ class Axiom (name :: Symbol) (vs :: [*]) (qs :: [*]) (p :: *) | name vs -> qs p
 (It's a pity we can't have proper theorems, but I'll leave that to Coq for
 now.)
 
-I could apply an `Axiom` with this:
+We could apply an `Axiom` with this:
 
 ```haskell
 applyAxiom
@@ -421,11 +422,11 @@ applyAxiom
   -> Refined (ps `AddProp` p) a
 ```
 
-…to learn a new fact about my refined value.
+…to learn a new fact about a refined value.
 
-The clever thing about `name` here is that it allows to determine both `qs`
-and `p` without enumerating them explicitly. You may be wondering what the
-heck is `vs`, but that will be clearer from examples.
+The clever thing about `name` here is that it allows us to determine both
+`qs` and `p` without enumerating them explicitly. You may be wondering what
+`vs` is for, but that will be clearer from examples.
 
 First, `IpProp` demands something to be formalized:
 

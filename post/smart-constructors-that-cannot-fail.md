@@ -501,7 +501,7 @@ parsers.
 
 I have coded up the whole thing here (will put it on Hackage shortly):
 
-* https://github.com/mrkkrp/facts
+* <https://github.com/mrkkrp/facts>
 
 Check it out and maybe try to use, I have no idea how it feels if used at
 scale. Maybe not very good!

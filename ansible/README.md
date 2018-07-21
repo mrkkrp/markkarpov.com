@@ -12,13 +12,6 @@ playbook which will create the deploy user (called `admin` by default):
 $ ansible-playbook root.yml
 ```
 
-Then run the `setup.yml` playbook that sets up other stuff as the deploy
-user:
-
-```
-$ ansbile-playbook setup.yml
-```
-
 To get a certificate from “Let's Encrypt” we still need to ssh into the
 server and run this manually:
 
@@ -26,8 +19,14 @@ server and run this manually:
 $ certbot --nginx -m my-email -d markkarpov.com certonly
 ```
 
-(This should work.) The certificate renewal process is set up automatically
-for you as part of `setup.yml` playbook.
+(This should work.) The certificate renewal process will be set up
+automatically for you as part of `setup.yml` playbook.
+
+Run the `setup.yml` playbook that sets up other stuff as the deploy user:
+
+```
+$ ansbile-playbook setup.yml
+```
 
 Now you can deploy with `deploy.yml`:
 

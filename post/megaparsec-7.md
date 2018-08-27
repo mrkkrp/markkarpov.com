@@ -20,7 +20,7 @@ a bit of benchmarking bravura, because yes, we're now faster than ever
 
 ## Simple changes
 
-The good but boring changes you need to know are the following…
+The good but boring changes you need to know about are the following…
 
 ### `parser-combinators` grows, `megaparsec` shrinks
 
@@ -86,7 +86,7 @@ always felt as an afterthought to me:
 * I think [mmark][mmark] is a nice example of what Megaparsec can do. But it
   also showed the limitations of the parsing library. `mmark` can report
   several `ParseError`s at once, and when they are pretty-printed, we
-  display the offending line per error from the original input stream. If we
+  display an offending line per error from the original input stream. If we
   just use the functions that are provided out-of-the-box, we'll be
   traversing the input stream N times, where N is the number of
   `ParseError`s we want to display. Not nice at all!
@@ -138,13 +138,13 @@ data PosState s = PosState
   } deriving (Show, Eq, Data, Typeable, Generic)
 ```
 
-This is a helper data type that allows to get from one `ParseError` to
-another and pretty print them in one pass. Functions like `runParser` or
-`parse` always return only one `ParseError` in a bundle, but we can add more
-ourselves, which is what I think `mmark` will be doing.
+This is a helper data type that allows to pretty print several `ParseError`s
+in one pass. Functions like `runParser` or `parse` always return only one
+`ParseError` in a bundle, but we can add more ourselves, which is what I
+think `mmark` will be doing.
 
 There is a but more about `PosState` though, and it has to do with the
-performance improvement in Megaparsec 7.
+performance improvements in Megaparsec 7.
 
 ## Performance improvements
 
@@ -177,20 +177,9 @@ Guess what, this gives about 100% of speed-up on microbenchmarks (not on all
 of them, but on many, and that's impressive), and this does transform into
 performance improvements for real parsers too.
 
-I maintain a few projects that use Megaparsec and they all have benchmarks
-for the parsers, so I checked how the dev version of Megaparsec is doing:
-
-* For parsers that use `getSourcePos` (`getPosition` in older versions of
-  Megaparsec) i.e. lookup column position or deal with indentation there is
-  no difference.
-
-* For other parsers there is 20-30% of speedup (memory usage stays mostly
-  the same).
-
-Finally, here is the [older benchmark][parsers-bench] comparing Attoparsec
-and Megaparsec. I used it to compare Attoparsec vs Megaparsec 6 vs
-Megaparsec 7. Here is a table which shows simplified results (run on my
-laptop):
+Here is the [older benchmark][parsers-bench] comparing Attoparsec and
+Megaparsec. I used it to compare Attoparsec vs Megaparsec 6 vs Megaparsec 7.
+Here is a table which shows simplified results (run on my laptop):
 
 | Benchmark | Attoparsec 0.13.2.2 | Megaparsec 6.5.0 | Megaparsec 7.0.0
 |-----------|--------------------:|-----------------:|----------------:

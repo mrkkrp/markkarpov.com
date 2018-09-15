@@ -4,7 +4,7 @@ desc: Practical recommendations for people who decide to switch from Parsec to M
 difficulty: 4
 date:
   published: October 15, 2015
-  updated: September 22, 2017
+  updated: September 27, 2018
 ---
 
 ```toc
@@ -27,11 +27,11 @@ import Text.Megaparsec
 -- if you parse a stream of characters
 import Text.Megaparsec.Char
 -- if you parse a stream of bytes
-import Tetx.Megaparsec.Byte
+import Text.Megaparsec.Byte
 -- if you need to parse permutation phrases:
-import Text.Megaparsec.Perm
+import Control.Applicative.Permutations -- from parser-combinators
 -- if you need to parse expressions:
-import Text.Megaparsec.Expr
+import Control.Monad.Combinators.Expr -- from parser-combinators
 -- for lexing of character streams
 import qualified Text.Megaparsec.Char.Lexer as L
 -- for lexing of binary streams
@@ -103,53 +103,13 @@ Megaparsec and reasons of their removal:
 
 ## Completely changed things
 
-In Megaparsec 5 and 6 the modules `Text.Megaparsec.Pos` and
+In Megaparsec 5, 6, and 7 the modules `Text.Megaparsec.Pos` and
 `Text.Megaparsec.Error` are completely different from those found in Parsec
 and Megaparsec 4. Take some time to look at documentation of the modules if
 your use-case requires operations on error messages or positions. You may
 like the fact that we have well-typed and extensible error messages now.
 
 ## Other
-
-* The `Stream` type class now has `updatePos` method that gives precise
-  control over advancing of textual positions during parsing.
-
-* Note that argument order of `label` has been flipped (the label itself
-  goes first now), so you can write: `myParser = label "my parser" $ …`.
-
-* Don't use the `label ""` (or the `… <?> ""`) idiom to “hide” some
-  “expected” tokens from error messages, use `hidden`.
-
-* New `token` parser is more powerful, its first argument provides full
-  control over reported error message while its second argument allows to
-  specify how to report a missing token in case of empty input stream.
-
-* New `tokens` parser allows to control how tokens are compared (yes, we
-  have case-insensitive `string` called `string'`).
-
-* `unexpected` allows to specify precisely what is unexpected in a
-  well-typed manner.
-
-* Tab width is not hard-coded anymore, use `getTabWidth` and `setTabWidth`
-  to change it. Default tab width is `defaultTabWidth`.
-
-* Now you can reliably test error messages, equality for them is defined
-  properly (in Parsec `Expect "foo"` is equal to `Expect "bar"`).
-
-* To render an error message, apply `parseErrorPretty` or
-  `parseErrorPretty'`.
-
-* `count' m n p` allows you to parse from `m` to `n` occurrences of `p`.
-
-* Now we have `someTill` and `eitherP` out of the box (in the package called
-  `parse-combinators`).
-
-* `token`-based combinators like `string` and `string'` backtrack by
-  default, so it's not necessary to use `try` with them (beginning from
-  `4.4.0`). This feature does not affect performance.
-
-* The new `failure` and `fancyFailure` combinators allow to fail with an
-  arbitrary error messages that can contain custom data.
 
 For full up to date info see [the
 changelog](https://github.com/mrkkrp/megaparsec/blob/master/CHANGELOG.md).
@@ -297,8 +257,8 @@ help with parsing of conventional escape sequences (literal character is
 parsed according to rules defined in the Haskell report).
 
 ```haskell
-charLiteral :: Parser Char
-charLiteral = char '\'' *> charLiteral <* char '\''
+myCharLiteral :: Parser Char
+myCharLiteral = char '\'' *> charLiteral <* char '\''
 ```
 
 `charLiteral` can be also used to parse string literals. This is simplified
@@ -316,14 +276,14 @@ stringLiteral = char '"' >> manyTill L.charLiteral (char '"')
 Parsing of numbers is easy:
 
 ```haskell
-integer :: Parser Integer
-integer = lexeme L.decimal
+decimal :: (MonadParsec e s m, Token s ~ Char, Integral a) => m a
+decimal = lexeme L.decimal
 
-float :: Parser Double
+float :: (MonadParsec e s m, Token s ~ Char, RealFloat a) => m a
 float = lexeme L.float
 
-number :: Parser Scientific
-number lexeme L.scientific -- similar to ‘naturalOrFloat’ in Parsec
+number :: (MonadParsec e s m, Token s ~ Char) => m Scientific
+number = lexeme L.scientific -- similar to ‘naturalOrFloat’ in Parsec
 ```
 
 Megaparsec's numeric parsers have been heavily optimized in version 6, they
@@ -334,10 +294,10 @@ different languages may have other prefixes for this sort of numbers. We
 should parse the prefixes manually:
 
 ```haskell
-hexadecimal :: Parser Integer
+hexadecimal :: (MonadParsec e s m, Token s ~ Char, Integral a) => m a
 hexadecimal = lexeme $ char '0' >> char' 'x' >> L.hexadecimal
 
-octal :: Parser Integer
+octal :: (MonadParsec e s m, Token s ~ Char, Integral a) => m a
 octal = lexeme $ char '0' >> char' 'o' >> L.octal
 ```
 
@@ -346,13 +306,13 @@ parsers like `decimal` do not parse sign. You can easily create parsers for
 signed numbers with the help of `signed`:
 
 ```haskell
-signedInteger :: Parser Integer
-signedInteger = L.signed sc integer
+signedDecimal :: (MonadParsec e s m, Token s ~ Char, Integral a) => m a
+signedDecimal = L.signed sc decimal
 
-signedFloat :: Parser Double
+signedFloat :: (MonadParsec e s m, Token s ~ Char, RealFloat a) => m a
 signedFloat = L.signed sc float
 
-signedNumber :: Parser Scientific
+signedNumber :: (MonadParsec e s m, Token s ~ Char) => m Scientific
 signedNumber = L.signed sc number
 ```
 

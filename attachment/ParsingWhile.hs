@@ -1,10 +1,10 @@
-module Main where
+module Main (main) where
 
 import Control.Monad (void)
+import Control.Monad.Combinators.Expr
 import Data.Void
 import Text.Megaparsec
 import Text.Megaparsec.Char
-import Text.Megaparsec.Expr
 import qualified Text.Megaparsec.Char.Lexer as L
 
 data BExpr
@@ -174,8 +174,10 @@ rExpr = do
   return (RBinary op a1 a2)
 
 relation :: Parser RBinOp
-relation = (symbol ">" *> pure Greater)
-  <|> (symbol "<" *> pure Less)
+relation = (Greater <$ symbol ">")
+  <|> (Less <$ symbol "<")
 
 main :: IO ()
-main = return ()
+main = do
+  input <- getContents
+  parseTest whileParser input

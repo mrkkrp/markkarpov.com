@@ -16,10 +16,10 @@ import Control.Monad
 import Control.Monad.IO.Class
 import Data.Aeson
 import Data.Aeson.Lens
-import Data.List (sortBy, foldl1')
+import Data.List (sortOn, foldl1')
 import Data.List.NonEmpty (NonEmpty (..))
 import Data.Maybe (fromMaybe, mapMaybe)
-import Data.Ord (comparing, Down (..))
+import Data.Ord (Down (..))
 import Data.Proxy
 import Data.Tagged
 import Data.Text (Text)
@@ -297,7 +297,7 @@ main = shakeArgs shakeOptions $ do
         -> Action [LocalInfo]
       gatherLocalInfo Proxy f = do
         ps' <- getDirFiles (pat @r)
-        fmap (sortBy (comparing f)) . forM ps' $ \post -> do
+        fmap (sortOn f) . forM ps' $ \post -> do
           need [post]
           v <- getPost post >>= interpretValue . fst
           return v { localFile = dropDirectory1 (unTagged (mapOut @r) post) }
@@ -307,7 +307,7 @@ main = shakeArgs shakeOptions $ do
           <$> gatherLocalInfo @'PostR Proxy (Down . localPublished)
         let ets = parseExternalPosts "external_posts" env
         return $
-          sortBy (comparing (Down . postInfoPublished)) (ips ++ ets)
+          sortOn (Down . postInfoPublished) (ips ++ ets)
 
   cmnOut postsFile %> \out -> do
     env <- commonEnv
@@ -375,7 +375,7 @@ main = shakeArgs shakeOptions $ do
       [ menuItem LearnHaskell env
       , provideAs "megaparsec_tutorials" mts
       , provideAs "generic_tutorials"
-          (sortBy (comparing (Down . postInfoPublished)) (its ++ ets))
+          (sortOn (Down . postInfoPublished) (its ++ ets))
       , mkTitle LearnHaskell ]
       out
 
@@ -532,9 +532,9 @@ addImageClasses = Ext.inlineRender $ \old inline ->
       (old $ Ext.Image inner src Nothing)
       [ L.class_  "float-right d-none d-md-block ml-3"
       , L.width_  "300"
-      , L.height_ "520"
+      , L.height_ "375"
       ]
-    i@(Ext.Image _ _ _) -> L.with (old i) [L.class_ "img-fluid"]
+    i@Ext.Image {} -> L.with (old i) [L.class_ "img-fluid"]
     other -> old other
 
 provideSocialUrls :: Value -> MMark.Extension

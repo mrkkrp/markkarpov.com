@@ -1,6 +1,6 @@
 {-# LANGUAGE TupleSections #-}
 
-module Main where
+module Main (main) where
 
 import Control.Applicative (empty)
 import Control.Monad (void)
@@ -55,4 +55,6 @@ parser :: Parser (String, [(String, [String])])
 parser = pItemList <* eof
 
 main :: IO ()
-main = return ()
+main = do
+  input <- getContents
+  parseTest parser input

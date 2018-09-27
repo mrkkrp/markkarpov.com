@@ -5,7 +5,7 @@ attachment: RecoveryFeature.hs
 difficulty: 3
 date:
   published: February 19, 2016
-  updated: September 22, 2017
+  updated: September 27, 2018
 ---
 
 The `withRecovery` primitive allows to recover from parse errors
@@ -44,15 +44,15 @@ following imports:
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE TypeFamilies     #-}
 
-module Main where
+module Main (main) where
 
 import Control.Applicative (empty)
 import Control.Monad (void)
+import Control.Monad.Combinators.Expr
+import Data.Scientific (toRealFloat)
 import Data.Void
 import Text.Megaparsec
 import Text.Megaparsec.Char
-import Text.Megaparsec.Expr
-import qualified Data.Scientific as Sci
 import qualified Text.Megaparsec.Char.Lexer as L
 ```
 
@@ -77,7 +77,7 @@ data Expr
 
 A program in our language is collection of equations, where every equation
 gives a name to an expression which in turn can be simply a number,
-reference to other equation, or some math involving those concepts.
+reference to other equation, or some math involving those things.
 
 We parse input stream in the form of a `String` and we don't need custom
 error messages, so we'll use the following definition of `Parser`:
@@ -145,7 +145,8 @@ float = lexeme (Sci.toRealFloat <$> L.scientific)
 ```
 
 All too easy. Parsing of expressions could slow us down, but there is a
-solution out-of-box in `Text.Megaparsec.Expr` module:
+solution out-of-box in the `Control.Monad.Combinators.Expr` module from
+([`parser-combinators`](https://hackage.haskell.org/package/parser-combinators)):
 
 ```haskell
 expr :: Parser Expr
@@ -171,14 +172,14 @@ parens = between (symbol "(") (symbol ")")
 
 We just wrote a fairly complete parser for expressions in our language! If
 you're new to all this stuff I suggest you load the code into GHCi and play
-with it a bit. Use the `parseTest'` function to feed input into the parser:
+with it a bit. Use the `parseTest` function to feed input into the parser:
 
 ```
-λ> parseTest' expr "5"
+λ> parseTest expr "5"
 Value 5.0
-λ> parseTest' expr "5 + foo"
+λ> parseTest expr "5 + foo"
 Sum (Value 5.0) (Reference "foo")
-λ> parseTest' expr "(x + y) * 5 + 7 * z"
+λ> parseTest expr "(x + y) * 5 + 7 * z"
 Sum
   (Multiplication (Sum (Reference "x") (Reference "y")) (Value 5.0))
   (Multiplication (Value 7.0) (Reference "z"))
@@ -216,11 +217,11 @@ able to report multiple error messages at once.
 Let's add one more type synonym—`RawData`:
 
 ```haskell
-type RawData t e = [Either (ParseError t e) Equation]
+type RawData s e = [Either (ParseError s e) Equation]
 ```
 
-This represents a collection of equations, just like `Program`, but every
-one of them may be malformed: in that case we get an error message in
+The type represents a collection of equations, just like `Program`, but
+every one of them may be malformed: in that case we get an error message in
 `Left`, otherwise we have a properly parsed equation in `Right`.
 
 You will be amazed just how easy it is to add recovering to an existing
@@ -231,7 +232,7 @@ rawData :: Parser (RawData Char Void)
 rawData = between scn eof (sepEndBy e scn)
   where
     e = withRecovery recover (Right <$> equation)
-    recover err = Left err <$ manyTill anyChar eol
+    recover err = Left err <$ manyTill anySingle eol
 ```
 
 Let try it, here is the input:

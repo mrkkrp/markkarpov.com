@@ -5,13 +5,11 @@ attachment: IndentationSensitiveParsing.hs
 difficulty: 3
 date:
   published: January 12, 2016
-  updated: September 22, 2017
+  updated: September 27, 2018
 ---
 
 This tutorial shows how helpers for indentation-sensitive parsing work,
-compose, and hopefully, *feel natural*—something we cannot say about ad-hoc
-solutions to this problem that exist as separate packages to work on top of
-Parsec, for example.
+compose, and hopefully, *feel natural*.
 
 ## Combinator overview
 

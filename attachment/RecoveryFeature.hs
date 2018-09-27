@@ -1,15 +1,15 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE TypeFamilies     #-}
 
-module Main where
+module Main (main) where
 
 import Control.Applicative (empty)
 import Control.Monad (void)
+import Control.Monad.Combinators.Expr
+import Data.Scientific (toRealFloat)
 import Data.Void
 import Text.Megaparsec
 import Text.Megaparsec.Char
-import Text.Megaparsec.Expr
-import Data.Scientific (toRealFloat)
 import qualified Text.Megaparsec.Char.Lexer as L
 
 type Program = [Equation]
@@ -78,13 +78,15 @@ equation = Equation <$> (name <* symbol "=") <*> expr
 prog :: Parser Program
 prog = between scn eof (sepEndBy equation scn)
 
-type RawData t e = [Either (ParseError t e) Equation]
+type RawData s e = [Either (ParseError s e) Equation]
 
-rawData :: Parser (RawData Char Void)
+rawData :: Parser (RawData String Void)
 rawData = between scn eof (sepEndBy e scn)
   where
     e = withRecovery recover (Right <$> equation)
-    recover err = Left err <$ manyTill anyChar eol
+    recover err = Left err <$ manyTill anySingle eol
 
 main :: IO ()
-main = return ()
+main = do
+  input <- getContents
+  parseTest rawData input

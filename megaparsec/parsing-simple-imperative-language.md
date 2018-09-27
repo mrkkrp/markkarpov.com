@@ -5,7 +5,7 @@ attachment: ParsingWhile.hs
 difficulty: 2
 date:
   published: October 13, 2015
-  updated: September 22, 2017
+  updated: September 15, 2018
 ---
 
 This tutorial will present how to parse a subset of a simple imperative
@@ -19,13 +19,13 @@ material for a tutorial.
 First let's import the necessary modules:
 
 ```haskell
-module Main where
+module Main (main) where
 
 import Control.Monad (void)
+import Control.Monad.Combinators.Expr -- from parser-combinators
 import Data.Void
 import Text.Megaparsec
 import Text.Megaparsec.Char
-import Text.Megaparsec.Expr
 import qualified Text.Megaparsec.Char.Lexer as L
 ```
 
@@ -227,8 +227,8 @@ result otherwise.
 
 Note the use of `try` in `identifier`. This is necessary to backtrack to
 beginning of the identifier in cases when `fail` is evaluated. Otherwise
-things like `many identifier` would fail on such identifiers instead of just
-stopping.
+expressions like `many identifier` would fail on such identifiers instead of
+just stopping.
 
 And that's it, we have just written the lexer for our language, now we can
 start writing the parser.
@@ -245,10 +245,10 @@ whileParser :: Parser Stmt
 whileParser = between sc eof stmt
 ```
 
-Now because any statement might be actually a sequence of statements
-separated by semicolons, we use `sepBy1` to parse at least one statement.
-The result is a list of statements. We also allow grouping statements with
-parentheses, which is useful, for instance, in the `while` loop.
+Because any statement might be actually a sequence of statements separated
+by semicolons, we use `sepBy1` to parse at least one statement. The result
+is a list of statements. We also allow grouping statements with parentheses,
+which is useful, for instance, in the `while` loop.
 
 ```haskell
 stmt :: Parser Stmt
@@ -258,7 +258,7 @@ stmt = f <$> sepBy1 stmt' semi
     f l = if length l == 1 then head l else Seq l
 ```
 
-Now a single statement is quite simple, it's either an `if` conditional, a
+A single statement is quite simple, it's either an `if` conditional, a
 `while` loop, an assignment or simply a `skip` statement. We use `<|>` to
 express choice. So `a <|> b` will first try parser `a` and if it fails
 (without actually consuming any input) then parser `b` will be used. *Note:
@@ -272,12 +272,6 @@ stmt' = ifStmt
   <|> assignStmt
   <|> parens stmt
 ```
-
-If you have a parser that might fail after consuming some input, and you
-still want to try the next parser, you should take a look at the `try`
-combinator. For instance `try p <|> q` will try parsing with `p` and if it
-fails, even after consuming the input, the `q` parser will be used as if
-nothing has been consumed by `p`.
 
 Now let's define the parsers for all the possible statements. This is quite
 straightforward as we just use the parsers from the lexer and then use all
@@ -313,14 +307,23 @@ skipStmt :: Parser Stmt
 skipStmt = Skip <$ rword "skip"
 ```
 
-We don't need `try` with these alternatives because `rword` matches on
-keyword (such as `if`, `while`, `skip`) using `string` which backtracks
-automatically. `identifier` already has `try` in its definition.
+If you have a parser that might fail after consuming some input, and you
+still want to try the next parser, you should take a look at the `try`
+combinator. For instance `try p <|> q` will try parsing with `p` and if it
+fails, even after consuming the input, the `q` parser will be used as if
+nothing has been consumed by `p`. We don't need `try` with these
+alternatives because `rword` matches on keyword (such as `if`, `while`,
+`skip`) using `string` which backtracks automatically, and once we have
+matched a keyword, we're committed to that branch and don't want to
+backtrack anyway. As for `identifier`, it already has `try` in its
+definition.
 
 ## Expressions
 
-What's left is to parse the expressions. Fortunately Megaparsec provides an
-easy way to do that. Let's define the arithmetic and Boolean expressions:
+What's left is to parse the expressions. Fortunately we can use the
+`Control.Monad.Combinators.Expr` module from the
+[`parser-combinators`](https://hackage.haskell.org/package/parser-combinators)
+package to do that. Let's define the arithmetic and Boolean expressions:
 
 ```haskell
 aExpr :: Parser AExpr
@@ -390,8 +393,8 @@ rExpr = do
   return (RBinary op a1 a2)
 
 relation :: Parser RBinOp
-relation = (symbol ">" *> pure Greater)
-  <|> (symbol "<" *> pure Less)
+relation = (Greater <$ symbol ">")
+  <|> (Less <$ symbol "<")
 ```
 
 And that's it. We have a quite simple parser which is able to parse a few
@@ -399,13 +402,19 @@ statements and arithmetic/boolean expressions.
 
 ## Notes
 
-If you want to experiment with the parser inside GHCi, these functions might
-be handy:
+If you want to experiment with the parser inside GHCi, the `parseTest`
+function might be handy. `parseTest p input` applies parser `p` on input
+`input` and prints results.
 
-* `parseTest p input` applies parser `p` on input `input` and prints
-  results.
-* `parseTest' p input` is the same as `parseTest`, but also displays
-  offending line as part of error message.
+We could also define `main` function like so, then compile an executable and
+play with it on the command line:
+
+```haskell
+main :: IO ()
+main = do
+  input <- getContents
+  parseTest whileParser input
+```
 
 ----
 

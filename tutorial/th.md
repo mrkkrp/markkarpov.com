@@ -99,22 +99,22 @@ Haskell program somehow. `a` can be anything in intermediate monadic
 expressions, but when we're about to insert the generated code into a
 Haskell source file, there are only four options:
 
-* [Declaration](https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#t:Dec)
+* [Declaration](https://hackage.haskell.org/package/template-haskell-2.13.0.0/docs/Language-Haskell-TH.html#t:Dec)
   `Dec`, which includes the top-level things like function and data type
   definitions. In fact, we would like to be able to generate several
   declarations at a time, so the type that is actually used (and expected by
   the interpolating machinery) is `[Dec]`.
 
-* [Expression](https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#t:Exp)
+* [Expression](https://hackage.haskell.org/package/template-haskell-2.13.0.0/docs/Language-Haskell-TH.html#t:Exp)
   `Exp`, such as `x + 1` or `\x -> x + 1`. It is probably the most common
   thing to generate.
 
-* [Type](https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#t:Type)
+* [Type](https://hackage.haskell.org/package/template-haskell-2.13.0.0/docs/Language-Haskell-TH.html#t:Type)
   `Type` such as `Int` or `Maybe Int` or just `Maybe`. The type doesn't have
   to be saturated (i.e. may have any kind), so it may be pretty much
   anything one can encounter on the type level.
 
-* [Pattern](https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#t:Pat)
+* [Pattern](https://hackage.haskell.org/package/template-haskell-2.13.0.0/docs/Language-Haskell-TH.html#t:Pat)
   `Pat` that we use for pattern-matching.
 
 I suggest you follow the links in the list above and glance at the
@@ -353,7 +353,7 @@ complicated:
 runQ :: Quasi m => Q a -> m a
 ```
 
-[`Quasi`](https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH-Syntax.html#t:Quasi)
+[`Quasi`](https://hackage.haskell.org/package/template-haskell-2.13.0.0/docs/Language-Haskell-TH-Syntax.html#t:Quasi)
 is the type class for monads that provide all the capabilities for
 meta-programming we have mentioned in the beginning when we introduced `Q`.
 You can click that link and take a look for yourself.
@@ -501,7 +501,7 @@ InfixE (Just (VarE x)) (VarE GHC.Num.+) (Just (LitE (IntegerL 1)))
 ```
 
 The
-[`Language.Haskell.TH.Lib`](https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH-Lib.html)
+[`Language.Haskell.TH.Lib`](https://hackage.haskell.org/package/template-haskell-2.13.0.0/docs/Language-Haskell-TH-Lib.html)
 module contains helper functions that take and return AST values in the `Q`
 monad, which sometimes helps produce shorter code, because these helpers
 compose well with quotation and splicing. Here we used `varE :: Name -> Q
@@ -537,29 +537,29 @@ information about named things.
 There are quite a few “reifying” functions that allow to do that:
 
 * [`reify :: Name -> Q
-  Info`](https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#v:reify)
+  Info`](https://hackage.haskell.org/package/template-haskell-2.13.0.0/docs/Language-Haskell-TH.html#v:reify)
   is the most commonly used one. It allows to look up general information
-  [`Info`](https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#t:Info)
+  [`Info`](https://hackage.haskell.org/package/template-haskell-2.13.0.0/docs/Language-Haskell-TH.html#t:Info)
   about a thing.
 
 * [`extsEnabled :: Q
-  [Extension]`](https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#v:extsEnabled)
+  [Extension]`](https://hackage.haskell.org/package/template-haskell-2.13.0.0/docs/Language-Haskell-TH.html#v:extsEnabled)
   returns the list of all enabled language extensions at the splicing site.
 
 * [`isExtEnabled :: Extension -> Q
-  Bool`](https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#v:isExtEnabled)
+  Bool`](https://hackage.haskell.org/package/template-haskell-2.13.0.0/docs/Language-Haskell-TH.html#v:isExtEnabled)
   allows to check whether a particular language extension is enabled.
 
 * [`reifyInstances :: Name -> [Type] ->
-  `](https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#v:reifyInstances)
+  `](https://hackage.haskell.org/package/template-haskell-2.13.0.0/docs/Language-Haskell-TH.html#v:reifyInstances)
   returns a list of visible instances of `Name` (type class name) for types
   `[Type]`.
 
 * There are more of them, for more rare use cases:
-  [`reifyFixity`](https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#v:reifyFixity),
-  [`reifyRoles`](https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#v:reifyRoles),
-  [`reifyAnnotations`](https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#v:reifyAnnotations),
-  [`reifyConStrictness`](https://hackage.haskell.org/package/template-haskell-2.12.0.0/docs/Language-Haskell-TH.html#v:reifyConStrictness).
+  [`reifyFixity`](https://hackage.haskell.org/package/template-haskell-2.13.0.0/docs/Language-Haskell-TH.html#v:reifyFixity),
+  [`reifyRoles`](https://hackage.haskell.org/package/template-haskell-2.13.0.0/docs/Language-Haskell-TH.html#v:reifyRoles),
+  [`reifyAnnotations`](https://hackage.haskell.org/package/template-haskell-2.13.0.0/docs/Language-Haskell-TH.html#v:reifyAnnotations),
+  [`reifyConStrictness`](https://hackage.haskell.org/package/template-haskell-2.13.0.0/docs/Language-Haskell-TH.html#v:reifyConStrictness).
 
 Reifying functions take `Name`s, but there is one more question to ask about
 a name: does it name a thing that is in scope when we write our meta-program
@@ -822,7 +822,7 @@ have? This could be used to deliver values generated in the `Q` monad to the
 outside world.
 
 The solution comes naturally in the form of the
-[`Lift`](https://hackage.haskell.org/package/template-haskell-2.12.0.0/docs/Language-Haskell-TH-Syntax.html#t:Lift)
+[`Lift`](https://hackage.haskell.org/package/template-haskell-2.13.0.0/docs/Language-Haskell-TH-Syntax.html#t:Lift)
 type class:
 
 ```haskell
@@ -956,7 +956,7 @@ foo txt = [| $e <> "!" |]
 ```
 
 This
-[`dataToExpQ`](https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH-Syntax.html#v:dataToExpQ)
+[`dataToExpQ`](https://hackage.haskell.org/package/template-haskell-2.13.0.0/docs/Language-Haskell-TH-Syntax.html#v:dataToExpQ)
 function in combination with
 [`cast`](https://hackage.haskell.org/package/base/docs/Data-Typeable.html#v:cast)
 (that comes from `Data.Typeable`) does the trick.
@@ -1052,7 +1052,7 @@ is called quasi-quotes. It turns out that TH allows us to define our own
 custom quasi-quoters that are like `d`, `e`, `t`, and `p` we saw earlier.
 
 Defining a quasi-quoter is easy. It is enough to import the
-[`QuasiQuoter`](https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH-Quote.html#t:QuasiQuoter)
+[`QuasiQuoter`](https://hackage.haskell.org/package/template-haskell-2.13.0.0/docs/Language-Haskell-TH-Quote.html#t:QuasiQuoter)
 data type from `Langauge.Haskell.TH.Quote`:
 
 ```haskell
@@ -1115,7 +1115,7 @@ external conditions that may contribute to unexpected compilation failures.
 Thus it makes sense to think twice before running `IO` from TH.
 
 That said, the function that lifts `IO` into `Q` is called simply
-[`runIO`](https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#v:runIO):
+[`runIO`](https://hackage.haskell.org/package/template-haskell-2.13.0.0/docs/Language-Haskell-TH.html#v:runIO):
 
 ```haskell
 runIO :: IO a -> Q a
@@ -1133,7 +1133,7 @@ case compilation usually starts to depend on contents of the file being
 read, and so it's a good idea to tell GHC that changes in that file should
 cause re-compilation of the module where the file-reading TH helper is
 spliced. This is done via the
-[`addDependentFile`](https://hackage.haskell.org/package/template-haskell-2.12.0.0/docs/Language-Haskell-TH-Syntax.html#v:addDependentFile)
+[`addDependentFile`](https://hackage.haskell.org/package/template-haskell-2.13.0.0/docs/Language-Haskell-TH-Syntax.html#v:addDependentFile)
 function:
 
 ```haskell

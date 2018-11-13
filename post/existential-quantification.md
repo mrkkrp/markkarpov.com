@@ -67,18 +67,20 @@ such constructions are called rank-N types.
 
 Here are the key things:
 
-* A variable is *universally quantified* when the consumer of expression it
-  appears in can choose what it will be.
-* A variable is *existentially quantified* when the consumer of expression
-  it appears in have to deal with the fact that the choice was made for him.
+* A variable is *universally quantified* when the consumer of the expression
+  it appears in can choose what it will be.
+* A variable is *existentially quantified* when the consumer of the
+  expression it appears in have to deal with the fact that the choice was
+  made for him.
 
 Both universally and existentially quantified variables are introduced with
 `forall`. There is no `exists` in Haskell. In fact, it's not necessary.
 
 A few examples should help:
 
-* In the function `myPrettyPrinter` above, for consumer of `myPrettyPrinter`
-  `a` is universally quantified (we can choose what the type will be)
+* In the function `myPrettyPrinter` above, for consumers of
+  `myPrettyPrinter` `a` is universally quantified (we can choose what the
+  type will be)
 * …while `b` is existentially quantified (we have to be prepared to deal
   with any `b` that will be given to the callback).
 * *Inside* the body of `myPrettyPrinter` `a` is existentially quantified
@@ -152,8 +154,7 @@ There are various degrees of how much we might want to preserve:
   instances of `Show` can be defined).
 
 * We could use GADTs to restore exact types of existentially quantified
-  variables later (which starts to smell like programming with dependent
-  types, and that's what it is!):
+  variables later:
 
   ```haskell
   data EType a where

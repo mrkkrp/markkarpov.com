@@ -1,6 +1,6 @@
 ---
 title: The true power of Dvorak
-desc: My experience with the Dvorak layout
+desc: My experience with the Dvorak layout.
 date:
   published: March 15, 2016
   updated:   June 1, 2017

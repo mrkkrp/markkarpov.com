@@ -1,6 +1,6 @@
 ---
 title: Putting together a form validation library
-desc: A write-up about motivation and design of the forma library
+desc: A write-up about motivation and design of the forma library.
 date:
   published: May 2, 2017
   updated:   June 6, 2017

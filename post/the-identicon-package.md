@@ -1,6 +1,6 @@
 ---
 title: The Identicon package
-desc: My new Identicon package for identicon generation
+desc: My new Identicon package for identicon generation.
 date:
   published: May 28, 2016
   updated:   June 1, 2017

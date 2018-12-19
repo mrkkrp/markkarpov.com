@@ -1,5 +1,4 @@
 {-# LANGUAGE DataKinds           #-}
-{-# LANGUAGE KindSignatures      #-}
 {-# LANGUAGE LambdaCase          #-}
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE PolyKinds           #-}
@@ -7,7 +6,6 @@
 {-# LANGUAGE RankNTypes          #-}
 {-# LANGUAGE RecordWildCards     #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeApplications    #-}
 
 module Main (main) where
 
@@ -20,8 +18,6 @@ import Data.List (sortOn, foldl1')
 import Data.List.NonEmpty (NonEmpty (..))
 import Data.Maybe (fromMaybe, mapMaybe)
 import Data.Ord (Down (..))
-import Data.Proxy
-import Data.Tagged
 import Data.Text (Text)
 import Data.Time
 import Development.Shake
@@ -46,110 +42,77 @@ import qualified Text.URI             as URI
 ----------------------------------------------------------------------------
 -- Settings
 
+-- | Top-level output directory of the site.
+
 outdir :: FilePath
 outdir = "_build"
 
 ----------------------------------------------------------------------------
 -- Routing
 
--- | Pattern for a 'Route'.
+-- | A route equipped with 'FilePattern' for input source files and a
+-- function how to get output file name from input file name. The function
+-- should not mess with 'outdir', that will be done for users automatically.
 
-newtype Pat r = Pat { unPat :: FilePattern }
+data Route
+  = Ins FilePattern (FilePath -> FilePath)
+  | Gen FilePath
 
-class Route (r :: Routes) where
+-- | This function allows to translate my clear vision of build system to
+-- his.
 
-  -- | Pattern for source files.
-  pat :: Pat r
+buildRoute :: Route -> (FilePath -> FilePath -> Action ()) -> Rules ()
+buildRoute (Ins pat mapOut') f = do
+  let mapOut x = outdir </> mapOut' x
+  action $
+    getMatchingFiles pat >>= need . fmap mapOut
+  inputMap <- fmap ($ ()) . newCache $ \() -> do
+    ifiles <- getMatchingFiles pat
+    return $ HM.fromList (zip (mapOut <$> ifiles) ifiles)
+  mapOut pat %> \output -> do
+    input <- (HM.! output) <$> inputMap
+    f input output
+buildRoute (Gen outFile') f = do
+  let outFile = outdir </> outFile'
+  want [outFile]
+  outFile %> \output ->
+    f output output
 
-  -- | How to get input file name given output file name.
-  mapIn :: Tagged r (FilePath -> FilePath)
-  mapIn = Tagged dropDirectory1
+----------------------------------------------------------------------------
+-- Routes
 
-  -- | How to get output file name given input file name.
-  mapOut :: Tagged r (FilePath -> FilePath)
-  mapOut = Tagged (\x -> outdir </> x)
-
--- | Input pattern, aka 'pat' mapped to output.
-
-outPattern :: forall r. Route r => Pat r
-outPattern = (Pat . f . unPat) (pat @r)
-  where
-    f = unTagged (mapOut @r)
-
--- | Defined rotues.
-
-data Routes
-  = PostR
-  | CssR
-  | JsR
-  | ImgR
-  | RawR
-  | AttachmentR
-  | MTutorialR
-  | TutorialR
-  | ResumeHtmlR
-  | ResumePdfR
-  | AboutR
-
-instance Route 'PostR where
-  pat    = Pat "post/*.md"
-  mapIn  = Tagged (\x -> dropDirectory1 x -<.> "md")
-  mapOut = Tagged (\x -> outdir </> x -<.> "html")
-
-instance Route 'CssR where
-  pat    = Pat "static/css/*.css"
-
-instance Route 'JsR where
-  pat    = Pat "static/js/*.js"
-
-instance Route 'ImgR where
-  pat    = Pat "static/img/*"
-
-instance Route 'RawR where
-  pat    = Pat "raw/*"
-  mapIn  = Tagged (\x -> "raw" </> dropDirectory1 x)
-  mapOut = Tagged (\x -> outdir </> dropDirectory1 x)
-
-instance Route 'AttachmentR where
-  pat    = Pat "attachment/*"
-
-instance Route 'MTutorialR where
-  pat    = Pat "megaparsec/*.md"
-  mapIn  = Tagged (\x -> dropDirectory1 x -<.> "md")
-  mapOut = Tagged (\x -> outdir </> x -<.> "html")
-
-instance Route 'TutorialR where
-  pat    = Pat "tutorial/*.md"
-  mapIn  = Tagged (\x -> dropDirectory1 x -<.> "md")
-  mapOut = Tagged (\x -> outdir </> x -<.> "html")
-
-instance Route 'ResumeHtmlR where
-  pat    = Pat "resume/resume.md"
-  mapIn  = Tagged (\x -> "resume" </> dropDirectory1 x -<.> "md")
-  mapOut = Tagged (\x -> outdir </> dropDirectory1 x -<.> "html")
-
-instance Route 'ResumePdfR where
-  pat    = Pat "resume/resume.pdf"
-  mapIn  = Tagged (\x -> "resume" </> dropDirectory1 x)
-  mapOut = Tagged (\x -> outdir </> dropDirectory1 x)
-
-instance Route 'AboutR where
-  pat    = Pat "about.md"
-  mapIn  = Tagged (\x -> dropDirectory1 x -<.> "md")
-  mapOut = Tagged (\x -> outdir </> x -<.> "html")
-
--- | TODO Find a way to abstract working with these files.
-
-aboutFile, ossFile, notFoundFile, learnFile, postsFile, atomFile :: FilePath
-aboutFile    = "about.html"
-ossFile      = "oss.html"
-notFoundFile = "404.html"
-learnFile    = "learn-haskell.html"
-postsFile    = "posts.html"
-atomFile     = "feed.atom"
-
-cmnOut :: FilePath -> FilePath
-cmnOut x = outdir </> x
+cssR
+  , jsR
+  , imgR
+  , rawR
+  , attachmentR
+  , notFoundR
+  , atomFeedR
+  , resumeHtmlR
+  , resumePdfR
+  , aboutR
+  , ossR
+  , learnHaskellR
+  , postsR
+  , postR
+  , mtutorialR
+  , tutorialR :: Route
+cssR          = Ins "static/css/*.css" id
+jsR           = Ins "static/js/*.js" id
+imgR          = Ins "static/img/*" id
+rawR          = Ins "raw/*" dropDirectory1
+attachmentR   = Ins "attachment/*" id
+notFoundR     = Gen "404.html"
+atomFeedR     = Gen "feed.atom"
+resumeHtmlR   = Ins "resume/resume.md" (\x -> dropDirectory1 x -<.> "html")
+resumePdfR    = Ins "resume/resume.pdf" dropDirectory1
+aboutR        = Ins "about.md" (-<.> "html")
+ossR          = Gen "oss.html"
+learnHaskellR = Gen "learn-haskell.html"
+postsR        = Gen "posts.html"
+postR         = Ins "post/*.md" (-<.> "html")
+mtutorialR    = Ins "megaparsec/*.md" (-<.> "html")
+tutorialR     = Ins "tutorial/*.md" (-<.> "html")
 
 ----------------------------------------------------------------------------
 -- Post info
@@ -227,23 +190,7 @@ menuItemTitle = \case
 main :: IO ()
 main = shakeArgs shakeOptions $ do
 
-  let z :: forall r. Route r => Proxy r -> Rules ()
-      z Proxy = action $
-        getDirFiles (pat @r) >>= need . fmap (unTagged $ mapOut @r)
-
-  z @'PostR Proxy
-  z @'CssR Proxy
-  z @'JsR Proxy
-  z @'ImgR Proxy
-  z @'RawR Proxy
-  z @'AttachmentR Proxy
-  z @'MTutorialR Proxy
-  z @'TutorialR Proxy
-  z @'ResumeHtmlR Proxy
-  z @'ResumePdfR Proxy
-
-  want $ cmnOut <$>
-    [aboutFile, ossFile, notFoundFile, learnFile, postsFile, atomFile]
+  -- Helpers
 
   phony "clean" $ do
     putNormal ("Cleaning files in " ++ outdir)
@@ -259,67 +206,63 @@ main = shakeArgs shakeOptions $ do
 
   templates <- fmap ($ ()) . newCache $ \() -> do
     let templateP = "templates/*.mustache"
-    getDirFiles (Pat templateP) >>= need
+    getMatchingFiles templateP >>= need
     liftIO (compileMustacheDir "default" (takeDirectory templateP))
 
   getPost <- newCache $ \path -> do
     env <- commonEnv
     getPostHelper env path
 
-  unPat (outPattern @'CssR) %> \out ->
-    copyFile' (unTagged (mapIn @'CssR) out) out
-
-  unPat (outPattern @'JsR) %> \out ->
-    copyFile' (unTagged (mapIn @'JsR) out) out
-
-  unPat (outPattern @'ImgR) %> \out ->
-    copyFile' (unTagged (mapIn @'ImgR) out) out
-
-  unPat (outPattern @'RawR) %> \out ->
-    copyFile' (unTagged (mapIn @'RawR) out) out
-
-  unPat (outPattern @'AttachmentR) %> \out ->
-    copyFile' (unTagged (mapIn @'AttachmentR) out) out
-
-  unPat (outPattern @'PostR) %> \out -> do
-    env <- commonEnv
-    ts  <- templates
-    let src = unTagged (mapIn @'PostR) out
-    need [src]
-    (v, content) <- getPost src
-    renderAndWrite ts ["post","default"] (Just content)
-      [menuItem Posts env, v, mkLocation out]
-      out
-
-  let gatherLocalInfo :: forall r a. (Route r, Ord a)
-        => Proxy r
+  let gatherLocalInfo :: Ord a
+        => Route
         -> (LocalInfo -> a)
         -> Action [LocalInfo]
-      gatherLocalInfo Proxy f = do
-        ps' <- getDirFiles (pat @r)
+      gatherLocalInfo (Ins pat mapOut) f = do
+        ps' <- getMatchingFiles pat
         fmap (sortOn f) . forM ps' $ \post -> do
           need [post]
           v <- getPost post >>= interpretValue . fst
-          return v { localFile = dropDirectory1 (unTagged (mapOut @r) post) }
+          return v { localFile = mapOut post }
+      gatherLocalInfo (Gen outFile) _ =
+        fail $ "cannot gather local info about: " ++ outFile
+
       gatherPosts = do
         env <- commonEnv
         ips <- fmap InternalPost
-          <$> gatherLocalInfo @'PostR Proxy (Down . localPublished)
+          <$> gatherLocalInfo postR (Down . localPublished)
         let ets = parseExternalPosts "external_posts" env
         return $
           sortOn (Down . postInfoPublished) (ips ++ ets)
 
-  cmnOut postsFile %> \out -> do
-    env <- commonEnv
-    ts  <- templates
-    ps  <- gatherPosts
-    renderAndWrite ts ["posts","default"] Nothing
-      [ menuItem Posts env
-      , provideAs "post" ps
-      , mkTitle Posts ]
-      out
+      justFromTemplate
+        :: Either Text MenuItem
+        -> PName
+        -> FilePath
+        -> Action ()
+      justFromTemplate etitle template output = do
+        env <- commonEnv
+        ts  <- templates
+        renderAndWrite ts [template,"default"] Nothing
+          [ either (const env) (`menuItem` env) etitle
+          , provideAs "title" (either id menuItemTitle etitle) ]
+          output
 
-  cmnOut atomFile %> \out -> do
+  -- Page implementations
+
+  buildRoute cssR copyFile'
+
+  buildRoute jsR copyFile'
+
+  buildRoute imgR copyFile'
+
+  buildRoute rawR copyFile'
+
+  buildRoute attachmentR copyFile'
+
+  buildRoute notFoundR $ \_ output ->
+    justFromTemplate (Left "404 Not Found") "404" output
+
+  buildRoute atomFeedR $ \_ output -> do
     env <- commonEnv
     ts  <- templates
     ps  <- gatherPosts
@@ -327,49 +270,39 @@ main = shakeArgs shakeOptions $ do
     renderAndWrite ts ["atom-feed"] Nothing
       [ env
       , provideAs "entry" ps
-      , provideAs "feed_file" (dropDirectory1 out)
+      , provideAs "feed_file" (dropDirectory1 output)
       , provideAs "feed_updated" feedUpdated ]
-      out
+      output
 
-  unPat (outPattern @'MTutorialR) %> \out -> do
+  buildRoute resumeHtmlR $ \input output -> do
     env <- commonEnv
     ts  <- templates
-    let src = unTagged (mapIn @'MTutorialR) out
-    need [src]
-    (v, content) <- getPost src
-    renderAndWrite ts ["post","default"] (Just content)
-      [menuItem LearnHaskell env, v, mkLocation out]
-      out
-
-  unPat (outPattern @'TutorialR) %> \out -> do
-    env <- commonEnv
-    ts  <- templates
-    let src = unTagged (mapIn @'TutorialR) out
-    need [src]
-    (v, content) <- getPost src
-    renderAndWrite ts ["post","default"] (Just content)
-      [menuItem LearnHaskell env, v, mkLocation out]
-      out
-
-  unPat (outPattern @'ResumeHtmlR) %> \out -> do
-    env <- commonEnv
-    ts  <- templates
-    let src = unTagged (mapIn @'ResumeHtmlR) out
-    need [src]
-    (v, content) <- getPost src
+    need [input]
+    (v, content) <- getPost input
     renderAndWrite ts ["post","default"] (Just content)
       [menuItem Resume env, v]
-      out
+      output
 
-  unPat (outPattern @'ResumePdfR) %> \out ->
-    copyFile' (unTagged (mapIn @'ResumePdfR) out) out
+  buildRoute resumePdfR copyFile'
 
-  cmnOut learnFile %> \out -> do
+  buildRoute aboutR $ \input output -> do
     env <- commonEnv
     ts  <- templates
-    mts <- gatherLocalInfo @'MTutorialR Proxy localDifficulty
+    need [input]
+    (v, content) <- getPost input
+    renderAndWrite ts ["post", "default"] (Just content)
+      [menuItem About env, v]
+      output
+
+  buildRoute ossR $ \_ output ->
+    justFromTemplate (Right OSS) "oss" output
+
+  buildRoute learnHaskellR $ \_ output -> do
+    env <- commonEnv
+    ts  <- templates
+    mts <- gatherLocalInfo mtutorialR localDifficulty
     its <- fmap InternalPost <$>
-      gatherLocalInfo @'TutorialR  Proxy (Down . localPublished)
+      gatherLocalInfo tutorialR (Down . localPublished)
     let ets = parseExternalPosts "external_tutorials" env
     renderAndWrite ts ["learn-haskell","default"] Nothing
       [ menuItem LearnHaskell env
@@ -377,35 +310,50 @@ main = shakeArgs shakeOptions $ do
       , provideAs "generic_tutorials"
           (sortOn (Down . postInfoPublished) (its ++ ets))
       , mkTitle LearnHaskell ]
-      out
+      output
 
-  unPat (outPattern @'AboutR) %> \out -> do
+  buildRoute postsR $ \_ output -> do
     env <- commonEnv
     ts  <- templates
-    let src = unTagged (mapIn @'AboutR) out
-    need [src]
-    (v, content) <- getPost src
-    renderAndWrite ts ["post", "default"] (Just content)
-      [menuItem About env, v]
-      out
+    ps  <- gatherPosts
+    renderAndWrite ts ["posts","default"] Nothing
+      [ menuItem Posts env
+      , provideAs "post" ps
+      , mkTitle Posts ]
+      output
 
-  let justFromTemplate :: Either Text MenuItem -> PName -> FilePath -> Action ()
-      justFromTemplate etitle template out = do
-        env <- commonEnv
-        ts  <- templates
-        renderAndWrite ts [template,"default"] Nothing
-          [ either (const env) (`menuItem` env) etitle
-          , provideAs "title" (either id menuItemTitle etitle) ]
-          out
+  buildRoute postR $ \input output -> do
+    env <- commonEnv
+    ts  <- templates
+    need [input]
+    (v, content) <- getPost input
+    renderAndWrite ts ["post","default"] (Just content)
+      [menuItem Posts env, v, mkLocation output]
+      output
 
-  cmnOut ossFile      %> justFromTemplate (Right OSS)            "oss"
-  cmnOut notFoundFile %> justFromTemplate (Left "404 Not Found") "404"
+  buildRoute mtutorialR $ \input output -> do
+    env <- commonEnv
+    ts  <- templates
+    need [input]
+    (v, content) <- getPost input
+    renderAndWrite ts ["post","default"] (Just content)
+      [menuItem LearnHaskell env, v, mkLocation output]
+      output
+
+  buildRoute tutorialR $ \input output -> do
+    env <- commonEnv
+    ts  <- templates
+    need [input]
+    (v, content) <- getPost input
+    renderAndWrite ts ["post","default"] (Just content)
+      [menuItem LearnHaskell env, v, mkLocation output]
+      output
 
 ----------------------------------------------------------------------------
 -- Helpers
 
-getDirFiles :: Pat r -> Action [FilePath]
-getDirFiles = getDirectoryFiles "" . pure . unPat
+getMatchingFiles :: FilePattern -> Action [FilePath]
+getMatchingFiles = getDirectoryFiles "" . pure
 
 selectTemplate :: PName -> Template -> Template
 selectTemplate name t = t { templateActual = name }

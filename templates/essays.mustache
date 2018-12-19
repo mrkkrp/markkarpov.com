@@ -1,0 +1,16 @@
+<h1>Essays</h1>
+
+<p>
+  These are my non-technical writings on various topics.
+</p>
+
+<table class="table table-striped">
+  {{# post }}
+  <tr>
+    <td>{{ published }}</td>
+    <td>
+      <a href="{{ file }}">{{ title }}</a>
+    </td>
+  </tr>
+  {{/ post }}
+</table>

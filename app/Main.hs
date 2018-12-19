@@ -94,9 +94,11 @@ cssR
   , ossR
   , learnHaskellR
   , postsR
+  , essaysR
   , postR
   , mtutorialR
-  , tutorialR :: Route
+  , tutorialR
+  , essayR :: Route
 cssR          = Ins "static/css/*.css" id
 jsR           = Ins "static/js/*.js" id
 imgR          = Ins "static/img/*" id
@@ -110,9 +112,11 @@ aboutR        = Ins "about.md" (-<.> "html")
 ossR          = Gen "oss.html"
 learnHaskellR = Gen "learn-haskell.html"
 postsR        = Gen "posts.html"
+essaysR       = Gen "essays.html"
 postR         = Ins "post/*.md" (-<.> "html")
 mtutorialR    = Ins "megaparsec/*.md" (-<.> "html")
 tutorialR     = Ins "tutorial/*.md" (-<.> "html")
+essayR        = Ins "essay/*.md" (-<.> "html")
 
 ----------------------------------------------------------------------------
 -- Post info
@@ -170,6 +174,7 @@ instance ToJSON LocalInfo where
 
 data MenuItem
   = Posts
+  | Essays
   | LearnHaskell
   | OSS
   | Resume
@@ -179,6 +184,7 @@ data MenuItem
 menuItemTitle :: MenuItem -> Text
 menuItemTitle = \case
   Posts        -> "Posts"
+  Essays       -> "Essays"
   LearnHaskell -> "Learn Haskell"
   OSS          -> "OSS"
   Resume       -> "Resume"
@@ -322,6 +328,16 @@ main = shakeArgs shakeOptions $ do
       , mkTitle Posts ]
       output
 
+  buildRoute essaysR $ \_ output -> do
+    env <- commonEnv
+    ts  <- templates
+    es  <- gatherLocalInfo essayR (Down . localPublished)
+    renderAndWrite ts ["essays","default"] Nothing
+      [ menuItem Posts env
+      , provideAs "post" es
+      , mkTitle Posts ]
+      output
+
   buildRoute postR $ \input output -> do
     env <- commonEnv
     ts  <- templates
@@ -347,6 +363,15 @@ main = shakeArgs shakeOptions $ do
     (v, content) <- getPost input
     renderAndWrite ts ["post","default"] (Just content)
       [menuItem LearnHaskell env, v, mkLocation output]
+      output
+
+  buildRoute essayR $ \input output -> do
+    env <- commonEnv
+    ts  <- templates
+    need [input]
+    (v, content) <- getPost input
+    renderAndWrite ts ["post","default"] (Just content)
+      [menuItem Essays env, v, mkLocation output]
       output
 
 ----------------------------------------------------------------------------

@@ -7,6 +7,6 @@ via Nginx from a DigitalOcean droplet.
 
 ## License
 
-Copyright © 2017–2018 Mark Karpov
+Copyright © 2017–2019 Mark Karpov
 
 All rights reserved.

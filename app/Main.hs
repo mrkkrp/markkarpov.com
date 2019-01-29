@@ -61,7 +61,10 @@ data Route
 -- | This function allows to translate my clear vision of build system to
 -- his.
 
-buildRoute :: Route -> (FilePath -> FilePath -> Action ()) -> Rules ()
+buildRoute
+  :: Route                      -- ^ 'Route' we want to build
+  -> (FilePath -> FilePath -> Action ()) -- ^ Input file, output file
+  -> Rules ()
 buildRoute (Ins pat mapOut') f = do
   let mapOut x = outdir </> mapOut' x
   action $
@@ -117,6 +120,8 @@ tutorialR     = Ins "tutorial/*.md" (-<.> "html")
 ----------------------------------------------------------------------------
 -- Post info
 
+-- | Information about post.
+
 data PostInfo
   = InternalPost LocalInfo     -- ^ 'LocalInfo' injection
   | ExternalPost Day Text Text -- ^ Published, title, URL
@@ -132,6 +137,8 @@ instance ToJSON PostInfo where
     , "updated_iso8601"   .= renderIso8601 published
     , "desc"              .= ("" :: Text)
     , "url"               .= url ]
+
+-- | Information about a post that is hosted on my site.
 
 data LocalInfo = LocalInfo
   { localTitle      :: !Text
@@ -175,6 +182,8 @@ data MenuItem
   | Resume
   | About
   deriving (Eq, Ord, Show, Enum, Bounded)
+
+-- | Get human-readable title of 'MenuItem'.
 
 menuItemTitle :: MenuItem -> Text
 menuItemTitle = \case
@@ -350,6 +359,46 @@ main = shakeArgs shakeOptions $ do
       output
 
 ----------------------------------------------------------------------------
+-- Custom MMark extensions
+
+addTableClasses :: MMark.Extension
+addTableClasses = Ext.blockRender $ \old block ->
+  case block of
+    t@(Ext.Table _ _) -> L.with (old t) [L.class_ "table table-striped"]
+    other -> old other
+
+addImageClasses :: MMark.Extension
+addImageClasses = Ext.inlineRender $ \old inline ->
+  case inline of
+    (Ext.Image inner src (Just "my_photo")) -> L.with
+      (old $ Ext.Image inner src Nothing)
+      [ L.class_  "float-right d-none d-md-block ml-3"
+      , L.width_  "300"
+      , L.height_ "375"
+      ]
+    i@Ext.Image {} -> L.with (old i) [L.class_ "img-fluid"]
+    other -> old other
+
+provideSocialUrls :: Value -> MMark.Extension
+provideSocialUrls v = Ext.inlineTrans $ \case
+  l@(Ext.Link inner uri mtitle) ->
+    if URI.uriScheme uri == Just [scheme|social|]
+      then case uri ^. uriPath of
+             [x] ->
+               case v ^? key "social" . key (URI.unRText x) . _String . getURI of
+                 Nothing -> Ext.Plain "!lookup failed!"
+                 Just t  ->
+                   if Ext.asPlainText inner == "x"
+                     then Ext.Link (Ext.Plain (URI.render t) :| []) t mtitle
+                     else Ext.Link inner t mtitle
+             _ -> l
+      else l
+  other -> other
+
+getURI :: Traversal' Text URI
+getURI f txt = maybe txt URI.render <$> traverse f (URI.mkURI txt :: Maybe URI)
+
+----------------------------------------------------------------------------
 -- Helpers
 
 getMatchingFiles :: FilePattern -> Action [FilePath]
@@ -463,43 +512,3 @@ postInfoPublished :: PostInfo -> Day
 postInfoPublished = \case
  InternalPost localInfo     -> localPublished localInfo
  ExternalPost published _ _ -> published
-
-----------------------------------------------------------------------------
--- Custom MMark extensions
-
-addTableClasses :: MMark.Extension
-addTableClasses = Ext.blockRender $ \old block ->
-  case block of
-    t@(Ext.Table _ _) -> L.with (old t) [L.class_ "table table-striped"]
-    other -> old other
-
-addImageClasses :: MMark.Extension
-addImageClasses = Ext.inlineRender $ \old inline ->
-  case inline of
-    (Ext.Image inner src (Just "my_photo")) -> L.with
-      (old $ Ext.Image inner src Nothing)
-      [ L.class_  "float-right d-none d-md-block ml-3"
-      , L.width_  "300"
-      , L.height_ "375"
-      ]
-    i@Ext.Image {} -> L.with (old i) [L.class_ "img-fluid"]
-    other -> old other
-
-provideSocialUrls :: Value -> MMark.Extension
-provideSocialUrls v = Ext.inlineTrans $ \case
-  l@(Ext.Link inner uri mtitle) ->
-    if URI.uriScheme uri == Just [scheme|social|]
-      then case uri ^. uriPath of
-             [x] ->
-               case v ^? key "social" . key (URI.unRText x) . _String . getURI of
-                 Nothing -> Ext.Plain "!lookup failed!"
-                 Just t  ->
-                   if Ext.asPlainText inner == "x"
-                     then Ext.Link (Ext.Plain (URI.render t) :| []) t mtitle
-                     else Ext.Link inner t mtitle
-             _ -> l
-      else l
-  other -> other
-
-getURI :: Traversal' Text URI
-getURI f txt = maybe txt URI.render <$> traverse f (URI.mkURI txt :: Maybe URI)

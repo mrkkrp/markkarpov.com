@@ -12,7 +12,13 @@ title: Resume
 ## Summary
 
 Software engineer specializing in functional programming using strong static
-typing, in Haskell in particular.
+type systems, in Haskell in particular.
+
+I strive to build systems that are simple, maintainable, easy to understand,
+and future-proof. Experience has taught me that the work is about exploiting
+strong sides of Haskell to achieve balance between simplicity and safety. It
+is also about happiness of developers and efficient conversion of money into
+value, rather than type-level acrobatics or proving how clever we can be.
 
 ## Tech work experience
 
@@ -23,33 +29,30 @@ typing, in Haskell in particular.
   Servant on backend). Agile. Another part of the job was writing tutorials
   and blog posts to increase visibility of the company.
 
-* **January 25, 2018–present** Software engineer at [Tweag
-  I/O](https://tweag.io) (remote).
+* **January 25, 2018–January 11, 2019** Software engineer at
+  [Tweag](https://tweag.io) (remote). Worked as a consultant with a number
+  of clients, helped developing Bazel rules for Haskell.
+
+* **January 14, 2019–present** Senior software engineer at
+  [Tweag](https://tweag.io), Paris, France.
 
 ## Haskell
 
-* Concepts (not mentioning basic things like rank-N types, existentials,
-  phantom types etc.): EDSL using combinators, GADTs, type-level
-  programming, generics, TH, high-performance Haskell, parallel and
-  concurrent Haskell, FFI, lens (van Laarhoven/profunctor).
+I've worked using Haskell on daily basis for 5 years. I used it to build
+open source projects and to help a number of clients build their products.
+In both cases I got continuous positive feedback throughout my career.
 
-* Libraries I'm familiar with (not mentioning vital common things like
-  `monad-control` and `base`): `lens`, `aeson`, `conduit`,
-  `postgresql-simple`, `persistent`, `esqueleto`, `dbmigrations`, `parsec`,
-  `megaparsec`, `attoparsec`, `yesod`, `snap`, `servant`, `http-client`,
-  `http-conduit`, `wreq`, `req`, `cryptonite`, `warp`, `websockets`,
-  `socket`, `network`, `HUnit`, `hspec`, `QuickCheck`, `test-framework`,
-  `tasty`, `hedgehog`, `webdriver`, `optparse-applicative`, `path`,
-  `path-io`, `stache`, `vector`, `containers`, `unordered-containers`,
-  `binary`, `cereal`, `store`, `distributed-process`, `reflection`,
-  `constraints`, `kan-extensions`, etc. I have experience with most of the
-  libraries in active use in the Haskell ecosystem.
+## Nix
+
+I started using Nix in 2018 when I joined Tweag. I use Nix and NixOS on
+daily basis and continue improving my Nix skills.
 
 ## Technologies
 
 * Databases: PostgreSQL, MySQL.
 * AWS.
 * Linux server.
+* Docker.
 * Strong knowledge of Git.
 * CI: Travis CI, Circle CI.
 * Dependent types, theorem provers: Coq.
@@ -76,24 +79,17 @@ The full list can be found at <https://markkarpov.com/oss.html>.
 ## Writing
 
 * I've authored a number of tutorials as part of my job and on my own, see
-  e.g. [GHC optimization and
-  fusion](https://www.stackbuilders.com/tutorials/haskell/ghc-optimization-and-fusion/),
+  e.g. [Template Haskell tutorial](https://markkarpov.com/tutorial/th.html),
   the full list is available at <https://markkarpov.com/learn-haskell.html>.
 
 * Blog posts are available [here](https://markkarpov.com/posts.html), see
   e.g. [Free monad considered
-  harmful](https://markkarpov.com/post/free-monad-considered-harmful.html)
-  from the recent ones.
-
-* I've authored two chapters for the upcoming book [Intermediate
-  Haskell](https://intermediatehaskell.com/): Exceptions and Megaparsec.
-  Unfortunately the content is not publicly available yet (only available to
-  reviewers).
+  harmful](https://markkarpov.com/post/free-monad-considered-harmful.html).
 
 ## Soft skills
 
-* I speak Russian (native) and English (fluent, experienced with
-  documentation/tutorial writing).
+* I speak Russian (native), English (fluent, experienced with
+  documentation/tutorial writing), and French (intermediate).
 
 * Stress-resistant, open to criticism/discussion.
 

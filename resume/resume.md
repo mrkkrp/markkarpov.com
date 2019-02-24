@@ -22,19 +22,19 @@ value, rather than type-level acrobatics or proving how clever we can be.
 
 ## Tech work experience
 
+* **January 14, 2019–present** Senior software engineer at
+  [Tweag](https://tweag.io), Paris, France.
+
+* **January 25, 2018–January 11, 2019** Software engineer at
+  [Tweag](https://tweag.io) (remote). Worked as a consultant with a number
+  of clients, helped developing Bazel rules for Haskell.
+
 * **May 4, 2016–May 20, 2017** Tier 2 Haskell developer at [Stack
   Builders](https://www.stackbuilders.com/) (remote). The job involved
   working for several clients mostly from the US. Web-applications built
   with Yesod, Snap, Servant (including a micro-service based system with
   Servant on backend). Agile. Another part of the job was writing tutorials
   and blog posts to increase visibility of the company.
-
-* **January 25, 2018–January 11, 2019** Software engineer at
-  [Tweag](https://tweag.io) (remote). Worked as a consultant with a number
-  of clients, helped developing Bazel rules for Haskell.
-
-* **January 14, 2019–present** Senior software engineer at
-  [Tweag](https://tweag.io), Paris, France.
 
 ## Haskell
 

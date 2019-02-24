@@ -1,9 +1,9 @@
 ---
 title: Megaparsec tutorial from IH book
-desc: This is a complete Megaparsec tutorial which originally was written as a chapter for the Intermediate Haskell book.
+desc: This is a Megaparsec tutorial which originally was written as a chapter for the Intermediate Haskell book.
 difficulty: 1
 date:
-  published: February 3, 2019
+  published: February 23, 2019
 ---
 
 *This is the Megaparsec tutorial which originally was written as a chapter

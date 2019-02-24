@@ -10,8 +10,7 @@ date:
 for the [Intermediate Haskell][ih] book. Due to lack of progress with the
 book in the last year, other authors agreed to let me publish the text as a
 standalone tutorial so people can benefit at least from this part of our
-work. I'd like to thank [Artyom Kazak][artyom] and [Vlad Zavialov][vlad] for
-reviewing the text many and many times.*
+work.*
 
 ```toc
 ```
@@ -2964,16 +2963,12 @@ In other words, we have now a fully functional parser that parses a custom
 stream.
 
 [ih]: https://intermediatehaskell.com/
-[artyom]: https://artyom.me/
-[vlad]: https://int-index.com/
-
 [parsec]: https://hackage.haskell.org/package/parsec
 [attoparsec]: https://hackage.haskell.org/package/attoparsec
 [trifecta]: https://hackage.haskell.org/package/trifecta
 [megaparsec]: https://hackage.haskell.org/package/megaparsec
 [hspec-megaparsec]: https://hackage.haskell.org/package/hspec-megaparsec
 [parser-combinators]: https://hackage.haskell.org/package/parser-combinators
-
 [ast]: https://en.wikipedia.org/wiki/Abstract_syntax_tree
 [more-speed-more-power]: https://markkarpov.com/post/megaparsec-more-speed-more-power.html
 [more-speed-more-power-hope]: https://markkarpov.com/post/megaparsec-more-speed-more-power.html#there-is-hope

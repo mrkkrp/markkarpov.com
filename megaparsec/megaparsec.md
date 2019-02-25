@@ -2275,7 +2275,7 @@ data ParseError s e
     -- ^ Fancy, custom errors.
 ```
 
-In English: a `ParseError` is either a `TirivalError` with at most one
+In English: a `ParseError` is either a `TrivialError` with at most one
 unexpected item and a (possibly empty) collection of expected items or a
 `FancyError`.
 

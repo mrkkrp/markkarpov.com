@@ -249,12 +249,12 @@ main = do
 
 Here `myException` will be thrown after `foo` but before `bar`.
 
-We must note the crucial difference between `throw e :: IO a` and `throwIO e
-:: IO a`, which is exactly the difference between *evaluation* and
-*execution*: evaluation triggers exception in the case of `throw e`, while
-execution (when the magical state “goes through” `throwIO`) triggers
-exception in the case of `throwIO e`. This is best demonstrated by the
-example with `seq` found in the docs of `throwIO`:
+We must note the crucial difference between `throw e :: a` and `throwIO e ::
+IO a`, which is exactly the difference between *evaluation* and *execution*:
+evaluation triggers exception in the case of `throw e`, while execution
+(when the magical state “goes through” `throwIO`) triggers exception in the
+case of `throwIO e`. This is best demonstrated by the example with `seq`
+found in the docs of `throwIO`:
 
 ```haskell
 throw e   `seq` x {- => -} throw e -- throwing triggered by evaluation

@@ -349,7 +349,7 @@ class (Typeable e, Show e) => Exception e where
 
 First of all, an `Exception` needs to be printable (in case it bubbles to
 the top level and terminates a program), hence `Show` is a superclass of
-`Extension`. `displayException` (which was added later) allows us to define
+`Exception`. `displayException` (which was added later) allows us to define
 a human-readable representation of exception, which is by default
 `show`-based.
 

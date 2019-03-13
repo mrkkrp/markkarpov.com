@@ -291,7 +291,9 @@ That seems to work all right. The problem with `satisfy` is that it does not
 say what is expected when it fails, because we cannot analyze the function
 which the caller of `satisfy` provides. There are other combinators that are
 less general, but can generate more helpful error messages instead, for
-example `single`, which matches a specific token value:
+example `single` (with type-constrained synonyms called `char` in
+`Text.Megaparsec.Byte` and `Text.Megaparsec.Char`) which matches a specific
+token value:
 
 ```haskell
 single :: MonadParsec e s m
@@ -356,7 +358,9 @@ string' :: (MonadParsec e s m, CI.FoldCase (Tokens s))
 string' = tokens ((==) `on` CI.mk)
 ```
 
-They match fixed chunks of input, `string` case-sensitively, while `string'`
+They match fixed chunks of input, `chunk` (which has type-constrained
+synonyms called `string` in `Text.Megaparsec.Byte` and
+`Text.Megaparsec.Char`) case-sensitively, while `string'`
 case-insensitively. For case-insensitive matching the `case-insensitive`
 package is used, thus the `FoldCase` constraint.
 

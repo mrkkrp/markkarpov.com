@@ -37,6 +37,7 @@ import qualified Lucid                as L
 import qualified Text.MMark           as MMark
 import qualified Text.MMark.Extension as Ext
 import qualified Text.MMark.Extension.Common as Ext
+import qualified Text.Megaparsec      as M
 import qualified Text.URI             as URI
 
 ----------------------------------------------------------------------------
@@ -434,7 +435,7 @@ getPostHelper :: Value -> FilePath -> Action (Value, TL.Text)
 getPostHelper env path = do
   txt <- liftIO (T.readFile path)
   case MMark.parse path txt of
-    Left errs -> fail (MMark.parseErrorsPretty txt errs)
+    Left bundle -> fail (M.errorBundlePretty bundle)
     Right doc -> do
       let toc = MMark.runScanner doc (Ext.tocScanner (\x -> x > 1 && x < 5))
           r   = MMark.useExtensions

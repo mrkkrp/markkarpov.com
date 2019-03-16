@@ -1,7 +1,7 @@
 name:                 markkarpov-com
 version:              0.1.0
 cabal-version:        1.18
-tested-with:          GHC==8.0.2, GHC==8.2.2
+tested-with:          GHC==8.6.4
 license:              AllRightsReserved
 author:               Mark Karpov <markkarpov92@gmail.com>
 maintainer:           Mark Karpov <markkarpov92@gmail.com>
@@ -25,6 +25,7 @@ executable mk-com
                     , lens
                     , lens-aeson
                     , lucid
+                    , megaparsec
                     , mmark
                     , mmark-ext
                     , modern-uri

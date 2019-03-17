@@ -10,12 +10,15 @@ RUN pip install html5validator
 RUN (curl -sSL https://get.haskellstack.org/ | sh) || true
 RUN stack upgrade
 
-WORKDIR /home/circleci
-RUN git clone https://github.com/mrkkrp/markkarpov.com project
+RUN mkdir -pv /home/circleci/project
 WORKDIR /home/circleci/project
+
 COPY stack.yaml stack.yaml
+COPY markkarpov-com.cabal markkarpov-com.cabal
+COPY Setup.hs Setup.hs
+
 RUN stack setup
-RUN stack build
-RUN stack test
+RUN stack build --only-dependencies --test --no-run-tests
+
 WORKDIR /home/circleci
 RUN rm -rvf project

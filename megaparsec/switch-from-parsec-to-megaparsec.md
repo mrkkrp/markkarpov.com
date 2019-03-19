@@ -98,7 +98,7 @@ Megaparsec and reasons of their removal:
   `runParser` respectively.
 
 * `chainl`, `chainl1`, `chainr`, and `chainr1`—use
-  [`Text.Megaparsec.Expr`](https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Expr.html)
+  [`Control.Monad.Combinators.Expr`](https://hackage.haskell.org/package/parser-combinators/docs/Control-Monad-Combinators-Expr.html)
   instead.
 
 ## Completely changed things

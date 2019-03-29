@@ -2,45 +2,28 @@ version: 2
 jobs:
   build:
     docker:
-      - image: mrkkrp/mk-com:0.2.4
+      - image: mrkkrp/mk-com:0.3.0
     steps:
       - checkout
-      # - restore_cache:
-      #     keys:
-      #       - stack-home-{{ checksum "stack.yaml" }}
-      #       - stack-home-
-      # - restore_cache:
-      #     keys:
-      #       - stack-work-{{ checksum "stack.yaml" }}
-      #       - stack-work-
-      # - run: stack --version
-      # - run: stack setup
-      - run: stack build
-      - run: stack test
-      - run: stack exec mk-com -- clean
-      - run: pdflatex -output-directory resume/ resume/resume.tex
-      - run: stack exec mk-com
-      - run: html5validator --root _build/ --show-warnings
+      - run: nix-build -o mk-com
+      - run: nix-shell --run "./mk-com/bin/mk-com clean"
+      - run: nix run -f nix/texlive-custom -c pdflatex -output-directory resume/ resume/resume.tex
+      - run: nix-shell --run "./mk-com/bin/mk-com"
+      - run: nix-build nix/html5validator -o html5validator
+      - run: nix run -f nix/nixpkgs openjdk -c ./html5validator/bin/html5validator --root _build/ --show-warnings
       - persist_to_workspace:
           root: ~/project
           paths:
             - _build
-      # - save_cache:
-      #     key: stack-home-{{ checksum "stack.yaml" }}
-      #     paths: "~/.stack"
-      # - save_cache:
-      #     key: stack-work-{{ checksum "stack.yaml" }}
-      #     paths: ".stack-work"
-
   deploy:
     docker:
-      - image: mrkkrp/mk-com:0.2.4
+      - image: mrkkrp/mk-com:0.3.0
     steps:
       - attach_workspace:
           at: /tmp
       - run:
           name: Copy to the droplet with rsync
-          command: rsync -avz -e "ssh -p 2555 -o \"StrictHostKeyChecking no\"" /tmp/_build/ admin@markkarpov.com:/home/admin/markkarpov.com
+          command: nix run -f nix/nixpkgs -c rsync -avz -e "ssh -p 2555 -o \"StrictHostKeyChecking no\"" /tmp/_build/ admin@markkarpov.com:/home/admin/markkarpov.com
 
 workflows:
   version: 2

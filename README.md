@@ -5,6 +5,22 @@
 Here I have a `shake`-powered custom generator of static pages. I serve them
 via Nginx from a DigitalOcean droplet.
 
+# How to generate a new image
+
+```console
+$ docker build . -t mrkkrp/mk-com:X.X.X
+```
+
+Where `X.X.X` is the version of image we're generating.
+
+Then push it:
+
+```console
+$ docker push mrkkrp/mk-com:X.X.X
+```
+
+Then update image names in `.circleci/config.yml`.
+
 ## License
 
 Copyright © 2017–2019 Mark Karpov

@@ -5,6 +5,7 @@
 *.o
 *~
 .cabal-sandbox/
+.ghc.environment*
 .hsenv
 .shake/
 .stack-work/
@@ -15,4 +16,6 @@ benchmarks.tix
 cabal-dev
 cabal.config
 cabal.sandbox.config
+dist-newstyle/
 dist/
+result

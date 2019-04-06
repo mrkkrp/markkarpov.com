@@ -19,11 +19,12 @@ jobs:
     docker:
       - image: mrkkrp/mk-com:0.3.0
     steps:
+      - checkout
       - attach_workspace:
           at: /tmp
       - run:
           name: Copy to the droplet with rsync
-          command: nix run -f nix/nixpkgs -c rsync -avz -e "ssh -p 2555 -o \"StrictHostKeyChecking no\"" /tmp/_build/ admin@markkarpov.com:/home/admin/markkarpov.com
+          command: nix run -f nix/nixpkgs rsync openssh -c rsync -avz -e "ssh -p 2555 -o \"StrictHostKeyChecking no\"" /tmp/_build/ admin@markkarpov.com:/home/admin/markkarpov.com
 
 workflows:
   version: 2

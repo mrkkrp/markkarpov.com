@@ -22,6 +22,7 @@ COPY nix/html5validator/default.nix nix/html5validator/default.nix
 RUN nix-build
 RUN nix-build nix/texlive-custom
 RUN nix-build nix/nixpkgs -A rsync
+RUN nix-build nix/nixpkgs -A openssh
 RUN nix-build nix/nixpkgs -A openjdk
 RUN nix-build nix/nixpkgs -A glibcLocales
 RUN nix-build nix/html5validator

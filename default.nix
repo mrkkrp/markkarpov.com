@@ -11,8 +11,8 @@ let
         super //
         { "markkarpov-com" = super.callCabal2nix "markkarpov-com" (pkgs.lib.sourceByRegex ./. sourceRegex) {};
           "ghc-syntax-highlighter" = pkgs.haskell.lib.overrideCabal super.ghc-syntax-highlighter (drv: {
-            version = "0.0.3.1";
-            sha256 = "1r45954nchn5rink3qrdv6pqigwsm1a2fyb297b56kpgz47cfgd7";
+            version = "0.0.4.0";
+            sha256 = "1kw1h7n4ydn1klzll24nwwg405j23wry9hg8g96vba51vah0wc47";
           });
         });
     };

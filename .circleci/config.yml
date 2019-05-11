@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: mrkkrp/mk-com:0.3.0
+      - image: mrkkrp/mk-com:0.3.1
     steps:
       - checkout
       - run: nix-build -o mk-com
@@ -17,7 +17,7 @@ jobs:
             - _build
   deploy:
     docker:
-      - image: mrkkrp/mk-com:0.3.0
+      - image: mrkkrp/mk-com:0.3.1
     steps:
       - checkout
       - attach_workspace:

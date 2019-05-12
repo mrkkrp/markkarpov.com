@@ -1741,7 +1741,7 @@ Here we can see two kinds of terms: variables (`a` and `b`) and integers
 (`2`). There are also two operators: `*` and `+`.
 
 Writing an expression parser may take a while to get right. To help with
-that, `megaparsec` comes with the `Text.Megaparsec.Expr` module which
+that, the `parser-combinators` package comes with the `Control.Monad.Combinators.Expr` module which
 exports only two things: the `Operator` data type and the `makeExprParser`
 helper. Both are well documented, so in this section we will not repeat the
 documentation, instead we are going to write a simple but fully functional
@@ -1871,7 +1871,7 @@ unexpected '$'
 expecting ')' or operator
 ```
 
-Documentation for the `Text.Megaparsec.Expr` module contains some hints that
+Documentation for the `Control.Monad.Combinators.Expr` module contains some hints that
 are useful in certain less-standard situations, so it is a good idea to read
 it as well.
 

@@ -1149,7 +1149,7 @@ type Parsec e s = ParsecT e s Identity
 ```
 
 `runParser` has 3 sisters: `runParser'`, `runParserT`, and `runParserT'`.
-The versions with the `T` suffix run `PrasecT` monad transformer, and the
+The versions with the `T` suffix run `ParsecT` monad transformer, and the
 “prime” versions take and return parser state. Let's put all the functions
 into a table:
 

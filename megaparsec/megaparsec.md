@@ -2161,15 +2161,27 @@ pComplexItem = L.indentBlock scn p
 pLineFold :: Parser String
 pLineFold = L.lineFold scn $ \sc' ->
   let ps = some (alphaNumChar <|> char '-') `sepBy1` try sc'
-  in unwords <$> ps <* sc -- (1)
+  in unwords <$> ps <* scn -- (1)
 ```
 
 `lineFold` works like this: we give it a space consumer that accepts
 newlines `scn` and it gives back a special space consumer `sc'` that we can
-use in the callback to consume space between elements of line fold. An
-important thing here is that we should use normal space consumer at the end
-of line fold (1) or our fold will have no end (this is also the reason we
-have to use `try` with `sc'`).
+use in the callback to consume space between elements of line fold.
+
+Why use `try sc'` and `scn` on the line (1)? The situation is the following:
+
+* Components of a line fold can only be more indented than its start.
+* `sc'` consumes whitespace with newlines in such a way that after consuming
+  whitespace the column is greater than initial column.
+* To stop, `sc'` should encounter the opposite situation, that is, column
+  after consumption should be less than or equal to the initial column. At
+  that point it fails without consuming input (thanks to `try`) and `scn` is
+  used to pick up whitespace before that new thing that will start at that
+  column.
+* Previously used `sc'` already probed whitespace with space consumer which
+  consumes newlines. So it only logical to also consume newlines when
+  picking up trailing whitespace. This is why `scn` is used on the line (1)
+  and not `sc`.
 
 *EXERCISE: Playing with the final version of our parser is left as an
 exercise for the reader. You can create “items” that consist of multiple

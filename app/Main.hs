@@ -56,8 +56,8 @@ outdir = "_build"
 -- should not mess with 'outdir', that will be done for users automatically.
 
 data Route
-  = Ins FilePattern (FilePath -> FilePath)
-  | Gen FilePath
+  = Ins FilePattern (FilePath -> FilePath) -- ^ Produced from inputs
+  | Gen FilePath                           -- ^ Generated
 
 -- | This function allows to translate my clear vision of build system to
 -- his.
@@ -98,9 +98,11 @@ cssR
   , ossR
   , learnHaskellR
   , postsR
+  , notesR
   , postR
   , mtutorialR
-  , tutorialR :: Route
+  , tutorialR
+  , noteR :: Route
 cssR          = Ins "static/css/*.css" id
 jsR           = Ins "static/js/*.js" id
 imgR          = Ins "static/img/*" id
@@ -114,9 +116,11 @@ aboutR        = Ins "about.md" (-<.> "html")
 ossR          = Gen "oss.html"
 learnHaskellR = Gen "learn-haskell.html"
 postsR        = Gen "posts.html"
+notesR        = Gen "notes.html"
 postR         = Ins "post/*.md" (-<.> "html")
 mtutorialR    = Ins "megaparsec/*.md" (-<.> "html")
 tutorialR     = Ins "tutorial/*.md" (-<.> "html")
+noteR         = Ins "notes/*.md" (-<.> "html")
 
 ----------------------------------------------------------------------------
 -- Post info
@@ -178,6 +182,7 @@ instance ToJSON LocalInfo where
 
 data MenuItem
   = Posts
+  | Notes
   | LearnHaskell
   | OSS
   | Resume
@@ -189,6 +194,7 @@ data MenuItem
 menuItemTitle :: MenuItem -> Text
 menuItemTitle = \case
   Posts        -> "Posts"
+  Notes        -> "Notes"
   LearnHaskell -> "Learn Haskell"
   OSS          -> "OSS"
   Resume       -> "Resume"
@@ -357,6 +363,25 @@ main = shakeArgs shakeOptions $ do
     (v, content) <- getPost input
     renderAndWrite ts ["post","default"] (Just content)
       [menuItem LearnHaskell env, v, mkLocation output]
+      output
+
+  buildRoute notesR $ \_ output -> do
+    env <- commonEnv
+    ts  <- templates
+    es  <- gatherLocalInfo noteR (Down . localPublished)
+    renderAndWrite ts ["notes","default"] Nothing
+      [ menuItem Notes env
+      , provideAs "post" es
+      , mkTitle Notes ]
+      output
+
+  buildRoute noteR $ \input output -> do
+    env <- commonEnv
+    ts  <- templates
+    need [input]
+    (v, content) <- getPost input
+    renderAndWrite ts ["post","default"] (Just content)
+      [menuItem Notes env, v, mkLocation output]
       output
 
 ----------------------------------------------------------------------------

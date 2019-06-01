@@ -3,7 +3,7 @@ title: Template Haskell tutorial
 desc: The tutorial explains how to use Template Haskell for metaprogramming in Haskell.
 date:
   published: December 24, 2017
-  updated: January 25, 2018
+  updated: June 1, 2019
 ---
 
 ```toc
@@ -23,7 +23,7 @@ the Haddocks.
 
 The tutorial cannot possibly cover every use of TH, and so it is structured
 in such a way so we only get to see the most common, conventional, and
-benign uses of the feature.
+benign uses of the GHC feature.
 
 ## Motivation
 
@@ -42,13 +42,12 @@ Let's list some uses of TH:
   common use case for TH. Even though the same problem can often be
   addressed by *generics*, they are known to make compilation times longer
   (compared to TH-based solutions), so TH is still the preferred method of
-  automatic instance deriving in libraries like `aeson` and `lens`.
+  automatic instance derivation in libraries like `aeson` and `lens`.
 
 * *Creation of TH DSLs* that are integrated into systems built in Haskell.
   Examples of such DLSs are the language for model declaration used in
-  [`persistent`](https://hackage.haskell.org/package/persistent), and
-  various other mini-languages used in the
-  [`yesod`](https://hackage.haskell.org/package/yesod) web framework.
+  [`persistent`][persistent], and various other mini-languages used in the
+  [`yesod`][yesod] web framework.
 
 * *Compile-time construction of values of refined types* that turns invalid
   inputs into compilation failures.
@@ -97,33 +96,34 @@ should not come as a surprise that there is a special monad called `Q`
 The only purpose of having a value of the type `Q a` is to use `a` in a
 Haskell program somehow. `a` can be anything in intermediate monadic
 expressions, but when we're about to insert the generated code into a
-Haskell source file, there are only four options:
+Haskell source file, there are only five options:
 
-* [Declaration](https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#t:Dec)
-  `Dec`, which includes the top-level things like function and data type
-  definitions. In fact, we would like to be able to generate several
-  declarations at a time, so the type that is actually used (and expected by
-  the interpolating machinery) is `[Dec]`.
+* [Declaration][dec] `Dec`, which includes the top-level things like
+  function and data type definitions. In fact, we would like to be able to
+  generate several declarations at a time, so the type that is actually used
+  (and expected by the interpolating machinery) is `[Dec]`.
 
-* [Expression](https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#t:Exp)
-  `Exp`, such as `x + 1` or `\x -> x + 1`. It is probably the most common
-  thing to generate.
+* [Expression][exp] `Exp`, such as `x + 1` or `\x -> x + 1`. It is probably
+  the most common thing to generate.
 
-* [Type](https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#t:Type)
-  `Type` such as `Int` or `Maybe Int` or just `Maybe`. The type doesn't have
-  to be saturated (i.e. may have any kind), so it may be pretty much
-  anything one can encounter on the type level.
+* [Typed expression][texp] `TExp`, which is identical to expression `Exp`,
+  but has a phantom type tag corresponding to the type of the expression
+  inside. For example, `TExp Int` means that the expression evaluates to an
+  `Int`.
 
-* [Pattern](https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#t:Pat)
-  `Pat` that we use for pattern-matching.
+* [Type][type] `Type` such as `Int` or `Maybe Int` or just `Maybe`. The type
+  doesn't have to be saturated (i.e. may have any kind), so it may be pretty
+  much anything one can encounter on the type level.
+
+* [Pattern][pat] `Pat` that we use for pattern-matching.
 
 I suggest you follow the links in the list above and glance at the
-definitions of `Dec`, `Exp`, `Type`, and `Pat`. Note the naming convention:
-the data constructors are suffixed with letters that hint about the data
-type they belong to: `Dec` constructors end with a “D”, `Exp` constructors
-end with an “E”, `Type` constructors end with a “T”, and `Pat` constructors
-end with a “P”. This makes it easy to distinguish e.g. an expression
-variable `VarE` from a pattern variable `VarP`.
+definitions of `Dec`, `Exp`, `TExp`, `Type`, and `Pat`. Note the naming
+convention: the data constructors are suffixed with letters that hint about
+the data type they belong to: `Dec` constructors end with a “D”, `Exp`
+constructors end with an “E”, `Type` constructors end with a “T”, and `Pat`
+constructors end with a “P”. This makes it easy to distinguish e.g. an
+expression variable `VarE` from a pattern variable `VarP`.
 
 Using the data types, slowly, through pain and suffering, we can indeed
 construct an expression:
@@ -262,12 +262,13 @@ Luckily, there is a way to get AST of arbitrary Haskell code by using
 *quotation*. There are four types of quotations that are enabled by the
 `TemplateHaskell` language extension:
 
-Thing produced | Quotation syntax | Type
----------------|:----------------:|:--------:
-Declaration    | `[d| … |]`       | `Q [Dec]`
-Expression     | `[e| … |]`       | `Q Exp`
-Type           | `[t| … |]`       | `Q Type`
-Pattern        | `[p| … |]`       | `Q Pat`
+Thing produced   | Quotation syntax | Type
+-----------------|:----------------:|:--------:
+Declaration      | `[d| … |]`       | `Q [Dec]`
+Expression       | `[e| … |]`       | `Q Exp`
+Typed expression | `[|| … ||]`      | `Q (TExp a)`
+Type             | `[t| … |]`       | `Q Type`
+Pattern          | `[p| … |]`       | `Q Pat`
 
 Indeed, we need several different quoters because the same code may mean
 different things is different contexts, for example:
@@ -329,6 +330,74 @@ InfixE
 
 It works as intended to our complete satisfaction.
 
+## Typed expressions
+
+Quotation for typed expressions is a bit special: it is the only way to
+create values of the type `TExp a`, i.e. it's introduction form for `TExp`.
+This way the compiler can ensure that the phantom type always corresponds to
+what is inside. For example, let's try and re-write `myFunc` using quotation
+for typed expression splices:
+
+```haskell
+myFuncTyped :: Q (TExp a)
+myFuncTyped = [|| \x -> x + 1 ||]
+```
+
+I left `a` there on purpose to check what GHC will propose as inferred type:
+
+> Couldn't match type `a` with `Integer -> Integer`
+
+Thus:
+
+```haskell
+myFuncTyped :: Q (TExp (Integer -> Integer))
+myFuncTyped = [|| \x -> x + 1 ||]
+```
+
+It appears that returning something polymorphic is not yet possible:
+
+```haskell
+myFuncTyped :: Q (TExp (Num a => a -> a))
+myFuncTyped = [|| \x -> x + 1 ||]
+```
+
+GHC says:
+
+> Illegal qualified type: `Num a => a -> a` \
+  GHC doesn't yet support impredicative polymorphism
+
+*Impredicative polymorphism* is when you try replace a polymorphic variable
+with an expression which itself contains a `forall`. In the case above,
+there is an implicit `forall` before the `Num a` constraint.
+
+Further, there is a special syntax for splicing of typed expressions. Let's
+try to write a typed version of `add2`:
+
+```haskell
+add2Typed :: Q (TExp (Integer -> Integer))
+add2Typed = [|| $$myFuncTyped . $$myFuncTyped ||]
+```
+
+Normal splices cannot be used in quotations for typed expressions and vice
+versa—typed splices cannot be used in quotations for untyped expressions.
+This is way we simply had to start by writing a typed version of `myFunc`!
+
+When using the double dollar syntax the compiler will make sure that we're
+splicing our typed expression in a correct context so there won't be type
+errors.
+
+Apart from splicing, there is another way to eliminate a value of type `TExp
+a`—just use `unType`:
+
+```haskell
+unType :: TExp a -> Exp
+```
+
+A bit more information about typed expressions can be found in [this blog
+post][typed-th].
+
+## A few words about `runQ`
+
 What is that `runQ` thing though? In GHCi we work in the `IO` monad, so it's
 natural to assume from the examples above that it should have the type:
 
@@ -353,10 +422,9 @@ complicated:
 runQ :: Quasi m => Q a -> m a
 ```
 
-[`Quasi`](https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH-Syntax.html#t:Quasi)
-is the type class for monads that provide all the capabilities for
-meta-programming we have mentioned in the beginning when we introduced `Q`.
-You can click that link and take a look for yourself.
+[`Quasi`][quasi] is the type class for monads that provide all the
+capabilities for meta-programming we have mentioned in the beginning when we
+introduced `Q`. You can click that link and take a look for yourself.
 
 In fact, `Q a` is just an existential wrapper around `Quasi m => m a` under
 the hood:
@@ -500,12 +568,11 @@ InfixE (Just (VarE x)) (VarE GHC.Num.+) (Just (LitE (IntegerL 1)))
 100
 ```
 
-The
-[`Language.Haskell.TH.Lib`](https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH-Lib.html)
-module contains helper functions that take and return AST values in the `Q`
-monad, which sometimes helps produce shorter code, because these helpers
-compose well with quotation and splicing. Here we used `varE :: Name -> Q
-Exp` instead of `VarE :: Name -> Exp`.
+The [`Language.Haskell.TH.Lib`][lib-module] module contains helper functions
+that take and return AST values in the `Q` monad, which sometimes helps
+produce shorter code, because these helpers compose well with quotation and
+splicing. Here we used `varE :: Name -> Q Exp` instead of `VarE :: Name ->
+Exp`.
 
 Another way to introduce a capturable name is apparently by using an unbound
 name in a quote:
@@ -521,13 +588,12 @@ InfixE (Just (UnboundVarE z)) (VarE GHC.Num.+) (Just (LitE (IntegerL 1)))
 But this approach seems quite fragile to my taste. (What if we later define
 `z` somewhere in the same module?)
 
-Capturable names are sometimes useful. For example, the
-[`hamlet`](https://hackage.haskell.org/package/hamlet) template system
-allows to use this syntax `#{name}` to refer to values in a template. The
-template then generates Haskell code where such names come out as capturable
-names, so they can be bound. The resulting effect is that values that are
-bound in the context where a template is used can be accessed in templates,
-which is pretty cool.
+Capturable names are sometimes useful. For example, the [`hamlet`][hamlet]
+template system allows to use this syntax `#{name}` to refer to values in a
+template. The template then generates Haskell code where such names come out
+as capturable names, so they can be bound. The resulting effect is that
+values that are bound in the context where a template is used can be
+accessed in templates, which is pretty cool.
 
 ## Retrieving information about things
 
@@ -536,30 +602,23 @@ information about named things.
 
 There are quite a few “reifying” functions that allow to do that:
 
-* [`reify :: Name -> Q
-  Info`](https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#v:reify)
-  is the most commonly used one. It allows to look up general information
-  [`Info`](https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#t:Info)
-  about a thing.
+* [`reify :: Name -> Q Info`][reify] is the most commonly used one. It
+  allows to look up general information [`Info`][info] about a thing.
 
-* [`extsEnabled :: Q
-  [Extension]`](https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#v:extsEnabled)
-  returns the list of all enabled language extensions at the splicing site.
+* [`extsEnabled :: Q [Extension]`][exts-enabled] returns the list of all
+  enabled language extensions at the splicing site.
 
-* [`isExtEnabled :: Extension -> Q
-  Bool`](https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#v:isExtEnabled)
-  allows to check whether a particular language extension is enabled.
+* [`isExtEnabled :: Extension -> Q Bool`][is-ext-enabled] allows to check
+  whether a particular language extension is enabled.
 
-* [`reifyInstances :: Name -> [Type] ->
-  `](https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#v:reifyInstances)
+* [`reifyInstances :: Name -> [Type] -> Q [InstanceDec]`][reify-instances]
   returns a list of visible instances of `Name` (type class name) for types
   `[Type]`.
 
 * There are more of them, for more rare use cases:
-  [`reifyFixity`](https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#v:reifyFixity),
-  [`reifyRoles`](https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#v:reifyRoles),
-  [`reifyAnnotations`](https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#v:reifyAnnotations),
-  [`reifyConStrictness`](https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#v:reifyConStrictness).
+  [`reifyFixity`][reify-fixity], [`reifyRoles`][reify-roles],
+  [`reifyAnnotations`][reify-annotations],
+  [`reifyConStrictness`][reify-con-strictness].
 
 Reifying functions take `Name`s, but there is one more question to ask about
 a name: does it name a thing that is in scope when we write our meta-program
@@ -761,11 +820,10 @@ what to do on its own.
 ## Viewing the generated code
 
 Sometimes it is helpful to be able to see the code we're generating at
-splice sites. GHC [allows to do
-that](https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/glasgow_exts.html#viewing-template-haskell-generated-code)
-with the `-ddump-splices` flag. Stack seems to eat that output though, so I
-had to add also `-ddump-to-file` and search for a file with the suffix
-`-splices` in the `.stack-work/dist` directory.
+splice sites. GHC [allows to do that][viewing-th-code] with the
+`-ddump-splices` flag. Stack seems to eat that output though, so I had to
+add also `-ddump-to-file` and search for a file with the suffix `-splices`
+in the `.stack-work/dist` directory.
 
 Here is what I've got:
 
@@ -821,9 +879,7 @@ What about getting an expression that “re-constructs” a value we already
 have? This could be used to deliver values generated in the `Q` monad to the
 outside world.
 
-The solution comes naturally in the form of the
-[`Lift`](https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH-Syntax.html#t:Lift)
-type class:
+The solution comes naturally in the form of the [`Lift`][lift] type class:
 
 ```haskell
 class Lift t where
@@ -864,9 +920,9 @@ data Bar a
 
 However, sometimes we want to lift values of types that do not define or
 derive `Lift` and so we risk introducing [*orphan
-instances*](https://wiki.haskell.org/Orphan_instance). Even worse, even if
-we were OK with defining orphan instances for things like `Text` and
-`ByteString`, we can't (at least not by using the `DeriveLift` extension):
+instances*][orphan-instance]. Even worse, even if we were OK with defining
+orphan instances for things like `Text` and `ByteString`, we can't (at least
+not by using the `DeriveLift` extension):
 
 ```haskell
 {-# LANGUAGE DeriveLift         #-}
@@ -929,11 +985,10 @@ And this is when it blows up:
 
 *This is scary.* I'll save your time and we won't go into the internals of
 `liftData` here. It suffices to say that `liftData` uses
-[`toConstr`](https://hackage.haskell.org/package/base/docs/Data-Data.html#v:toConstr)
-internally which returns `pack` for `Text`. The rest of the machinery
-apparently expects this `pack` function to be in the same module the data
-type is defined, `Data.Text.Internal`, but `pack` is defined in `Data.Text`,
-thus we get the error.
+[`toConstr`][to-constr] internally which returns `pack` for `Text`. The rest
+of the machinery apparently expects this `pack` function to be in the same
+module the data type is defined, `Data.Text.Internal`, but `pack` is defined
+in `Data.Text`, thus we get the error.
 
 `Text` is a pretty common type, how do we lift it? The first step would be
 to define a lifting function manually:
@@ -955,11 +1010,8 @@ foo txt = [| $e <> "!" |]
     e = dataToExpQ (fmap liftText . cast) txt
 ```
 
-This
-[`dataToExpQ`](https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH-Syntax.html#v:dataToExpQ)
-function in combination with
-[`cast`](https://hackage.haskell.org/package/base/docs/Data-Typeable.html#v:cast)
-(that comes from `Data.Typeable`) does the trick.
+This [`dataToExpQ`][data-to-expq] function in combination with
+[`cast`][cast] (that comes from `Data.Typeable`) does the trick.
 
 Let's see what `dataToExpQ` does:
 
@@ -1009,8 +1061,7 @@ refined types at compile time turning invalid inputs into compilation
 errors.
 
 Our practical example will be taken (although in a simplified form) from an
-existing library I wrote, it's called
-[`modern-uri`](https://hackage.haskell.org/package/modern-uri). In the
+existing library I wrote, it's called [`modern-uri`][modern-uri]. In the
 library we have a function that takes `Text` representing a URI as input and
 outputs `Maybe URI`:
 
@@ -1052,8 +1103,7 @@ is called quasi-quotes. It turns out that TH allows us to define our own
 custom quasi-quoters that are like `d`, `e`, `t`, and `p` we saw earlier.
 
 Defining a quasi-quoter is easy. It is enough to import the
-[`QuasiQuoter`](https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH-Quote.html#t:QuasiQuoter)
-data type from `Langauge.Haskell.TH.Quote`:
+[`QuasiQuoter`][quasi-quoter] data type from `Langauge.Haskell.TH.Quote`:
 
 ```haskell
 data QuasiQuoter = QuasiQuoter
@@ -1115,25 +1165,23 @@ external conditions that may contribute to unexpected compilation failures.
 Thus it makes sense to think twice before running `IO` from TH.
 
 That said, the function that lifts `IO` into `Q` is called simply
-[`runIO`](https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#v:runIO):
+[`runIO`][run-io]:
 
 ```haskell
 runIO :: IO a -> Q a
 ```
 
 Needless to say, one can do a lot with such a tool, for good or for evil.
-One example of a good use is the
-[`gitrev`](https://hackage.haskell.org/package/gitrev) package which allows
-to insert information about active branch and last commit of code that is
-being compiled. It works by literally running the `git` executable at
-complie time and then lifting the fetched data.
+One example of a good use is the [`gitrev`][gitrev] package which allows to
+insert information about active branch and last commit of code that is being
+compiled. It works by literally running the `git` executable at complie time
+and then lifting the fetched data.
 
 A far more common use case for `IO` in `Q` is reading from files. In that
 case compilation usually starts to depend on contents of the file being
 read, and so it's a good idea to tell GHC that changes in that file should
 cause re-compilation of the module where the file-reading TH helper is
-spliced. This is done via the
-[`addDependentFile`](https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH-Syntax.html#v:addDependentFile)
+spliced. This is done via the [`addDependentFile`][add-dependent-file]
 function:
 
 ```haskell
@@ -1146,11 +1194,10 @@ addDependentFile :: FilePath -> Q ()
 ## Example 3: the `file-embed` package
 
 Finally, in our last example, let's re-implement (in a simplified form) the
-popular package
-[`file-embed`](https://hackage.haskell.org/package/file-embed), which allows
-to load contents of a file and splice them as a `IsString a => a` value (the
-type of string literals in Haskell in the presence of the
-`OverloadedStrings` language extension.)
+popular package [`file-embed`][file-embed], which allows to load contents of
+a file and splice them as a `IsString a => a` value (the type of string
+literals in Haskell in the presence of the `OverloadedStrings` language
+extension.)
 
 If we have this in `TH.hs` file:
 
@@ -1201,10 +1248,45 @@ information refer directly to the Haddocks:
 
 <https://hackage.haskell.org/package/template-haskell>
 
-The new
-[`th-abstraction`](https://hackage.haskell.org/package/th-abstraction)
-package may also be of interest. It normalizes variations in the interface
-for inspecting datatype information between different versions of the
-`template-haskell` library.
+The new [`th-abstraction`][th-abstraction] package may also be of interest.
+It normalizes variations in the interface for inspecting datatype
+information between different versions of the `template-haskell` library.
 
 Good luck!
+
+[persistent]: https://hackage.haskell.org/package/persistent
+[yesod]: https://hackage.haskell.org/package/yesod
+[hamlet]: https://hackage.haskell.org/package/hamlet
+[modern-uri]: https://hackage.haskell.org/package/modern-uri
+[gitrev]: https://hackage.haskell.org/package/gitrev
+[file-embed]: https://hackage.haskell.org/package/file-embed
+[th-abstraction]: https://hackage.haskell.org/package/th-abstraction
+
+[dec]: https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#t:Dec
+[exp]: https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#t:Exp
+[texp]: https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#t:TExp
+[type]: https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#t:Type
+[pat]: https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#t:Pat
+[quasi]: https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH-Syntax.html#t:Quasi
+[quasi-quoter]: https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH-Quote.html#t:QuasiQuoter
+[reify]: https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#v:reify
+[info]: https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#t:Info
+[exts-enabled]: https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#v:extsEnabled
+[is-ext-enabled]: https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#v:isExtEnabled
+[reify-instances]: https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#v:reifyInstances
+[reify-fixity]: https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#v:reifyFixity
+[reify-roles]: https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#v:reifyRoles
+[reify-annotations]: https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#v:reifyAnnotations
+[reify-con-strictness]: https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#v:reifyConStrictness
+[lift]: https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH-Syntax.html#t:Lift
+[to-constr]: https://hackage.haskell.org/package/base/docs/Data-Data.html#v:toConstr
+[data-to-expq]: https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH-Syntax.html#v:dataToExpQ
+[cast]: https://hackage.haskell.org/package/base/docs/Data-Typeable.html#v:cast
+[run-io]: https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#v:runIO
+[add-dependent-file]: https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH-Syntax.html#v:addDependentFile
+
+[lib-module]: https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH-Lib.html
+
+[typed-th]: https://www.cs.drexel.edu/~mainland/2013/05/31/type-safe-runtime-code-generation-with-typed-template-haskell/
+[viewing-th-code]: https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/glasgow_exts.html#viewing-template-haskell-generated-code
+[orphan-instance]: https://wiki.haskell.org/Orphan_instance

@@ -19,23 +19,17 @@ jobs:
       - run:
           name: Build environment
           command: |
-            nix-shell --pure --run :
-            nix-build nix/texlive-custom
-            nix-build nix/html5validator
+            nix-shell --attr site --pure --run :
       - run:
           name: Push Cachix
           command: |
-            nix-store -qR --include-outputs $(nix-instantiate default.nix) | cachix push mrkkrp
-            nix-store -qR --include-outputs $(nix-instantiate nix/texlive-custom) | cachix push mrkkrp
-            nix-store -qR --include-outputs $(nix-instantiate nix/html5validator) | cachix push mrkkrp
-      - run: nix-build -o mk-com
-      - run: nix-shell --run "./mk-com/bin/mk-com clean"
-      - run: nix run -f nix/texlive-custom -c pdflatex -output-directory resume/ resume/resume.tex
-      - run: nix-shell --run "./mk-com/bin/mk-com"
-      - run: nix-build nix/html5validator -o html5validator
-      - run: nix run -f nix/nixpkgs openjdk -c ./html5validator/bin/html5validator --root _build/ --show-warnings
+            nix-store -qR --include-outputs $(nix-instantiate --attr site default.nix) | cachix push mrkkrp
+      - run:
+          name: Build the site
+          command: |
+            nix-build --attr site
       - persist_to_workspace:
-          root: ~/project
+          root: ~/project/result
           paths:
             - _build
 

@@ -2365,9 +2365,9 @@ data ParseErrorBundle s e = ParseErrorBundle
   }
 ```
 
-All parer-running functions return `ParseErrorBundle` with correctly set
+All parser-running functions return `ParseErrorBundle` with correctly set
 `bundlePosState` and a single `ParseError` inside. The collection of
-`ParseErrors` inside can be extended by user before displaying
+`ParseError`s inside can be extended by user before displaying
 `ParseErrorBundle` to user. It is the responsibility of the user to keep
 `ParseError`s sorted by their offsets.
 
@@ -2386,7 +2386,7 @@ I'm failing, help me!
 ```
 
 For many people who are familiar with simpler parsing libraries such as
-`parse` this is often enough. However, displaying a parse error to the user
+`parsec` this is often enough. However, displaying a parse error to the user
 is not everything, we may have a need to analyze and/or manipulate it. This
 is where `String`s are not very convenient.
 

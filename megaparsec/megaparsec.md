@@ -1,4 +1,4 @@
----
+cd---
 title: Megaparsec tutorial from IH book
 desc: This is a Megaparsec tutorial which originally was written as a chapter for the Intermediate Haskell book.
 difficulty: 1
@@ -2564,7 +2564,7 @@ instance ShowErrorComponent Custom where
     parseErrorTextPretty (TrivialError @Char @Void undefined us es)
       ++ showPosStack stack
   showErrorComponent (FancyWithLocation stack cs) =
-    showErrorComponent cs
+    parseErrorTextPretty (FancyError @Text @Void undefined (Set.singleton cs))
       ++ showPosStack stack
 
 showPosStack :: [String] -> String

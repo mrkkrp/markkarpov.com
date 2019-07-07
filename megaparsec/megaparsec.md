@@ -2988,7 +2988,7 @@ stream.
 [ast]: https://en.wikipedia.org/wiki/Abstract_syntax_tree
 [more-speed-more-power]: https://markkarpov.com/post/megaparsec-more-speed-more-power.html
 [more-speed-more-power-hope]: https://markkarpov.com/post/megaparsec-more-speed-more-power.html#there-is-hope
-[megaparsec-tests]: https://github.com/mrkkrp/megaparsec/tree/master/tests
+[megaparsec-tests]: https://github.com/mrkkrp/megaparsec/tree/master/megaparsec-tests/tests
 [hspec-megaparsec-tests]: https://github.com/mrkkrp/hspec-megaparsec/blob/master/tests/Main.hs
 
 ***

@@ -2718,7 +2718,7 @@ like this:
     it "fails on 'b's producing correct error message" $
       parse myParser "" "bbb" `shouldFailWith`
         TrivialError
-          (initialPos "" :| [])
+          0
           (Just (Tokens ('b' :| [])))
           (Set.singleton (Tokens ('a' :| [])))
 ```

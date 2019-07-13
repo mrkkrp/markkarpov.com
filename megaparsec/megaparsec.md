@@ -1,4 +1,4 @@
-cd---
+---
 title: Megaparsec tutorial from IH book
 desc: This is a Megaparsec tutorial which originally was written as a chapter for the Intermediate Haskell book.
 difficulty: 1

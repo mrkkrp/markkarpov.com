@@ -12,6 +12,9 @@ book in the last year, other authors agreed to let me publish the text as a
 standalone tutorial so people can benefit at least from this part of our
 work.*
 
+*There is a Japanese translation of this article:
+<https://haskell.e-bigmoon.com/posts/2019/07-14-megaparsec-tutorial.html>*.
+
 ```toc
 ```
 

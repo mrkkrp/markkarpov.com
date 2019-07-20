@@ -5,8 +5,10 @@ attachment: RecoveryFeature.hs
 difficulty: 3
 date:
   published: February 19, 2016
-  updated: September 27, 2018
+  updated: July 20, 2019
 ---
+
+*The text here may be obsolete. See [this tutorial][megaparsec] instead.*
 
 The `withRecovery` primitive allows to recover from parse errors
 “on-the-fly” and report several errors after parsing is finished or ignore
@@ -285,3 +287,5 @@ current part cannot be parsed. In a language like Python, you could use
 indentation levels to tell apart high-level definitions. In every case you
 should use your judgment and creativity to decide how to make use of
 `withRecovery`.
+
+[megaparsec]: /megaparsec/megaparsec.html

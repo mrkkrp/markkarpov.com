@@ -4,8 +4,12 @@ desc: Practical recommendations for people who decide to switch from Parsec to M
 difficulty: 4
 date:
   published: October 15, 2015
-  updated: September 27, 2018
+  updated: July 20, 2019
 ---
+
+*The text here may be obsolete. The two libraries keep diverging and it's
+fair to start considering Megaparsec an independent library instead of a
+fork.*
 
 ```toc
 ```

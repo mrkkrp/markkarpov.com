@@ -5,8 +5,10 @@ attachment: ParsingWhile.hs
 difficulty: 2
 date:
   published: October 13, 2015
-  updated: September 15, 2018
+  updated: July 20, 2019
 ---
+
+*The text here may be obsolete. See [this tutorial][megaparsec] instead.*
 
 This tutorial will present how to parse a subset of a simple imperative
 programming language called *WHILE* (introduced in the book “Principles of
@@ -419,3 +421,5 @@ main = do
 ----
 
 * [Original Parsec tutorial in Haskell Wiki](https://wiki.haskell.org/Parsing_a_simple_imperative_language)
+
+[megaparsec]: /megaparsec/megaparsec.html

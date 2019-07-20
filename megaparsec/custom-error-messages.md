@@ -4,8 +4,10 @@ desc: Learn how to use user-defined data types in parse errors.
 difficulty: 3
 date:
   published: August 10, 2016
-  updated: September 27, 2018
+  updated: July 20, 2019
 ---
+
+*The text here may be obsolete. See [this tutorial][megaparsec] instead.*
 
 One of the advantages of Megaparsec is the ability to use your own data
 types as part of data that is returned on parse failure. This opens the
@@ -466,3 +468,5 @@ arbitrary data to Megaparsec error messages. This way it's possible to pump
 out some data from a failing parser keeping track of things in a type-safe
 way, which is one thing we should always care about when writing Haskell
 programs.
+
+[megaparsec]: /megaparsec/megaparsec.html

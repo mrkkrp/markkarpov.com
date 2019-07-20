@@ -4,8 +4,10 @@ desc: Practical recommendations that should help you write a fast parser.
 difficulty: 4
 date:
   published: September 11, 2016
-  updated: September 27, 2017
+  updated: July 20, 2019
 ---
+
+*The text here may be obsolete. See [this tutorial][megaparsec] instead.*
 
 If performance of your Megaparsec parser is worse that you hoped, there may
 be ways to improve it. This short guide will instruct you what to attempt,
@@ -50,3 +52,5 @@ much easier for you to see how to make your parser faster. Sometimes
 however, making a parser faster will also make your code less readable. If
 performance of your parser is not a bottleneck in the system you are
 building, consider preferring readability over performance.
+
+[megaparsec]: /megaparsec/megaparsec.html

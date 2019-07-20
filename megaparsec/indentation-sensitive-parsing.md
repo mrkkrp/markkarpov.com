@@ -5,8 +5,10 @@ attachment: IndentationSensitiveParsing.hs
 difficulty: 3
 date:
   published: January 12, 2016
-  updated: September 27, 2018
+  updated: July 20, 2019
 ---
+
+*The text here may be obsolete. See [this tutorial][megaparsec] instead.*
 
 This tutorial shows how helpers for indentation-sensitive parsing work,
 compose, and hopefully, *feel natural*.
@@ -351,3 +353,5 @@ to feed the parser with various variants of malformed data. And this is no
 surprise, since no state is shared between different parts of the
 structure—it's just assembled purely from simpler parts—sufficiently elegant
 solution in the spirit of the rest of the library.
+
+[megaparsec]: /megaparsec/megaparsec.html

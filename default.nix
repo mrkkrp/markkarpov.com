@@ -57,18 +57,14 @@ let
   site = pkgs.stdenv.mkDerivation {
     name = "mk-com";
     buildInputs = [
-      haskellPackages.markkarpov-com
-      html5validator
       pkgs.glibcLocales
-      pkgs.openjdk
-      resume
     ];
     LANG = "en_US.UTF-8";
     src = pkgs.lib.sourceByRegex ./. siteSourceRegex;
     buildPhase = ''
       cp ${resume}/resume.pdf resume/resume.pdf
-      mk-com
-      html5validator --root _build/ --show-warnings
+      ${app}/bin/mk-com
+      ${html5validator}/bin/html5validator --root _build/ --show-warnings
     '';
     installPhase = ''
       mkdir "$out"

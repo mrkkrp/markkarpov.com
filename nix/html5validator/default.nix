@@ -9,6 +9,10 @@ in with pkgs.python36Packages; buildPythonPackage rec {
      sha256 = "f587dac897b7d8f8009cfc8707f67d4cb4524facf9489c6e7a35c0801cc0e79e";
    };
 
+   propagatedBuildInputs = [
+     pkgs.openjdk
+   ];
+
    doCheck = false;
 
    meta = with pkgs.stdenv.lib; {

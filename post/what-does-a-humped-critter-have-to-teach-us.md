@@ -161,7 +161,7 @@ Here we first defined the type signature `Eq` which captures the necessary
 minimum for talking about equality of things: the type `t` and the equality
 function `eq`. Then we defined the functor `EqFromIndexed` which takes the
 module `Elt : Eq` providing an equality check for elements, as well as the
-module `I` providing two functions `index` and `length`. This allow us to
+module `I` providing two functions `index` and `length`. This allows us to
 check if two indexable containers are equal by simply traversing all
 elements. The definition of `EqFromIndexed` also features an *anonymous
 module signature*.

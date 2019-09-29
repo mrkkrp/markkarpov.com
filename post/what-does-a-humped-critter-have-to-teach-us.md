@@ -263,14 +263,17 @@ I think OCaml may be doing better than Haskell here. Here are some thoughts:
   between types and values/functions. Which leads us to…
 
 * **Type classes as a way to go from type level to value level.** In modern
-  Haskell type classes are often used to get a unique value (functions are
-  also values in this context) associated with a type. Here, type class
+  Haskell type classes are often used to get a value (functions are also
+  values in this context) associated with a type. Here, type class
   definition establishes what sort of value you can get, and instances
-  define actual values. If we accept that the “uniqueness” property is
-  useful, then we could argue that OCaml doesn't have such a mechanism.
-  [Edward Kmett likes this a lot.][type-classes-vs-the-world] But I'd say
-  it's not a problem of module system vs type classes. If we have dependent
-  types, we automatically can get one-to-one correspondence of similar kind.
+  define actual values, one per type. If we accept that coherence of
+  instance resolution is useful, then we could argue that OCaml doesn't have
+  such a mechanism. [Edward Kmett likes this a
+  lot.][type-classes-vs-the-world] But I'd say it's not a problem of module
+  system vs type classes. If we have dependent types, we also can get
+  compute values form types, although such an approach will be “closed”, as
+  opposed to the “open” system with type classes where new instances always
+  can be added.
 
 ## Conclusion
 

@@ -270,10 +270,10 @@ I think OCaml may be doing better than Haskell here. Here are some thoughts:
   instance resolution is useful, then we could argue that OCaml doesn't have
   such a mechanism. [Edward Kmett likes this a
   lot.][type-classes-vs-the-world] But I'd say it's not a problem of module
-  system vs type classes. If we have dependent types, we also can get
-  compute values form types, although such an approach will be “closed”, as
-  opposed to the “open” system with type classes where new instances always
-  can be added.
+  system vs type classes. If we have dependent types, we also can compute
+  values form types, although such an approach will be “closed”, as opposed
+  to the “open” system with type classes where new instances always can be
+  added.
 
 ## Conclusion
 

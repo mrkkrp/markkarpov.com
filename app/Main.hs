@@ -98,11 +98,12 @@ cssR
   , ossR
   , learnHaskellR
   , postsR
-  , notesR
+  -- , notesR
   , postR
   , mtutorialR
   , tutorialR
-  , noteR :: Route
+  -- , noteR
+    :: Route
 cssR          = Ins "static/css/*.css" id
 jsR           = Ins "static/js/*.js" id
 imgR          = Ins "static/img/*" id
@@ -116,11 +117,11 @@ aboutR        = Ins "about.md" (-<.> "html")
 ossR          = Gen "oss.html"
 learnHaskellR = Gen "learn-haskell.html"
 postsR        = Gen "posts.html"
-notesR        = Gen "notes.html"
+-- notesR        = Gen "notes.html"
 postR         = Ins "post/*.md" (-<.> "html")
 mtutorialR    = Ins "megaparsec/*.md" (-<.> "html")
 tutorialR     = Ins "tutorial/*.md" (-<.> "html")
-noteR         = Ins "notes/*.md" (-<.> "html")
+-- noteR         = Ins "notes/*.md" (-<.> "html")
 
 ----------------------------------------------------------------------------
 -- Post info
@@ -365,24 +366,24 @@ main = shakeArgs shakeOptions $ do
       [menuItem LearnHaskell env, v, mkLocation output]
       output
 
-  buildRoute notesR $ \_ output -> do
-    env <- commonEnv
-    ts  <- templates
-    es  <- gatherLocalInfo noteR (Down . localPublished)
-    renderAndWrite ts ["notes","default"] Nothing
-      [ menuItem Notes env
-      , provideAs "post" es
-      , mkTitle Notes ]
-      output
+  -- buildRoute notesR $ \_ output -> do
+  --   env <- commonEnv
+  --   ts  <- templates
+  --   es  <- gatherLocalInfo noteR (Down . localPublished)
+  --   renderAndWrite ts ["notes","default"] Nothing
+  --     [ menuItem Notes env
+  --     , provideAs "post" es
+  --     , mkTitle Notes ]
+  --     output
 
-  buildRoute noteR $ \input output -> do
-    env <- commonEnv
-    ts  <- templates
-    need [input]
-    (v, content) <- getPost input
-    renderAndWrite ts ["post","default"] (Just content)
-      [menuItem Notes env, v, mkLocation output]
-      output
+  -- buildRoute noteR $ \input output -> do
+  --   env <- commonEnv
+  --   ts  <- templates
+  --   need [input]
+  --   (v, content) <- getPost input
+  --   renderAndWrite ts ["post","default"] (Just content)
+  --     [menuItem Notes env, v, mkLocation output]
+  --     output
 
 ----------------------------------------------------------------------------
 -- Custom MMark extensions

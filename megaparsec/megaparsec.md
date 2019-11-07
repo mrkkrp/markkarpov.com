@@ -4,6 +4,7 @@ desc: This is a Megaparsec tutorial which originally was written as a chapter fo
 difficulty: 1
 date:
   published: February 23, 2019
+  updated: November 7, 2019
 ---
 
 *This is the Megaparsec tutorial which originally was written as a chapter
@@ -39,14 +40,14 @@ solve the same problem, and note various trade-offs they make:
   `ByteString` out-of-the-box, but not `Text`.
 
 * [`megaparsec`][megaparsec] is a fork of `parsec` that has been actively
-  developed in the last few years. The current version strikes a nice
-  balance between speed, quality of error messages, and flexibility. As an
+  developed in the last few years. The current version tries to find a nice
+  balance between speed, flexibility, and quality of parse errors. As an
   unofficial successor of `parsec`, it stays conventional and immediately
   familiar for users who have used that library or who have read `parsec`
   tutorials.
 
 It would be impractical to try to cover all these libraries, and so we will
-focus on `megaparsec`. More precisely, we are going to cover the version 7,
+focus on `megaparsec`. More precisely, we are going to cover the version 8,
 which by the time this book is published will probably have replaced the
 older versions almost everywhere.
 
@@ -293,8 +294,8 @@ explicit clarification of parser type would be unnecessary.*
 That seems to work all right. The problem with `satisfy` is that it does not
 say what is expected when it fails, because we cannot analyze the function
 which the caller of `satisfy` provides. There are other combinators that are
-less general, but can generate more helpful error messages instead, for
-example `single` (with type-constrained synonyms called `char` in
+less general, but they can generate more helpful error messages. For example
+`single` (with type-constrained synonyms called `char` in
 `Text.Megaparsec.Byte` and `Text.Megaparsec.Char`) which matches a specific
 token value:
 
@@ -333,8 +334,8 @@ newline :: (MonadParsec e s m, Token s ~ Char) => m (Token s)
 newline = single '\n'
 ```
 
-The second primitive is called `tokens` and it allows to parse `Tokens s`,
-that is, it can be used to match a fixed chunk of input:
+The second primitive is called `tokens` and it allows us to parse `Tokens
+s`, that is, it can be used to match a fixed chunk of input:
 
 ```haskell
 tokens :: MonadParsec e s m
@@ -626,10 +627,9 @@ Uri {uriScheme = "irc"}
 ```
 
 We are not done with the scheme parsing though. A good Haskell programmer
-tries to define types in such a way so incorrect data simply cannot be
-represented. Not every `Text` value is a valid scheme. Let us define a data
-type to represent schemes and make our `pScheme` parser return value of that
-type:
+tries to define types in such a way so incorrect data cannot be represented.
+Not every `Text` value is a valid scheme. Let us define a data type to
+represent schemes and make our `pScheme` parser return value of that type:
 
 ```haskell
 data Scheme
@@ -830,8 +830,8 @@ Important points here:
 * (4) Do not use `try` unless necessary! Here if `char ':'` succeeds (which
   is by itself built on top of `token`, so it does not need a `try`), we
   know for sure that port must follow after it, so we just demand a decimal
-  number with `L.decimal`. After matching `:`, we are sort of committed and
-  do not need a way to go back.
+  number with `L.decimal`. After matching `:`, we are committed and do not
+  need a way to go back.
 
 * In (5) and (6) we assemble `Authority` and `Uri` values using the
   `RecordWildCards` language extension.
@@ -874,7 +874,7 @@ expecting '.', ':', alphanumeric character, or end of input
 
 ## Debugging parsers
 
-However, you may find that there is some funny stuff going on:
+However, you may find that there is a problem:
 
 ```
 λ> parseTest (pUri <* eof) "https://mark:@example.com"
@@ -987,8 +987,8 @@ branch of parsing. Just like with port where when we see column `:` we are
 sure port number must follow. If you look carefully, you will see that the
 double slash `//` is the sign that we have the authority part in our URI.
 Since we match `//` with an “atomic” parser (`string`), matching on it
-backtracks automatically, and after we have matched `//`, we can be fearless
-and demand the authority part. Let us remove the first `try` from `pUri`:
+backtracks automatically, and after we have matched `//`, we can be sure to
+demand the authority part. Let us remove the first `try` from `pUri`:
 
 ```haskell
 pUri :: Parser Uri
@@ -1151,7 +1151,7 @@ is the non-transformer version of `ParsecT`:
 type Parsec e s = ParsecT e s Identity
 ```
 
-`runParser` has 3 sisters: `runParser'`, `runParserT`, and `runParserT'`.
+`runParser` has 3 siblings: `runParser'`, `runParserT`, and `runParserT'`.
 The versions with the `T` suffix run `ParsecT` monad transformer, and the
 “prime” versions take and return parser state. Let's put all the functions
 into a table:
@@ -1162,7 +1162,8 @@ into a table:
 | Custom initial state | `runParser'`  | `runParserT'`  |
 
 Custom initial state may be necessary if you e.g. want to set tab width to
-some non-standard value (the default value is `8`). Here `runParser'`:
+some non-standard value (the default value is `8`). As an example, here is
+the type signature of `runParser'`:
 
 ```haskell
 runParser'
@@ -1175,7 +1176,7 @@ Modifying `State` manually is advanced usage of the library, and we are not
 going to describe it here.
 
 If you wonder what is `ParseErrorBundle`, we'll discuss it in [one of the
-following chapters](#parse-errors).
+following sections](#parse-errors).
 
 ## The `MonadParsec` type class
 
@@ -1470,15 +1471,15 @@ Some notes:
   requirements perfectly.
 
 * The second argument of `L.space` defines how to skip line comments, that
-  is, comments that start with a given sequence of tokens and end with end
-  of line. The `skipLineComment` helper allows to craft an auxiliary parser
-  for line comments easily.
+  is, comments that start with a given sequence of tokens and end with the
+  end of line. The `skipLineComment` helper allows us to craft an auxiliary
+  parser for line comments easily.
 
 * The third argument of `L.space` in turn defines how to pick up block
   comments: everything between starting and ending sequences of tokens. The
-  `skipBlockComment` helper allows to deal with non-nested block comments.
-  If supporting nested block comments is desirable, `skipBlockCommentNested`
-  should be used instead.
+  `skipBlockComment` helper allows us to deal with non-nested block
+  comments. If supporting nested block comments is desirable,
+  `skipBlockCommentNested` should be used instead.
 
 Operationally, `L.space` tries all three parsers in turn as many times as it
 can till all of them cannot be applied anymore meaning that we have consumed
@@ -1493,10 +1494,10 @@ space-related helpers:
 
 ```haskell
 lexeme :: Parser a -> Parser a
-lexeme = L.lexeme sc -- (1)
+lexeme = L.lexeme sc
 
 symbol :: Text -> Parser Text
-symbol = L.symbol sc -- (2)
+symbol = L.symbol sc
 ```
 
 * `lexeme` is a wrapper for lexemes that picks up all trailing white space
@@ -1569,7 +1570,7 @@ representations:
 
 ```haskell
 decimal, octal, hexadecimal
-  :: (MonadParsec e s m, Token s ~ Char, Integral a) => m a
+  :: (MonadParsec e s m, Token s ~ Char, Num a) => m a
 ```
 
 Using them is easy:
@@ -1592,10 +1593,10 @@ unexpected 'a'
 expecting end of input or the rest of integer
 ```
 
-`scientific` and `float` accept integer and fractional grammars.
-`scientific` returns the `Scientific` type from the `scientific` package,
-while `float` is polymorphic in its result type and can return any instance
-of `RealFloat`:
+`scientific` accepts integer and fractional grammars, while `float` accepts
+only fractional grammars. `scientific` returns the `Scientific` type from
+the `scientific` package, while `float` is polymorphic in its result type
+and can return any instance of `RealFloat`:
 
 ```haskell
 scientific :: (MonadParsec e s m, Token s ~ Char)              => m Scientific
@@ -1727,7 +1728,8 @@ withPredicate2 f msg p = do
 This way we just set offset in the input stream to what if was before
 running `p` and then fail. There is a mismatch now in what remains
 unconsumed vs offset position, but it does not matter in this case because
-we end parsing immediately by calling `fail`.
+we end parsing immediately by calling `fail`. It may matter in other cases.
+We will see how to do better in situations like this later in the chapter.
 
 ## Parsing expressions
 
@@ -1744,11 +1746,11 @@ Here we can see two kinds of terms: variables (`a` and `b`) and integers
 (`2`). There are also two operators: `*` and `+`.
 
 Writing an expression parser may take a while to get right. To help with
-that, the `parser-combinators` package comes with the `Control.Monad.Combinators.Expr` module which
-exports only two things: the `Operator` data type and the `makeExprParser`
-helper. Both are well documented, so in this section we will not repeat the
-documentation, instead we are going to write a simple but fully functional
-expression parser.
+that, the [`parser-combinators`][parser-combinators] package comes with the
+`Control.Monad.Combinators.Expr` module which exports only two things: the
+`Operator` data type and the `makeExprParser` helper. Both are well
+documented, so in this section we will not repeat the documentation, instead
+we are going to write a simple but fully functional expression parser.
 
 Let us start by defining a data type representing expression as [AST][ast]:
 
@@ -1774,8 +1776,8 @@ makeExprParser :: MonadParsec e s m
   -> m a               -- ^ Resulting expression parser
 ```
 
-Let us start with the term parser then. It is helpful to think about term as
-a box that that is to be considered as a indivisible whole by the expression
+Let us start with the term parser. It is helpful to think about term as a
+box that that is to be considered as a indivisible whole by the expression
 parsing algorithm when it works with things like associativity and
 precedence. In our case there are three things that fall into this category:
 variables, integers, and entire expressions in parentheses. Using the
@@ -1796,7 +1798,8 @@ pTerm :: Parser Expr
 pTerm = choice
   [ parens pExpr
   , pVariable
-  , pInteger ]
+  , pInteger
+  ]
 
 pExpr :: Parser Expr
 pExpr = makeExprParser pTerm operatorTable
@@ -1833,11 +1836,14 @@ data Operator m a -- N.B.
 operatorTable :: [[Operator Parser Expr]]
 operatorTable =
   [ [ prefix "-" Negation
-    , prefix "+" id ]
+    , prefix "+" id
+    ]
   , [ binary "*" Product
-    , binary "/" Division ]
+    , binary "/" Division
+    ]
   , [ binary "+" Sum
-    , binary "-" Subtr ]
+    , binary "-" Subtr
+    ]
   ]
 
 binary :: Text -> (Expr -> Expr -> Expr) -> Operator Parser Expr
@@ -1850,8 +1856,8 @@ postfix name f = Postfix (f <$ symbol name)
 
 Note how we place `Parser (Expr -> Expr -> Expr)` inside `InfixL` in
 `binary` and similarly `Parser (Expr -> Expr)` in `prefix` and `postfix`.
-I.e. we run `symbol name` and return function to apply to terms in order to
-get the final result of the type `Expr`.
+That is, we run `symbol name` and return function to apply to terms in order
+to get the final result of the type `Expr`.
 
 We can now try our parser, it is ready!
 
@@ -2060,9 +2066,9 @@ incorrect indentation (got 2, should be equal to 3)
 ("something",["one","two","three"])
 ```
 
-This definitely seems to work. Let us replace `IndentMany` with `IndentSome`
-and `Nothing` with `Just (mkPos 5)` (indentation levels are counted from 1,
-so it will require 4 spaces before indented items):
+Let us replace `IndentMany` with `IndentSome` and `Nothing` with `Just
+(mkPos 5)` (indentation levels are counted from 1, so it will require 4
+spaces before indented items):
 
 ```haskell
 pItemList :: Parser (String, [String])
@@ -2139,7 +2145,9 @@ Right
   ( "first-chapter"
   , [ ("paragraph-one",   ["note-A","note-B"])
     , ("paragraph-two",   ["note-1","note-2"])
-    , ("paragraph-three", []) ] )
+    , ("paragraph-three", [])
+    ]
+  )
 ```
 
 This demonstrates how this approach scales for nested indented construts
@@ -2264,7 +2272,7 @@ When we parse `ByteString`s and `Text`, this will be a lot faster than the
 original approach. Also note that `T.pack` is not necessary anymore as we
 get `Text` directly from `takeWhile1P`.
 
-These equations should be helpful in understanding the meaning of the `Maybe
+These equations may be helpful for understanding the meaning of the `Maybe
 String` argument of `takeWhileP` and `takeWhile1P`:
 
 ```haskell
@@ -2342,17 +2350,16 @@ Finally, `ErrorCustom` is a sort of an “extension slot” which allows to
 embed arbitrary data into the `ErrorFancy` type. When we do not need any
 custom data in our parse errors, we parametrize `ErrorFancy` by `Void`.
 Since `Void` is not inhabited by non-bottom values, `ErrorCustom` becomes
-“cancelled” or if we follow the analogy between algebraic data types and
-numbers, “multiplied by zero”.
+“cancelled out” or, if we follow the analogy between algebraic data types
+and numbers, “multiplied by zero”.
 
 In older version of the library, `ParseError`s were returned directly by
 functions like `parse`, but version 7 delays calculation of line and column
 for each error, as well as fetching of relevant line on input for displaying
 in case of an error. This is done to be make parsing faster, because all
-this info is usually useful only when a parser fails. Another problem of
-older versions of the library is that displaying several parse errors at
-once (admittedly, this is still an example of advanced usage) required
-re-traversal of input each time to fetch the right line.
+this information is usually useful only when a parser fails. Another problem
+of older versions of the library is that displaying several parse errors at
+once required re-traversal of input each time to fetch the right line.
 
 The problem is solved with the `ParseErrorBundle` data type:
 
@@ -2394,7 +2401,7 @@ is not everything, we may have a need to analyze and/or manipulate it. This
 is where `String`s are not very convenient.
 
 Trivial parse errors are usually generated by `megaparsec`, but we can
-signal any such an error ourselves using the `failure` primitive:
+signal any such an error ourselves using the `failure` combinator:
 
 ```haskell
 failure :: MonadParsec e s m
@@ -2420,10 +2427,10 @@ unexpected end of input
 expecting 'a' or 'b'
 ```
 
-Unlike `fail`-based approach, trivial parse errors are easy to pattern-match
-on, inspect, and modify.
+Unlike the `fail`-based approach, trivial parse errors are easy to
+pattern-match on, inspect, and modify.
 
-For fancy errors we correspondingly have the `fancyFaliure` primitive:
+For fancy errors we correspondingly have the `fancyFaliure` combinator:
 
 ```haskell
 fancyFailure :: MonadParsec e s m
@@ -2514,12 +2521,12 @@ errorBundlePretty
   -> String               -- ^ Textual rendition of the bundle
 ```
 
-In 95% of cases you will only need this one function.
+In 99% of cases you will only need this one function.
 
 ### Catching parse errors in running parser
 
 Another useful feature of `megaparsec` is that it is possible to “catch” a
-parse error, alter it in some way and then re-throw, just like with
+parse error, alter it in some way, and then re-throw, just like with
 exceptions. This is enabled by the `observing` primitive:
 
 ```haskell
@@ -2631,34 +2638,184 @@ idiom is quite useful, so there is even a non-primitive helper called
 
 ```haskell
 -- | Specify how to process 'ParseError's that happen inside of this
--- wrapper. As a side effect of the current implementation changing
--- 'errorPos' with this combinator will also change the final 'statePos' in
--- the parser state (try to avoid that because 'statePos' will go out of
--- sync with factual position in the input stream, which is probably OK if
--- you finish parsing right after that, but be warned).
+-- wrapper. This applies to both normal and delayed 'ParseError's.
+--
+-- As a side-effect of the implementation the inner computation will start
+-- with empty collection of delayed errors and they will be updated and
+-- “restored” on the way out of 'region'.
 
 region :: MonadParsec e s m
   => (ParseError s e -> ParseError s e)
      -- ^ How to process 'ParseError's
-  -> m a
-     -- ^ The “region” that the processing applies to
+  -> m a               -- ^ The “region” that the processing applies to
   -> m a
 region f m = do
   r <- observing m
   case r of
-    Left err ->
-      case f err of
-        TrivialError o us ps -> do
-          updateParserState $ \st -> st { stateOffset = o }
-          failure us ps
-        FancyError o xs -> do
-          updateParserState $ \st -> st { stateOffset = o }
-          fancyFailure xs
+    Left err -> parseError (f err) -- see the next section
     Right x -> return x
 ```
 
 *EXERCISE: Rewrite the `inside` function in the program above using
 `region`.*
+
+### Controlling location of parse errors
+
+The definition of `region` uses the `parseError` primitive:
+
+```haskell
+parseError :: MonadParsec e s m => ParseError s e -> m a
+```
+
+It is the fundamental primitive for error reporting and all other functions
+we have seen so far are defined in terms of `parseError`:
+
+```haskell
+failure
+  :: MonadParsec e s m
+  => Maybe (ErrorItem (Token s)) -- ^ Unexpected item (if any)
+  -> Set (ErrorItem (Token s)) -- ^ Expected items
+  -> m a
+failure us ps = do
+  o <- getOffset
+  parseError (TrivialError o us ps)
+
+fancyFailure
+  :: MonadParsec e s m
+  => Set (ErrorFancy e) -- ^ Fancy error components
+  -> m a
+fancyFailure xs = do
+  o <- getOffset
+  parseError (FancyError o xs)
+```
+
+One thing `parseError` allows you to do is to set error offset (that is,
+position) to something else than current position in input stream. Let's
+return to the example with rejecting results of parsing retroactively:
+
+```haskell
+withPredicate2
+  :: (a -> Bool)       -- ^ The check to perform on parsed input
+  -> String            -- ^ Message to print when the check fails
+  -> Parser a          -- ^ Parser to run
+  -> Parser a          -- ^ Resulting parser that performs the check
+withPredicate2 f msg p = do
+  o <- getOffset
+  r <- p
+  if f r
+    then return r
+    else do
+      setOffset o
+      fail msg
+```
+
+We noted that `setOffset o` will make the error to be located correctly, but
+it will also invalidate parser state as a side effect—the offset will not
+reflect reality anymore. This may be a real problem in more complex parsers.
+For example, imagine that you enclose `withPredicate2` with `observing` so
+that there will be some code running after `fail`.
+
+With `parseError` and `region` we finally have proper solution to the
+problem—either use `parseError` to reset parse error location, or use
+`parseError` in the first place:
+
+```haskell
+withPredicate3
+  :: (a -> Bool)       -- ^ The check to perform on parsed input
+  -> String            -- ^ Message to print when the check fails
+  -> Parser a          -- ^ Parser to run
+  -> Parser a          -- ^ Resulting parser that performs the check
+withPredicate3 f msg p = do
+  o <- getOffset
+  r <- p
+  if f r
+    then return r
+    else region (setErrorOffset o) (fail msg)
+
+withPredicate4
+  :: (a -> Bool)       -- ^ The check to perform on parsed input
+  -> String            -- ^ Message to print when the check fails
+  -> Parser a          -- ^ Parser to run
+  -> Parser a          -- ^ Resulting parser that performs the check
+withPredicate4 f msg p = do
+  o <- getOffset
+  r <- p
+  if f r
+    then return r
+    else parseError (FancyError o (Set.singleton (ErrorFail msg)))
+```
+
+### Reporting multiple parse errors
+
+Finally, `megaparsec` allows us to signal several parse errors in a single
+run. This may be helpful for the end users because they will be able to fix
+several issues at once and so they will need to run your parser fewer times.
+
+One prerequisite for having a multi-error parser is that it should be
+possible to skip over a problematic part of input and resume parsing from a
+position that is known to be good. This part is accomplished by using the
+`withRecovery` primitive:
+
+```haskell
+-- | @'withRecovery' r p@ allows continue parsing even if parser @p@
+-- fails. In this case @r@ is called with the actual 'ParseError' as its
+-- argument. Typical usage is to return a value signifying failure to
+-- parse this particular object and to consume some part of the input up
+-- to the point where the next object starts.
+--
+-- Note that if @r@ fails, original error message is reported as if
+-- without 'withRecovery'. In no way recovering parser @r@ can influence
+-- error messages.
+
+withRecovery
+  :: (ParseError s e -> m a) -- ^ How to recover from failure
+  -> m a             -- ^ Original parser
+  -> m a             -- ^ Parser that can recover from failures
+```
+
+Before Megaparsec 8 users had to pick the type `a` to be a sum type
+including the possibilities for success and failure. For example, it could
+be `Either (ParseError s e) Result`. The parse errors had to be collected
+and later manually added to the `ParseErrorBundle` before displaying.
+Needless to say, all of this was an example of advanced usage that is not
+user friendly.
+
+Megaparsec 8 supports *delayed parse errors*:
+
+```haskell
+-- | Register a 'ParseError' for later reporting. This action does not end
+-- parsing and has no effect except for adding the given 'ParseError' to the
+-- collection of “delayed” 'ParseError's which will be taken into
+-- consideration at the end of parsing. Only if this collection is empty
+-- parser will succeed. This is the main way to report several parse errors
+-- at once.
+
+registerParseError :: MonadParsec e s m => ParseError s e -> m ()
+
+-- | Like 'failure', but for delayed 'ParseError's.
+
+registerFailure
+  :: MonadParsec e s m
+  => Maybe (ErrorItem (Token s)) -- ^ Unexpected item (if any)
+  -> Set (ErrorItem (Token s)) -- ^ Expected items
+  -> m ()
+
+-- | Like 'fancyFailure', but for delayed 'ParseError's.
+
+registerFancyFailure
+  :: MonadParsec e s m
+  => Set (ErrorFancy e) -- ^ Fancy error components
+  -> m ()
+```
+
+These errors can be registered in the error-processing callback of
+`withRecovery` making the resulting type `Maybe Result`. This takes care of
+including the delayed errors in the final `ParseErrorBundle` as well as
+making the parser fail in the end if the collection of delayed errors in not
+empty.
+
+With all this, we hope that the practice of writing multi-error parsers will
+become more common among the users.
 
 ## Testing Megaparsec parsers
 
@@ -2796,6 +2953,7 @@ could be generated with `alex`, we will assume it in the following form:
 ```haskell
 {-# LANGUAGE LambdaCase        #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards   #-}
 {-# LANGUAGE TypeFamilies      #-}
 
 module Main (main) where
@@ -2818,13 +2976,14 @@ data MyToken
   deriving (Eq, Ord, Show)
 ```
 
-To report parse errors though we need a way to know where token starts and
-ends, so let us add `WithPos`:
+To report parse errors though we need a way to know where token starting
+position, ending position, and length, so let us add `WithPos`:
 
 ```haskell
 data WithPos a = WithPos
   { startPos :: SourcePos
-  , endPos   :: SourcePos
+  , endPos :: SourcePos
+  , tokenLength :: Int
   , tokenVal :: a
   } deriving (Eq, Ord, Show)
 ```
@@ -2832,8 +2991,9 @@ data WithPos a = WithPos
 Then we can have a data type for our stream:
 
 ```haskell
-newtype MyStream = MyStream
-  { unMyStream :: [WithPos MyToken]
+data MyStream = MyStream
+  { myStreamInput :: String -- for showing offending lines
+  , unMyStream :: [WithPos MyToken]
   }
 ```
 
@@ -2858,32 +3018,61 @@ go straight to defining the missing methods:
   chunkToTokens Proxy = id
   chunkLength Proxy = length
   chunkEmpty Proxy = null
-  take1_ (MyStream []) = Nothing
-  take1_ (MyStream (t:ts)) = Just (t, MyStream ts)
-  takeN_ n (MyStream s)
-    | n <= 0    = Just ([], MyStream s)
+  take1_ (MyStream _ []) = Nothing
+  take1_ (MyStream str (t:ts)) = Just
+    ( t
+    , MyStream (drop (tokensLength pxy (t:|[])) str) ts
+    )
+  takeN_ n (MyStream str s)
+    | n <= 0    = Just ([], MyStream str s)
     | null s    = Nothing
     | otherwise =
         let (x, s') = splitAt n s
-        in Just (x, MyStream s')
-  takeWhile_ f (MyStream s) =
+        in case NE.nonEmpty x of
+          Nothing -> Just (x, MyStream str s')
+          Just nex -> Just (x, MyStream (drop (tokensLength pxy nex) str) s')
+  takeWhile_ f (MyStream str s) =
     let (x, s') = DL.span f s
-    in (x, MyStream s')
-  showTokens Proxy = DL.intercalate ", "
+    in case NE.nonEmpty x of
+      Nothing -> (x, MyStream str s')
+      Just nex -> (x, MyStream (drop (tokensLength pxy nex) str) s')
+  showTokens Proxy = DL.intercalate " "
     . NE.toList
     . fmap (showMyToken . tokenVal)
-  reachOffset o pst@PosState {..} =
-    case drop (o - pstateOffset) (unMyStream pstateInput) of
-      [] ->
-        ( pstateSourcePos
-        , "<missing input>"
-        , pst { pstateInput = MyStream [] }
-        )
-      (x:xs) ->
-        ( startPos x
-        , "<missing input>"
-        , pst { pstateInput = MyStream (x:xs) }
-        )
+  tokensLength Proxy xs = sum (tokenLength <$> xs)
+  reachOffset o PosState {..} =
+    ( prefix ++ restOfLine
+    , PosState
+        { pstateInput = MyStream
+            { myStreamInput = postStr
+            , unMyStream = post
+            }
+        , pstateOffset = max pstateOffset o
+        , pstateSourcePos = newSourcePos
+        , pstateTabWidth = pstateTabWidth
+        , pstateLinePrefix = prefix
+        }
+    )
+    where
+      prefix =
+        if sameLine
+          then pstateLinePrefix ++ preStr
+          else preStr
+      sameLine = sourceLine newSourcePos == sourceLine pstateSourcePos
+      newSourcePos =
+        case post of
+          [] -> pstateSourcePos
+          (x:_) -> startPos x
+      (pre, post) = splitAt (o - pstateOffset) (unMyStream pstateInput)
+      (preStr, postStr) = splitAt tokensConsumed (myStreamInput pstateInput)
+      tokensConsumed =
+        case NE.nonEmpty pre of
+          Nothing -> 0
+          Just nePre -> tokensLength pxy nePre
+      restOfLine = takeWhile (/= '\n') postStr
+
+pxy :: Proxy MyStream
+pxy = Proxy
 
 showMyToken :: MyToken -> String
 showMyToken = \case
@@ -2896,10 +3085,7 @@ showMyToken = \case
 ```
 
 More background information about the `Stream` type class (and why it looks
-like this) can be found in [this blog post][more-speed-more-power]. In the
-`reachOffset` function we lack original input stream, so we cannot really
-show offending line. This could be solved, but the solution is outside of
-the scope of this text.
+like this) can be found in [this blog post][more-speed-more-power].
 
 Now we can define `Parser` for our custom stream:
 
@@ -2914,14 +3100,14 @@ modules, but if we are to work with custom tokens, we need custom helpers.
 
 ```haskell
 liftMyToken :: MyToken -> WithPos MyToken
-liftMyToken myToken = WithPos pos pos myToken
+liftMyToken myToken = WithPos pos pos 0 myToken
   where
     pos = initialPos ""
 
 pToken :: MyToken -> Parser MyToken
 pToken c = token test (Set.singleton . Tokens . nes . liftMyToken $ c)
   where
-    test wpos@(WithPos _ _ x) =
+    test (WithPos _ _ _ x) =
       if x == c
         then Just x
         else Nothing
@@ -2930,7 +3116,7 @@ pToken c = token test (Set.singleton . Tokens . nes . liftMyToken $ c)
 pInt :: Parser Int
 pInt = token test Set.empty <?> "integer"
   where
-    test (WithPos _ _ (Int n)) = Just n
+    test (WithPos _ _ _ (Int n)) = Just n
     test _ = Nothing
 ```
 
@@ -2950,11 +3136,13 @@ And an example input for it:
 ```haskell
 exampleStream :: MyStream
 exampleStream = MyStream
+  "5 + 6"
   [ at 1 1 (Int 5)
-  , at 1 3 Plus         -- (1)
-  , at 1 5 (Int 6) ]
+  , at 1 3 Div         -- (1)
+  , at 1 5 (Int 6)
+  ]
   where
-    at  l c = WithPos (at' l c) (at' l (c + 1))
+    at  l c = WithPos (at' l c) (at' l (c + 1)) 2
     at' l c = SourcePos "" (mkPos l) (mkPos c)
 ```
 
@@ -2972,8 +3160,8 @@ error:
 λ> parseTest (pSum <* eof) exampleStream
 1:3:
   |
-1 | <missing input>
-  |   ^
+1 | 5 + 6
+  |   ^^
 unexpected /
 expecting +
 ```

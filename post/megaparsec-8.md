@@ -176,7 +176,7 @@ Before Megaparsec 8 users had to pick the type `a` to be a sum type
 including the possibilities for success and failure. For example, it could
 be `Either (ParseError s e) Result`. The parse errors had to be collected
 and later manually added to the `ParseErrorBundle` before displaying.
-Needless to say, all of this was an example of advanced usage that is not
+Needless to say, all of this was an example of advanced usage that was not
 user friendly.
 
 Megaparsec 8 adds support for *delayed parse errors*:

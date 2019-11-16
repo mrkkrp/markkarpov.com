@@ -81,7 +81,7 @@ This is the orange menu with camera icon with some sort of meter underneath.
 * `Customize M-Fn bar` (page 4). `M-Fn` bar is useful, but it doesn't do
   anything by default. I set it to control ISO. Truth to be told, I almost
   always use `Auto-ISO` anyway because adjusting it manually is a waste of
-  time you'll be missing shots. Modern cameras can figure out ISO pretty
+  time and you'll be missing shots. Modern cameras can figure out ISO pretty
   well these days, so you need to think about fewer things when shooting. I
   disable the safety lock, because unlocking it takes time. If you
   accidentally touch it once and tweak ISO, it's not the end of the world,

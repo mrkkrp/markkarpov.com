@@ -27,15 +27,15 @@ reason to shoot in JPEG alone or combined with RAW.
 The problem with RAW though, is that it's a term which does not map to a
 single file format. In fact, almost every camera has its own RAW format. For
 example, my Canon EOS R writes files with `CR3` extension which is different
-from `CR2` older Canon cameras produced and also different from the formats
-other camera manufactures use.
+from `CR2` older Canon cameras produced and is also different from the
+formats other camera manufactures use.
 
 It's not a big deal for users of proprietary software like [Abobe
 Lightroom][lightroom] on Windows or Mac because Canon promptly gives those
-players SDKs which allows them to work with new formats. The situation is
-different for Linux users. We have to reverse-engineer the format. It takes
-time. In fact, it's been 1 year since release of Canon EOS R and it's still
-not supported by popular RAW developer applications such as
+players SDKs which allows them to work with the new formats. The situation
+is different for Linux users. We have to reverse-engineer the format. It
+takes time. In fact, it's been 1 year since release of Canon EOS R and it's
+still not supported by popular RAW developer applications such as
 [Darktable][darktable].
 
 Happily, there is a solution. Adobe created a unified RAW format with open
@@ -103,14 +103,14 @@ Here are the step-by-step instructions:
 I use [Darktable][darktable]. It follows the “non-destructive” editing
 model, meaning that your RAW files stay intact. Instead it creates files in
 the XMP format that describe the operations you apply to the RAW files. Then
-you can export the results as e.g. JPEG files.
+you can export the results as e.g. JPEG images.
 
 ## Storing the photos
 
-So the only thing that changes is the XMP files and those can be store in
+The only thing that changes is the XMP files and those can be stored in
 version control system such as [Git][git]. Git is something most software
 developers use to keep track of changes in source code. Since I'm a
-developer was natural for me to see that I can store the XMP files of
+developer, it was natural for me to see that I can store the XMP files of
 Darktable in a Git repository. This way I can use [GitHub][github] as my
 backup and I can go back and forth in history of edits so that nothing can
 be lost.

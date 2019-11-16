@@ -16,8 +16,8 @@ the new wonderful RF glass.
 In this post I will explain the tweaks I made to the default configuration.
 I'm not going to explain each and every thing you can change, there are
 already posts like that and the official manual. Instead I'll focus on how
-to make the camera easier and quicker to operate—so you won't miss a good
-shot. If I don't mention a setting it means that the default is OK.
+to make the camera easier and quicker to operate—so that you won't miss a
+good shot. If I don't mention a setting it means that the default is OK.
 
 Press the `Menu` button to access the settings.
 
@@ -40,9 +40,9 @@ This is the red menu with little camera icon.
   valuable in certain situations. Instead, just shoot and concentrate on
   what you're doing in real time. When it's over you can check the results.
   Bad shots will be bad, good shots will be good, regardless of the time
-  when you check them, but you'll have more shots! It's OK to have review
-  enabled if you're shooting something that is not moving and where you
-  can't really miss a moment.
+  when you check them, but you'll have more material to pick from! It's OK
+  to have review enabled if you're shooting something that is not moving and
+  where you can't really miss a moment.
 
 ## Auto-focus
 
@@ -81,10 +81,10 @@ This is the orange menu with camera icon with some sort of meter underneath.
     without looking. I use it to switch between one shot AF and servo AF.
 
 * `Customize dials` (page 4). The two standard dials are OK, except the
-  so-called `Quick control dial` (closer to you) is less handy to rotate and
-  by default it controls aperture which is the setting that I tweak most
-  often. This is why I set the control ring on the lens to control aperture
-  as well. You could think that duplicating functions like this is wasteful,
+  so-called `Quick control dial` (closer to you) is harder to rotate and by
+  default it controls aperture which is the setting that I tweak most often.
+  This is why I set the control ring on the lens to control aperture as
+  well. You could think that duplicating functions like this is wasteful,
   but really things you do often should be very easy and quick (the lens'
   ring being the easiest thing to rotate IMO). Also, there is very limited
   choice with regard to `Quick control dial` alternative functions so I just

@@ -3,6 +3,7 @@ title: "A major upgrade to Megaparsec: more speed, more power"
 desc: The post describes extension of the Stream type class that allowed to make the Megaparsec library more efficient and simplify code base.
 date:
   published: July 6, 2017
+tag: haskell
 ---
 
 It looks like comparing Haskell's performance with C (even just FFI) causes

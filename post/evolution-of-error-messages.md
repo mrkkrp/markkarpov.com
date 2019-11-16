@@ -3,6 +3,7 @@ title: Evolution of error messages
 desc: The second and final post about Megaparsec 6 development. This time we walk through re-design of parse error messages.
 date:
   published: July 26, 2017
+tag: haskell
 ---
 
 This is the second and final post about Megaparsec 6.0.0 development. This

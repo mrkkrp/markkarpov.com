@@ -3,6 +3,7 @@ title: Short ByteString and Text
 desc: We all know the ByteString and Text types, but are they always the best choice? What else does the Haskell ecosystem provide?
 date:
   published: October 30, 2017
+tag: haskell
 ---
 
 The `ByteString` and `Text` (strict and lazy) types have a great adoption in

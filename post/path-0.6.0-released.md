@@ -3,6 +3,7 @@ title: Path 0.6.0 released
 desc: It took some time, but the most popular Haskell library for dealing with well-typed paths got to its next (semi)-major version, yay!
 date:
    published: June 16, 2017
+tag: haskell
 ---
 
 As a co-maintainer of [`path`](https://hackage.haskell.org/package/path) and

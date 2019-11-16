@@ -4,6 +4,7 @@ desc: My experience with the Dvorak layout.
 date:
   published: March 15, 2016
   updated:   June 1, 2017
+tag: other
 ---
 
 A month and a half has passed from the moment when I switched to the Dvorak

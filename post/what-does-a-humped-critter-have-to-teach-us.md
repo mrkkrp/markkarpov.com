@@ -3,6 +3,7 @@ title: What does a humped critter have to teach us?
 desc: The post compares OCaml's module system with Haskell's type classes.
 date:
   published: September 29, 2019
+tag: haskell
 ---
 
 ![Camels](/static/img/camels.png)

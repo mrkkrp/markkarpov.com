@@ -3,6 +3,7 @@ title: The monads of Haskell
 desc: Let's talk about monads in Haskell.
 date:
   published: April 16, 2019
+tag: haskell
 ---
 
 *This one reads almost as if it's a 1st April joke, but as a matter of fact

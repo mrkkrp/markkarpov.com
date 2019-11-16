@@ -3,6 +3,7 @@ title: Announcing MMark
 desc: In this post I talk about a new markdown processor I've been working on.
 date:
   published: November 17, 2017
+tag: haskell
 ---
 
 Yesterday I released a new package called

@@ -3,6 +3,7 @@ title: Req 1.0.0, HTTP client, and streaming
 desc: In this post I describe essential changes to Req in version 1.0.0, dig into the low-level API of http-client, how it does streaming, and how it is used in Req.
 date:
   published: December 2, 2017
+tag: haskell
 ---
 
 A year ago I first published

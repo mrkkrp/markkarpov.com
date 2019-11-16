@@ -3,6 +3,7 @@ title: MMark status update
 desc: A short update about the MMark project.
 date:
   published: February 14, 2018
+tag: haskell
 ---
 
 In November 2017 I announced MMark—~~a~~ the strict markdown processor for

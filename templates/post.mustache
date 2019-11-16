@@ -1,4 +1,9 @@
 <h1>{{ title }}</h1>
+
+{{# tag }}
+<a href="/tag/{{ . }}.html" class="badge badge-primary">{{ . }}</a>
+{{/ tag }}
+
 {{# date }}
 <p>
   <em class="text-muted">

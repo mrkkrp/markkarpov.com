@@ -3,6 +3,7 @@ title: Megaparsec 7
 desc: A post about the most important and exiciting changes in Megaparsec 7.
 date:
   published: August 27, 2018
+tag: haskell
 ---
 
 For a while now I've been working on Megaparsec 7. Due to the fact that my

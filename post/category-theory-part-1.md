@@ -4,6 +4,7 @@ desc: Category theory notions in simple to understand (I hope), but concise form
 date:
   published: September 18, 2016
   updated:   June 1, 2017
+tag: other
 ---
 
 ```toc

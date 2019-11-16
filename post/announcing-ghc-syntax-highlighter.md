@@ -3,6 +3,7 @@ title: Announcing GHC syntax highlighter
 desc: Announcing GHC syntax highlighter, a package that allows to highlight Haskell code using lexer of GHC itself.
 date:
   published: May 13, 2018
+tag: haskell
 ---
 
 Yesterday I published a new package [`ghc-syntax-highlighter`][ghcsh], which

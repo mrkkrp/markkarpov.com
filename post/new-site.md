@@ -3,6 +3,7 @@ title: New site
 desc: I've set up a new site where I'll host my blog, tutorials, and more.
 date:
   published: June 6, 2017
+tag: other
 ---
 
 Finally I have set up my new web site here, at <https://markkarpov.com>. I

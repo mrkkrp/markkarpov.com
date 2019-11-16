@@ -4,6 +4,7 @@ desc: How I finally decided what is better (for me), Lisp or Haskell?
 date:
   published: October 23, 2015
   updated: June 1, 2017
+tag: haskell
 ---
 
 Lisp and Haskell are arguably the most peculiar languages out there, at

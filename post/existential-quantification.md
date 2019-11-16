@@ -3,6 +3,7 @@ title: Existential quantification
 desc: In this post I'm going to give an idea of how existentials can be useful in Haskell.
 date:
   published: November 11, 2018
+tag: haskell
 ---
 
 In this post I'm going to give an idea of how existentials can be useful in

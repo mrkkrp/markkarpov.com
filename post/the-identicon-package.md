@@ -4,6 +4,7 @@ desc: My new Identicon package for identicon generation.
 date:
   published: May 28, 2016
   updated:   June 1, 2017
+tag: haskell
 ---
 
 I need to generate identicons for one of my projects so I wrote a package

@@ -34,14 +34,14 @@ This is the red menu with little camera icon.
   files are stored on the same card.
 
 * `Image review` (page 1). I turn it off. Why? With mirrorless camera you
-  get pretty good idea of what you're going when you press the shooting
-  button. Reviewing your shoots is a waste of time which may be very
-  valuable in certain situations. Instead, just shoot and concentrate on
-  what you're doing in real time. When it's over you can check the results.
-  Bad shots will be bad, good shots will be good, regardless of the time
-  when you check them, but you'll have more shots! It's OK to have review
-  enabled if you're shooting something that is not moving and where you
-  can't really miss a moment.
+  get pretty good idea of what you're going to get when you press the
+  shooting button. Reviewing your shoots is a waste of time which may be
+  very valuable in certain situations. Instead, just shoot and concentrate
+  on what you're doing in real time. When it's over you can check the
+  results. Bad shots will be bad, good shots will be good, regardless of the
+  time when you check them, but you'll have more shots! It's OK to have
+  review enabled if you're shooting something that is not moving and where
+  you can't really miss a moment.
 
 ## Auto-focus
 

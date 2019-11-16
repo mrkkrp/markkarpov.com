@@ -3,6 +3,7 @@ title: Canon EOS R settings I use
 desc: Tweaks I made to the configuration of the Canon EOS R camera with explanations why.
 date:
   published: November 16, 2019
+tag: photography
 ---
 
 ```toc

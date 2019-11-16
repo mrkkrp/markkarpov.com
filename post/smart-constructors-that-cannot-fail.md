@@ -3,6 +3,7 @@ title: Smart constructors that cannot fail
 desc: The post describes design of a library which implements refined types. Novelty of the library is that it allows us to establish meaningful connections between properties and do logical conclusions.
 date:
   published: June 16, 2018
+tag: haskell
 ---
 
 > Wicked.\

@@ -4,6 +4,7 @@ desc: Before you start writing your code using free monads read this, you may ch
 date:
   published: September 27, 2017
   updated: January 25, 2018
+tag: haskell
 ---
 
 Now and then blog posts explaining and promoting use of free monads pop up,

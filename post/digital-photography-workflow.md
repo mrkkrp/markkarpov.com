@@ -3,6 +3,7 @@ title: Digital photography workflow for Linux
 desc: Digital photgraphy workflow I use on Linux.
 date:
   published: November 16, 2019
+tag: photography
 ---
 
 ```toc

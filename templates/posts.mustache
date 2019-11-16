@@ -4,7 +4,11 @@
   </a>
 </h1>
 
-<table class="table table-striped">
+{{# tag }}
+<a href="/tag/{{ . }}.html" class="badge badge-primary">{{ . }}</a>
+{{/ tag }}
+
+<table class="table table-striped mt-3">
   {{# post }}
   <tr>
     <td>{{ published }}</td>

@@ -4,6 +4,7 @@ desc: A write-up about motivation and design of the forma library.
 date:
   published: May 2, 2017
   updated:   June 6, 2017
+tag: haskell
 ---
 
 This time I want to talk about something as boring as parsing and validating

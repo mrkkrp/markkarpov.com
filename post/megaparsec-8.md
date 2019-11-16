@@ -3,6 +3,7 @@ title: Megaparsec 8
 desc: New version of the parsing library has been released.
 date:
   published: November 7, 2019
+tag: haskell
 ---
 
 Another year has passed and it is time again for a new major version of

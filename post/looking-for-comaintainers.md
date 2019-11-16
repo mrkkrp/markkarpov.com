@@ -3,6 +3,7 @@ title: Looking for co-maintainers for my open-source projects
 desc: Looking for co-maintainers for my open-source projects.
 date:
   published: September 15, 2018
+tag: other
 ---
 
 *I originally posted this on Reddit, but in its infinite wisdom, it has

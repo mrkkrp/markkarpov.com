@@ -4,6 +4,7 @@ desc: Finally Megaparsec 5 is out, what's new?
 date:
   published: May 15, 2016
   updated:   June 1, 2017
+tag: haskell
 ---
 
 I'm happy to announce a new major release of Megaparsec.

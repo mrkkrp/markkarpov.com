@@ -3,6 +3,7 @@ title: Announcing Hasky Stack
 desc: Announing my new package for working with Haskell Tool Stack — Hasky Stack.
 date:
   published: August 13, 2017
+tag: haskell
 ---
 
 It's been a while since I released an Emacs package. The last one was

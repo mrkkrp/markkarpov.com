@@ -9,15 +9,16 @@
 
 module Main (main) where
 
-import Control.Lens hiding ((.=))
+import Control.Lens hiding ((.=), (<.>))
 import Control.Monad
 import Control.Monad.IO.Class
 import Data.Aeson
 import Data.Aeson.Lens
-import Data.List (sortOn, foldl1')
+import Data.List (sortOn, foldl1', foldl')
 import Data.List.NonEmpty (NonEmpty (..))
 import Data.Maybe (fromMaybe, mapMaybe)
 import Data.Ord (Down (..))
+import Data.Set (Set)
 import Data.Text (Text)
 import Data.Time
 import Development.Shake
@@ -27,6 +28,7 @@ import Text.URI (URI)
 import Text.URI.Lens (uriPath)
 import Text.URI.QQ (scheme)
 import qualified Data.HashMap.Strict  as HM
+import qualified Data.Set             as E
 import qualified Data.Text            as T
 import qualified Data.Text.IO         as T
 import qualified Data.Text.Lazy       as TL
@@ -57,7 +59,8 @@ outdir = "_build"
 
 data Route
   = Ins FilePattern (FilePath -> FilePath) -- ^ Produced from inputs
-  | Gen FilePath                           -- ^ Generated
+  | Gen FilePath                           -- ^ Generated, fixed file
+  | GenPat FilePath                        -- ^ Generated, pattern
 
 -- | This function allows to translate my clear vision of build system to
 -- his.
@@ -81,6 +84,10 @@ buildRoute (Gen outFile') f = do
   want [outFile]
   outFile %> \output ->
     f output output
+buildRoute (GenPat outFile') f = do
+  let outFile = outdir </> outFile'
+  outFile %> \output ->
+    f output output
 
 ----------------------------------------------------------------------------
 -- Routes
@@ -100,6 +107,7 @@ cssR
   , postsR
   -- , notesR
   , postR
+  , tagsR
   , mtutorialR
   , tutorialR
   -- , noteR
@@ -117,6 +125,7 @@ aboutR        = Ins "about.md" (-<.> "html")
 ossR          = Gen "oss.html"
 learnHaskellR = Gen "learn-haskell.html"
 postsR        = Gen "posts.html"
+tagsR         = GenPat "tag/*.html"
 -- notesR        = Gen "notes.html"
 postR         = Ins "post/*.md" (-<.> "html")
 mtutorialR    = Ins "megaparsec/*.md" (-<.> "html")
@@ -132,6 +141,8 @@ data PostInfo
   = InternalPost LocalInfo     -- ^ 'LocalInfo' injection
   | ExternalPost Day Text Text -- ^ Published, title, URL
   deriving (Eq, Show)
+
+-- | The instance is only used for atom feed.
 
 instance ToJSON PostInfo where
   toJSON (InternalPost localInfo) = toJSON localInfo
@@ -153,6 +164,7 @@ data LocalInfo = LocalInfo
   , localDesc       :: !Text
   , localDifficulty :: !(Maybe Int)
   , localFile       :: !FilePath
+  , localTags       :: Set Text
   } deriving (Eq, Show)
 
 instance FromJSON LocalInfo where
@@ -164,6 +176,7 @@ instance FromJSON LocalInfo where
     localDesc      <- o .: "desc"
     localDifficulty <- o .:? "difficulty"
     let localFile = ""
+    localTags <- E.fromList . T.words . T.toLower <$> (o .:? "tag" .!= "")
     return LocalInfo {..}
 
 instance ToJSON LocalInfo where
@@ -174,7 +187,8 @@ instance ToJSON LocalInfo where
     , "updated"           .= fmap renderDay localUpdated
     , "updated_iso8601"   .= renderIso8601 (localNormalizedUpdated info)
     , "desc"              .= localDesc
-    , "file"              .= localFile ]
+    , "file"              .= ("/" ++ localFile)
+    ]
 
 ----------------------------------------------------------------------------
 -- Menu items
@@ -242,14 +256,8 @@ main = shakeArgs shakeOptions $ do
           return v { localFile = mapOut post }
       gatherLocalInfo (Gen outFile) _ =
         fail $ "cannot gather local info about: " ++ outFile
-
-      gatherPosts = do
-        env <- commonEnv
-        ips <- fmap InternalPost
-          <$> gatherLocalInfo postR (Down . localPublished)
-        let ets = parseExternalPosts "external_posts" env
-        return $
-          sortOn (Down . postInfoPublished) (ips ++ ets)
+      gatherLocalInfo (GenPat pat) _ =
+        fail $ "cannot gather local info about: " ++ pat
 
       justFromTemplate
         :: Either Text MenuItem
@@ -263,6 +271,14 @@ main = shakeArgs shakeOptions $ do
           [ either (const env) (`menuItem` env) etitle
           , provideAs "title" (either id menuItemTitle etitle) ]
           output
+
+  allPosts <- fmap ($ ()) . newCache $ \() -> do
+    env <- commonEnv
+    ips <- fmap InternalPost
+      <$> gatherLocalInfo postR (Down . localPublished)
+    let ets = parseExternalPosts "external_posts" env
+    return $
+      sortOn (Down . postInfoPublished) (ips ++ ets)
 
   -- Page implementations
 
@@ -282,8 +298,9 @@ main = shakeArgs shakeOptions $ do
   buildRoute atomFeedR $ \_ output -> do
     env <- commonEnv
     ts  <- templates
-    ps  <- gatherPosts
-    let feedUpdated = renderIso8601 $ maximum (normalizedUpdated <$> ps)
+    ps <- allPosts
+    let feedUpdated = renderIso8601 $
+          maximum (normalizedUpdated <$> ps)
     renderAndWrite ts ["atom-feed"] Nothing
       [ env
       , provideAs "entry" ps
@@ -332,11 +349,28 @@ main = shakeArgs shakeOptions $ do
   buildRoute postsR $ \_ output -> do
     env <- commonEnv
     ts  <- templates
-    ps  <- gatherPosts
+    ps <- allPosts
+    let tags = getTags ps
+    need (tagToPath <$> E.toList tags)
     renderAndWrite ts ["posts","default"] Nothing
       [ menuItem Posts env
       , provideAs "post" ps
-      , mkTitle Posts ]
+      , provideAs "tag" tags
+      , mkTitle Posts
+      ]
+      output
+
+  buildRoute tagsR $ \_ output -> do
+    let tag = pathToTag output
+    env <- commonEnv
+    ts <- templates
+    ps <- allPosts
+    renderAndWrite ts ["posts","default"] Nothing
+      [ menuItem Posts env
+      , provideAs "post" (filterByTag tag ps)
+      , provideAs "tag" (getTags ps)
+      , mkTitle Posts
+      ]
       output
 
   buildRoute postR $ \input output -> do
@@ -456,6 +490,27 @@ menuItem item = over (key "main_menu" . _Array) . V.map $ \case
       then HM.insert "active" (Bool True) m
       else m
   v -> v
+
+getTags :: [PostInfo] -> Set Text
+getTags ps = foldl' f E.empty ps
+  where
+    f s = \case
+      InternalPost LocalInfo {..} -> E.union s localTags
+      ExternalPost {} -> s
+
+tagToPath :: Text -> FilePath
+tagToPath tag = outdir </> "tag" </> T.unpack tag <.> "html"
+
+pathToTag :: FilePath -> Text
+pathToTag path = T.pack . dropExtensions $
+  makeRelative (outdir </> "tag") path
+
+filterByTag :: Text -> [PostInfo] -> [PostInfo]
+filterByTag tag = filter f
+  where
+    f = \case
+      InternalPost LocalInfo {..} -> tag `elem` localTags
+      ExternalPost {} -> False
 
 getPostHelper :: Value -> FilePath -> Action (Value, TL.Text)
 getPostHelper env path = do

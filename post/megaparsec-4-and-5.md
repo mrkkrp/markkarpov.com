@@ -4,6 +4,7 @@ desc: What we have achieved with version 4 of Megaparsec and what is planned in 
 date:
   published: February 23, 2016
   updated:   June 1, 2017
+tag: haskell
 ---
 
 This post is an attempt to summarize progress made by the Megaparsec project

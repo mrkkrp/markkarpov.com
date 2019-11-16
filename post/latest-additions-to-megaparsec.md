@@ -4,6 +4,7 @@ desc: This blog post summarizes new features added to Megaparsec in the second h
 date:
   published: November 24, 2016
   updated:   June 1, 2017
+tag: haskell
 ---
 
 I think it's time for a little blog post summarizing progress of the

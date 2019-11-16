@@ -3,6 +3,7 @@ title: Working with text without pain
 desc: Hints how to make your typing experience more pleasant and protect yourself from RSI in the future.
 date:
   published: June 7, 2017
+tag: other
 ---
 
 For some time I wanted to write about how I do typing and text editing in

@@ -3,6 +3,7 @@ title: Migrating text metrics to pure Haskell
 desc: One more blog post about Haskell competing with C in speed.
 date:
   published: June 13, 2017
+tag: haskell
 ---
 
 It's been a while since I first published the [`text-metrics`](https://github.com/mrkkrp/text-metrics) package,

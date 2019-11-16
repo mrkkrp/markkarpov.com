@@ -5,6 +5,9 @@ date:
   published: November 16, 2019
 ---
 
+```toc
+```
+
 Recently I bought Canon EOS R. It is Canon's first full-frame mirrorless
 camera, relatively inexpensive, and most importantly it gives you access to
 the new wonderful RF glass.

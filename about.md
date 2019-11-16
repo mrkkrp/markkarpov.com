@@ -4,8 +4,8 @@ title: About me
 
 ![Mark Karpov](/static/img/my-photo.png 'my_photo')
 
-Hey there! I'm a professional Haskell developer and senior software engineer
-at [Tweag](https://tweag.io). I currently live in Paris, France.
+Hey there! I'm a Haskell developer and software engineer at
+[Tweag](https://tweag.io). I currently live in Paris, France.
 
 I authored a number of [open source projects](/oss.html) and several
 [tutorials](/learn-haskell.html). On this site I collected some stuff I do

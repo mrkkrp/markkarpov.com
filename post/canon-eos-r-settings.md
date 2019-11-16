@@ -52,6 +52,14 @@ pressing `M-Fn` button or `Q set` button, so I'll skip them here.
   relative, active touch area should be right. This way you can move the AF
   area using your right thumb while looking through the view finder.
 
+## Set-up
+
+This is the yellow menu with wrench icon.
+
+* `Beep` (page 3). A matter of taste, but I disable it because it is obvious
+  to me when the camera focuses. I don't like to go around beeping all the
+  time and distracting people (who I may want to shoot!).
+
 ## Custom functions
 
 This is the orange menu with camera icon with some sort of meter underneath.

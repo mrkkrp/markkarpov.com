@@ -338,14 +338,14 @@ rText0 = refined "foobar"
 
 -- In real programs use 'estMonadThrow' or similar, don't just blindly
 -- assume things!
-rText1 :: Refined '[GreaterThan 5 `Via` Length]
+rText1 :: Refined '[GreaterThan 5 `Via` Length] Text
 rText1 = assumeProp @(GreaterThan 5 `Via` Length) rText0
 ```
 
 How about:
 
 ```haskell
-rText :: Refined '[UriAbsolute `Via` IsURI]
+rText :: Refined '[UriAbsolute `Via` IsURI] Text
 ```
 
 We can establish properties of projections, or properties of any types that

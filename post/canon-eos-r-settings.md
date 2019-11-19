@@ -40,7 +40,7 @@ This is the red menu with little camera icon.
   valuable in certain situations. Instead, just shoot and concentrate on
   what you're doing in real time. When it's over you can check the results.
   Bad shots will be bad, good shots will be good, regardless of the time
-  when you check them, but you'll have more material to pick from! It's OK
+  when you check them, but you'll have more material to choose from! It's OK
   to have review enabled if you're shooting something that is not moving and
   where you can't really miss a moment.
 
@@ -85,10 +85,10 @@ This is the orange menu with camera icon with some sort of meter underneath.
   default it controls aperture which is the setting that I tweak most often.
   This is why I set the control ring on the lens to control aperture as
   well. You could think that duplicating functions like this is wasteful,
-  but really things you do often should be very easy and quick (the lens'
-  ring being the easiest thing to rotate IMO). Also, there is very limited
-  choice with regard to `Quick control dial` alternative functions so I just
-  keep it as is.
+  but things you do often should be very easy and quick (the lens' ring
+  being the easiest thing to rotate IMO). Also, there is very limited choice
+  with regard to `Quick control dial` alternative functions so I just keep
+  it as is.
 
 * `Customize M-Fn bar` (page 4). `M-Fn` bar is useful, but it doesn't do
   anything by default. I set it to control ISO. Truth to be told, I almost

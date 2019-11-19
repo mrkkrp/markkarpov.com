@@ -11,7 +11,7 @@ tag: photography
 
 A few weeks ago I started with photography as a hobbyist. As a software
 engineer, one of the first things I wanted to get right is the process I'm
-going to use for developing my photos and storing the raw files. One
+going to use for developing my photos and storing the RAW files. One
 constraint is that I use Linux and I'm not willing to touch Windows or buy a
 Mac, so this post is going to target people like me—Linux users who are
 technically-inclined enough to use something like version control system to

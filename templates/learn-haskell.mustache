@@ -1,8 +1,8 @@
 <h1>Learn Haskell</h1>
 
-<h2>Generic tutorials</h2>
+<h2>My tutorials</h2>
 <table class="table table-striped">
-  {{# generic_tutorials }}
+  {{# my_tutorials }}
   <tr>
     <td>{{ published }}</td>
     <td>
@@ -15,21 +15,8 @@
       {{/ url }}
     </td>
   </tr>
-  {{/ generic_tutorials }}
+  {{/ my_tutorials }}
 </table>
-
-<h2>Megaparsec tutorials</h2>
-<table class="table table-striped">
-  {{# megaparsec_tutorials }}
-  <tr>
-    <td>{{ published }}</td>
-    <td><a href="{{ file }}">{{ title }}</a></td>
-  </tr>
-  {{/ megaparsec_tutorials }}
-</table>
-<p>
-  The tutorials here have been updated to be used with Megaparsec 8.
-</p>
 
 <h2>Recommended tutorials</h2>
 <p>

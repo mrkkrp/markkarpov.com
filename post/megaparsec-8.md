@@ -238,4 +238,4 @@ Happy parsing!
 [patches]: https://github.com/mrkkrp/megaparsec/tree/31b917b1297950c22925f9ee7f7a588834293103/nix/patches
 [location-setting-example]: https://github.com/mmark-md/mmark/blob/8f5534d8068c2b7a139b893639ee5920bcaedd84/Text/MMark/Parser.hs#L787-L790
 [the-changelog]: https://github.com/mrkkrp/megaparsec/blob/master/CHANGELOG.md
-[official-tutorial]: https://markkarpov.com/megaparsec/megaparsec.html
+[official-tutorial]: https://markkarpov.com/tutorial/megaparsec.html

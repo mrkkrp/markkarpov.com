@@ -108,7 +108,6 @@ cssR
   -- , notesR
   , postR
   , tagsR
-  , mtutorialR
   , tutorialR
   -- , noteR
     :: Route
@@ -128,7 +127,6 @@ postsR        = Gen "posts.html"
 tagsR         = GenPat "tag/*.html"
 -- notesR        = Gen "notes.html"
 postR         = Ins "post/*.md" (-<.> "html")
-mtutorialR    = Ins "megaparsec/*.md" (-<.> "html")
 tutorialR     = Ins "tutorial/*.md" (-<.> "html")
 -- noteR         = Ins "notes/*.md" (-<.> "html")
 
@@ -162,7 +160,6 @@ data LocalInfo = LocalInfo
   , localPublished  :: !Day
   , localUpdated    :: !(Maybe Day)
   , localDesc       :: !Text
-  , localDifficulty :: !(Maybe Int)
   , localFile       :: !FilePath
   , localTags       :: Set Text
   } deriving (Eq, Show)
@@ -174,7 +171,6 @@ instance FromJSON LocalInfo where
     localUpdated   <- (o .: "date") >>= (.:? "updated")  >>=
       maybe (pure Nothing) (fmap Just . parseDay)
     localDesc      <- o .: "desc"
-    localDifficulty <- o .:? "difficulty"
     let localFile = ""
     localTags <- E.fromList . T.words . T.toLower <$> (o .:? "tag" .!= "")
     return LocalInfo {..}
@@ -334,14 +330,12 @@ main = shakeArgs shakeOptions $ do
   buildRoute learnHaskellR $ \_ output -> do
     env <- commonEnv
     ts  <- templates
-    mts <- gatherLocalInfo mtutorialR localDifficulty
     its <- fmap InternalPost <$>
       gatherLocalInfo tutorialR (Down . localPublished)
     let ets = parseExternalPosts "external_tutorials" env
     renderAndWrite ts ["learn-haskell","default"] Nothing
       [ menuItem LearnHaskell env
-      , provideAs "megaparsec_tutorials" mts
-      , provideAs "generic_tutorials"
+      , provideAs "my_tutorials"
           (sortOn (Down . postInfoPublished) (its ++ ets))
       , mkTitle LearnHaskell ]
       output
@@ -380,15 +374,6 @@ main = shakeArgs shakeOptions $ do
     (v, content) <- getPost input
     renderAndWrite ts ["post","default"] (Just content)
       [menuItem Posts env, v, mkLocation output]
-      output
-
-  buildRoute mtutorialR $ \input output -> do
-    env <- commonEnv
-    ts  <- templates
-    need [input]
-    (v, content) <- getPost input
-    renderAndWrite ts ["post","default"] (Just content)
-      [menuItem LearnHaskell env, v, mkLocation output]
       output
 
   buildRoute tutorialR $ \input output -> do

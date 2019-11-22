@@ -12,15 +12,15 @@ title: Resume
 ## Summary
 
 I'm a software engineer specializing in functional programming using strong
-static type systems, in Haskell in particular. I have worked many years as a
-full-time consultant helping our clients design and build correct, robust,
-and maintainable software. Being a consultant allowed me to participate in
-more projects that a typical software engineer gets to work on. I've
-developed the ability for critical thinking, making wise trade-offs,
-analyzing and exploiting advantages of various technologies to satisfy needs
-of business. I also learned how to handle different personalities and
-collaborate with diverse teams. My personal projects include high-profile
-Haskell libraries, tutorials, and a technical blog.
+static type systems. I have worked many years as a full-time consultant
+helping our clients design and build correct, robust, and maintainable
+software. Being a consultant allowed me to participate in more projects that
+a typical software engineer gets to work on. I've developed the ability for
+critical thinking, making wise trade-offs, analyzing and exploiting
+advantages of various technologies to satisfy needs of business. I also
+learned how to handle different personalities and collaborate with diverse
+teams. My personal projects include high-profile Haskell libraries,
+tutorials, and a technical blog.
 
 ## Professional experience
 
@@ -40,8 +40,8 @@ Haskell libraries, tutorials, and a technical blog.
 
 * [Megaparsec](https://github.com/mrkkrp/megaparsec)—Industrial-strength
   monadic parser combinator library.
-* [MMark](https://github.com/mmark-md/mmark)—Strict markdown processor for
-  writers.
+* [Ormolu](https://github.com/tweag/ormolu)—A formatter for Haskell source
+  code.
 * [Req](https://github.com/mrkkrp/req)—Easy-to-use, type-safe, expandable,
   high-level HTTP library.
 * [Zip](https://github.com/mrkkrp/zip)—Efficient library for manipulating
@@ -52,12 +52,10 @@ The full list can be found at <https://markkarpov.com/oss.html>.
 ## Writing
 
 * I've authored a number of tutorials as part of my job and on my own, see
-  e.g. [“Template Haskell
-  tutorial”](https://markkarpov.com/tutorial/th.html), the full list is
-  available at <https://markkarpov.com/learn-haskell.html>.
+  <https://markkarpov.com/learn-haskell.html>.
 * Blog posts are available at <https://markkarpov.com/posts.html>, see e.g.
-  [“Free monad considered
-  harmful”](https://markkarpov.com/post/free-monad-considered-harmful.html).
+  [“Why Haskell is
+  important”](https://www.tweag.io/posts/2019-09-06-why-haskell-is-important.html).
 
 ## Technologies
 

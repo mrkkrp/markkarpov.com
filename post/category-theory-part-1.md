@@ -78,9 +78,7 @@ object `$B$` is codomain of some map, then the map should be defined for
 every value `$a$` in `$A$` (i.e. it should “use” all input values), but not
 necessarily it should map to all values in `$B$`. This may seem obvious, but
 I want to put it here explicitly, because I found this “rule” useful for
-understanding some conclusions in the book many times. Of course, there can
-be only one element in codomain corresponding to a given element in domain,
-because otherwise the whole mapping would be ambiguous.
+understanding some conclusions in the book many times.
 
 At this point it should be clear that category theory is a very abstract
 thing. If we study abstract transformations of abstract objects, then

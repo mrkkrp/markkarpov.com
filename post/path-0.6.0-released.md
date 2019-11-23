@@ -18,9 +18,9 @@ changes in the latest versions.
 The `path` package is currently the most popular way to work with typed
 paths in Haskell. “Typed” means here that file paths are the same `FilePath`
 strings internally (for the ease of interaction with the existing “vanilla”
-paths and libraries), but only can be created through validating smart
-constructors which attach some important information to them at the type
-level.
+paths and libraries), but only can be created through validating [smart
+constructors][smart-constructors] which attach some important information to
+them at the type level.
 
 The main type is `Path b t` where
 
@@ -158,3 +158,5 @@ contributions.
 I believe that the `path` ecosystem has recently reached a new level of
 maturity. If you don't yet use `path`, maybe now is the time to give it a
 try!
+
+[smart-constructors]: /post/smart-constructors-that-cannot-fail.html

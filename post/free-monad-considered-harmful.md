@@ -253,14 +253,15 @@ instance (HasMyEnvA r, HasMyEnvB r) => MonadFoo (ReaderT r IO) where
   -- …
 ```
 
-The approach with using this simple `ReaderT`-based stack for things that
-actually run real actions is nice as explained in the post I link to above.
-It's exception-friendly because of the stateless nature of the reader monad
-transformer and the context is easy to manipulate. In particular, I advise
-to always use lenses with this setup because with them it's possible to
-change (not only read) a specific component of the abstract `r` thing, so
-you can have a region of code with changed environment using `local` with
-`Lens'` and `withReader` with the more general `Lens` type.
+The approach with using [this simple `ReaderT`-based
+stack][monads-of-haskell] for things that actually run real actions is nice
+as explained in the post I link to above. It's exception-friendly because of
+the stateless nature of the reader monad transformer and the context is easy
+to manipulate. In particular, I advise to always use lenses with this setup
+because with them it's possible to change (not only read) a specific
+component of the abstract `r` thing, so you can have a region of code with
+changed environment using `local` with `Lens'` and `withReader` with the
+more general `Lens` type.
 
 Note that if performance is of any concern, it's possible to use
 `INLINEABLE` and `SPECIALIZE` pragmas to squeeze out any undesirable
@@ -346,8 +347,10 @@ representation quite straightforwardly.
 
 ## Conclusion
 
-Of course the title is a click bait and I do not mean to be so categorical.
-Free monads do have their uses, but in most cases I'd think twice before
-committing to that style of programming because it's somewhat tedious and
-inefficient (unless you're careful). So the post is just a fair warning and
-a demonstration of alternative solutions.
+Of course the title is a click bait and I do not mean to be so
+*categorical*. Free monads do have their uses, but in most cases I'd think
+twice before committing to that style of programming because it's somewhat
+tedious and inefficient (unless you're careful). So the post is just a fair
+warning and a demonstration of alternative solutions.
+
+[monads-of-haskell]: /post/the-monads.html

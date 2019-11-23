@@ -2526,8 +2526,8 @@ In 99% of cases you will only need this one function.
 ### Catching parse errors in running parser
 
 Another useful feature of `megaparsec` is that it is possible to “catch” a
-parse error, alter it in some way, and then re-throw, just like with
-exceptions. This is enabled by the `observing` primitive:
+parse error, alter it in some way, and then re-throw, [just like with
+exceptions][exceptions]. This is enabled by the `observing` primitive:
 
 ```haskell
 -- | @'observing' p@ allows to “observe” failure of the @p@ parser, should
@@ -3181,6 +3181,7 @@ stream.
 [more-speed-more-power-hope]: https://markkarpov.com/post/megaparsec-more-speed-more-power.html#there-is-hope
 [megaparsec-tests]: https://github.com/mrkkrp/megaparsec/tree/master/megaparsec-tests/tests
 [hspec-megaparsec-tests]: https://github.com/mrkkrp/hspec-megaparsec/blob/master/tests/Main.hs
+[exceptions]: /tutorial/exceptions.html
 
 ***
 

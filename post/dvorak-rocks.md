@@ -38,14 +38,14 @@ won't be able to ever beat this personal record. Well, I have to say yes,
 *not with QWERTY*. Now, after another 15 days I type 70 wpm and I feel like
 I will be able to do 80 and maybe 100 someday[1](footnote:1).
 
-But the main thing about Dvorak is comfort, of course. It just feels so much
-better. You know, like proper mechanical keyboard feels better. Like modal
-editing feels better than non-modal. Hands move so natural and with
-surprising accuracy, text just flows… Now combination of modal editing and
-Dvorak has eliminated any discomfort for me even when I use laptop keyboard.
-I can type a lot and I cannot reach the point when my hands are tired. Old
-weird sensations in my hands have gone. Now I just see how *proper* touch
-typing is done.
+But the main thing about Dvorak is comfort, of course. It just [feels so
+much better][without-pain]. You know, like proper mechanical keyboard feels
+better. Like modal editing feels better than non-modal. Hands move so
+natural and with surprising accuracy, text just flows… Now combination of
+modal editing and Dvorak has eliminated any discomfort for me even when I
+use laptop keyboard. I can type a lot and I cannot reach the point when my
+hands are tired. Old weird sensations in my hands have gone. Now I just see
+how *proper* touch typing is done.
 
 ***
 
@@ -53,3 +53,5 @@ typing is done.
 
   1. And yes, now in 2017, I do type 80 wpm and I feel I have not reached my
      maximal speed yet.
+
+[without-pain]: /post/working-with-text-without-pain.html

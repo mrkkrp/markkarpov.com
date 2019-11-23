@@ -80,7 +80,7 @@ up with a newer model, **Kinesis Advantage 2 QD**
 
 I bought this one too as soon as it became available. The “QD” part in the
 name tells us that this is a version with dual-legended QWERTY/Dvorak key
-caps, which is exactly what I need as a Dvorak typist.
+caps, which is exactly what I need as a [Dvorak typist][dvorak].
 
 This keyboard satisfies all my requirements. All the keys are mechanical,
 including those smaller function keys. In addition to that it's fully
@@ -166,8 +166,9 @@ is, normal typing experience.
 ## Keyboard layout
 
 QWERTY is a terrible historical accident, but switching to an alternative
-keyboard layout such as Dvorak is still optional in my opinion, provided you
-have a good keyboard and do not ever hold any keys/use key chords.
+keyboard layout such as [Dvorak][dvorak] is still optional in my opinion,
+provided you have a good keyboard and do not ever hold any keys/use key
+chords.
 
 However, Dvorak will make typing more comfortable. I can confirm this as a
 person [who switched a year ago](/post/dvorak-rocks.html). I still remember
@@ -185,3 +186,4 @@ pains in hands from others, I usually try to convince them to at least buy
 an ergonomic keyboard. Now I have the whole article to send them to!
 
 [kbd]: kbd:
+[dvorak]: /post/dvorak-rocks.html

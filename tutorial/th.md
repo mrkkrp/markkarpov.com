@@ -40,9 +40,10 @@ Let's list some uses of TH:
 
 * *Automatic deriving of type class instances* is still perhaps the most
   common use case for TH. Even though the same problem can often be
-  addressed by *generics*, they are known to make compilation times longer
-  (compared to TH-based solutions), so TH is still the preferred method of
-  automatic instance derivation in libraries like `aeson` and `lens`.
+  [addressed by generics][generics], they are known to make compilation
+  times longer (compared to TH-based solutions), so TH is still the
+  preferred method of automatic instance derivation in libraries like
+  `aeson` and `lens`.
 
 * *Creation of TH DSLs* that are integrated into systems built in Haskell.
   Examples of such DLSs are the language for model declaration used in
@@ -1291,3 +1292,4 @@ Good luck!
 [viewing-th-code]: https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/glasgow_exts.html#viewing-template-haskell-generated-code
 [orphan-instance]: https://wiki.haskell.org/Orphan_instance
 [existentials]: /post/existential-quantification.html
+[generics]: /tutorial/generics.html

@@ -224,9 +224,10 @@ unSelectedName (SelectedName txt) = txt
 ```
 
 I just don't export the `SelectedName` constructor and the only way to get a
-`SelectedName` is via the `pick` smart constructor which also attaches the
-tag in the form of a set of field names at the type level to that value. We
-now statically know that given `Text` value is in that set.
+`SelectedName` is via the `pick` [smart constructor][smart-constructors]
+which also attaches the tag in the form of a set of field names at the type
+level to that value. We now statically know that given `Text` value is in
+that set.
 
 We need now to index `BranchState` and `FormParser` by that collection of
 names too:
@@ -513,3 +514,5 @@ I'm yet to use `forma` in a large project. I'm playing with replacing
 `yesod-form` with `forma` in a personal project, and chances are guys at
 work will use it for a new greenfield project we have, so after a while I
 should have some feedback about this design.
+
+[smart-constructors]: /post/smart-constructors-that-cannot-fail.html

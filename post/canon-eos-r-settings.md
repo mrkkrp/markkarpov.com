@@ -44,6 +44,12 @@ This is the red menu with little camera icon.
   to have review enabled if you're shooting something that is not moving and
   where you can't really miss a moment.
 
+* `ISO speed settings` (page 3). In the `ISO speed range` sub-menu, it's a
+  good idea to decrease the lower limit for ISO to 50 (marked as L) instead
+  of the default 100. Many people do not know that it is possible to unlock
+  lower ISO or their cameras. Sometimes it is handy to be able to use 50
+  when there is too much light.
+
 ## Auto-focus
 
 This is the purple menu with the two letters AF. There are a few settings

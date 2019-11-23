@@ -97,22 +97,22 @@ This is the orange menu with camera icon with some sort of meter underneath.
 
 * `Customize dials` (page 4). The two standard dials are OK, except the
   so-called `Quick control dial` (closer to you) is harder to rotate and by
-  default it controls aperture which is the setting that I tweak most often.
-  This is why I set the control ring on the lens to control aperture as
-  well. You could think that duplicating functions like this is wasteful,
-  but things you do often should be very easy and quick (the lens' ring
-  being the easiest thing to rotate IMO). Also, there is very limited choice
-  with regard to `Quick control dial` alternative functions so I just keep
-  it as is.
+  default it controls aperture which is the setting that [I tweak most
+  often][exposure]. This is why I set the control ring on the lens to
+  control aperture as well. You could think that duplicating functions like
+  this is wasteful, but things you do often should be very easy and quick
+  (the lens' ring being the easiest thing to rotate IMO). Also, there is
+  very limited choice with regard to `Quick control dial` alternative
+  functions so I just keep it as is.
 
 * `Customize M-Fn bar` (page 4). `M-Fn` bar is useful, but it doesn't do
   anything by default. I set it to control ISO. Truth to be told, I almost
-  always use `Auto-ISO` anyway because adjusting it manually is a waste of
-  time and you'll be missing shots. Modern cameras can figure out ISO pretty
-  well these days, so you need to think about fewer things when shooting. I
-  disable the safety lock, because unlocking it takes time. If you
-  accidentally touch it once and tweak ISO, it's not the end of the world,
-  you can bring it back.
+  [always use `Auto-ISO`][exposure] anyway because adjusting it manually is
+  a waste of time and you'll be missing shots. Modern cameras can figure out
+  ISO pretty well these days, so you need to think about fewer things when
+  shooting. I disable the safety lock, because unlocking it takes time. If
+  you accidentally touch it once and tweak ISO, it's not the end of the
+  world, you can bring it back.
 
 ## Conclusion
 
@@ -120,3 +120,4 @@ There are many more settings to tweak in certain situations, but these I
 find essential for quick operation at all times. Happy shooting!
 
 [workflow]: /post/digital-photography-workflow.html
+[exposure]: /post/exposure.html

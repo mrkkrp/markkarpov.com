@@ -13,8 +13,7 @@ book in the last year, other authors agreed to let me publish the text as a
 standalone tutorial so people can benefit at least from this part of our
 work.*
 
-*There is a Japanese translation of this article:
-<https://haskell.e-bigmoon.com/posts/2019/07-14-megaparsec-tutorial.html>*.
+[Japanese translation][japanese], [Chinese translation][chinese].
 
 ```toc
 ```
@@ -3170,6 +3169,8 @@ In other words, we have now a fully functional parser that parses a custom
 stream.
 
 [ih]: https://intermediatehaskell.com/
+[japanese]: https://haskell.e-bigmoon.com/posts/2019/07-14-megaparsec-tutorial.html
+[chinese]: https://blog.yzyzsun.me/megaparsec/
 [parsec]: https://hackage.haskell.org/package/parsec
 [attoparsec]: https://hackage.haskell.org/package/attoparsec
 [trifecta]: https://hackage.haskell.org/package/trifecta

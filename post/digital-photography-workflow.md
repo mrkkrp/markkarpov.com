@@ -26,9 +26,9 @@ reason to shoot in JPEG alone or combined with RAW.
 
 The problem with RAW though, is that it's a term which does not map to a
 single file format. In fact, almost every camera has its own RAW format. For
-example, my Canon EOS R writes files with `CR3` extension which is different
-from `CR2` older Canon cameras produced and is also different from the
-formats other camera manufactures use.
+example, my [Canon EOS R][eos-r-settings] writes files with `CR3` extension
+which is different from `CR2` older Canon cameras produced and is also
+different from the formats other camera manufactures use.
 
 It's not a big deal for users of proprietary software like [Abobe
 Lightroom][lightroom] on Windows or Mac because Canon promptly gives those
@@ -187,6 +187,7 @@ GitHub works as a reliable backup in the cloud. Even if my computer gets
 lost or breaks restoring my data is as easy as cloning the repository again
 and re-rendering the JPEG files.
 
+[eos-r-settings]: /post/canon-eos-r-settings.html
 [darktable]: https://www.darktable.org
 [lightroom]: https://www.adobe.com/products/photoshop-lightroom.html
 [dng]: https://helpx.adobe.com/photoshop/digital-negative.html

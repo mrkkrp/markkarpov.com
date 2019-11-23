@@ -376,9 +376,10 @@ throwing, we know that every exception is always wrapped in `SomeException`.
 data SomeException = forall e. Exception e => SomeException e
 ```
 
-It is an existential wrapper around instances of `Exception`. It hides
-information about the type `e` stored inside `SomeException`. The only thing
-we know about `e` is that it is an instance of `Exception`.
+It is an [existential wrapper][existentials] around instances of
+`Exception`. It hides information about the type `e` stored inside
+`SomeException`. The only thing we know about `e` is that it is an instance
+of `Exception`.
 
 The throwing part should be clear now, but what about catching? We want to
 be able to say “I want to catch only arithmetic exceptions, like division by
@@ -1655,3 +1656,4 @@ of classes from `exceptions`. We recommend just using the
 [general-bracket]: https://hackage.haskell.org/package/exceptions/docs/Control-Monad-Catch.html#v:generalBracket
 [safe-exceptions]: https://hackage.haskell.org/package/safe-exceptions
 [safe-exceptions-readme]: https://github.com/fpco/safe-exceptions#readme
+[existentials]: /post/existential-quantification.html

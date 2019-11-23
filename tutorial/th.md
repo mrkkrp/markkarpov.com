@@ -426,8 +426,8 @@ runQ :: Quasi m => Q a -> m a
 capabilities for meta-programming we have mentioned in the beginning when we
 introduced `Q`. You can click that link and take a look for yourself.
 
-In fact, `Q a` is just an existential wrapper around `Quasi m => m a` under
-the hood:
+In fact, `Q a` is just [an existential wrapper][existentials] around `Quasi
+m => m a` under the hood:
 
 ```haskell
 newtype Q a = Q { unQ :: forall m. Quasi m => m a }
@@ -1290,3 +1290,4 @@ Good luck!
 [typed-th]: https://www.cs.drexel.edu/~mainland/2013/05/31/type-safe-runtime-code-generation-with-typed-template-haskell/
 [viewing-th-code]: https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/glasgow_exts.html#viewing-template-haskell-generated-code
 [orphan-instance]: https://wiki.haskell.org/Orphan_instance
+[existentials]: /post/existential-quantification.html

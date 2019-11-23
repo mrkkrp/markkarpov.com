@@ -1250,7 +1250,7 @@ data List a b = List ([a] -> Maybe (b, [a])) [a]
 `[a]` here doesn't really ever change according to our idea of not touching
 it. Its type should be just the same as the type of the argument its
 companion function `[a] -> Maybe (b, [a])` consumes. We could hide it then
-using existential quantification:
+using [existential quantification][existentials]:
 
 ```haskell
 data List b = forall a. List ([a] -> Maybe (b, [a])) [a]
@@ -1674,3 +1674,4 @@ of an improvement in this case.
 [stream-fusion]: http://community.haskell.org/~duncan/thesis.pdf
 [vector]: https://hackage.haskell.org/package/vector
 [text]: https://hackage.haskell.org/package/text
+[existentials]: /post/existential-quantification.html

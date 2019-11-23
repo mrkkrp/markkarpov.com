@@ -26,13 +26,13 @@ Press the `Menu` button to access the settings.
 This is the red menu with little camera icon.
 
 * `Image quality` (page 1). I set it to RAW. RAW files contain raw data from
-  the sensor. It allows you to get better results during post-production
-  phase than with JPEG which is a lossy, compressed image format. JPEG files
-  can be obtained from RAW files during development of digital negatives
-  which is something you probably will be doing anyway if you've bought this
-  sort of camera. I see no point in duplicating information by shooting in
-  both RAW and JPEG. There is no added safety either because both types of
-  files are stored on the same card.
+  the sensor. It allows you to get better results during [post-production
+  phase][workflow] than with JPEG which is a lossy, compressed image format.
+  JPEG files can be obtained from RAW files during development of digital
+  negatives which is something you probably will be doing anyway if you've
+  bought this sort of camera. I see no point in duplicating information by
+  shooting in both RAW and JPEG. There is no added safety either because
+  both types of files are stored on the same card.
 
 * `Image review` (page 1). I turn it off. Why? With mirrorless camera you
   get pretty good idea of what you're going to get when you press the
@@ -103,3 +103,5 @@ This is the orange menu with camera icon with some sort of meter underneath.
 
 There are many more settings to tweak in certain situations, but these I
 find essential for quick operation at all times. Happy shooting!
+
+[workflow]: /post/digital-photography-workflow.html

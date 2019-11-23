@@ -1,5 +1,5 @@
 ---
-title: Exceptions tutorial from IH book
+title: Exceptions tutorial
 desc: This is a tutorial about exceptions in Haskell which originally was written as a chapter for the Intermediate Haskell book.
 date:
   published: March 3, 2019

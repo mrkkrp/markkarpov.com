@@ -1,5 +1,5 @@
 ---
-title: Megaparsec tutorial from IH book
+title: Megaparsec tutorial
 desc: This is a Megaparsec tutorial which originally was written as a chapter for the Intermediate Haskell book.
 difficulty: 1
 date:

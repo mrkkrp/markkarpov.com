@@ -2646,7 +2646,8 @@ idiom is quite useful, so there is even a non-primitive helper called
 region :: MonadParsec e s m
   => (ParseError s e -> ParseError s e)
      -- ^ How to process 'ParseError's
-  -> m a               -- ^ The “region” that the processing applies to
+  -> m a
+     -- ^ The “region” that the processing applies to
   -> m a
 region f m = do
   r <- observing m
@@ -3137,7 +3138,7 @@ exampleStream :: MyStream
 exampleStream = MyStream
   "5 + 6"
   [ at 1 1 (Int 5)
-  , at 1 3 Div         -- (1)
+  , at 1 3 Plus         -- (1)
   , at 1 5 (Int 6)
   ]
   where

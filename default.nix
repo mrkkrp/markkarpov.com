@@ -16,6 +16,7 @@ let
     "^resume$" "^resume/resume\.md$"
     "^static.*$"
     "^templates.*$"
+    "^translation.*$"
     "^tutorial.*$"
     "^about\.md$"
   ];

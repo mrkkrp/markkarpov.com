@@ -1,5 +1,12 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html
+  {{# to_lang }}
+  lang="{{ . }}"
+  {{/ to_lang }}
+  {{^ to_lang }}
+  lang="en"
+  {{/ to_lang }}
+  dir="ltr">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">

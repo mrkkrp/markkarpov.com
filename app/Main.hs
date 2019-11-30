@@ -110,11 +110,11 @@ cssR,
   ossR,
   learnHaskellR,
   postsR,
-  -- , notesR
+  translationsR,
   postR,
   tagsR,
-  tutorialR ::
-    -- , noteR
+  tutorialR,
+  translationR ::
     Route
 cssR = Ins "static/css/*.css" id
 jsR = Ins "static/js/*.js" id
@@ -129,12 +129,11 @@ aboutR = Ins "about.md" (-<.> "html")
 ossR = Gen "oss.html"
 learnHaskellR = Gen "learn-haskell.html"
 postsR = Gen "posts.html"
+translationsR = Gen "translations.html"
 tagsR = GenPat "tag/*.html"
--- notesR        = Gen "notes.html"
 postR = Ins "post/*.md" (-<.> "html")
 tutorialR = Ins "tutorial/*.md" (-<.> "html")
-
--- noteR         = Ins "notes/*.md" (-<.> "html")
+translationR = Ins "translation/*.md" (-<.> "html")
 
 ----------------------------------------------------------------------------
 -- Post info
@@ -169,7 +168,9 @@ data LocalInfo
         localUpdated :: !(Maybe Day),
         localDesc :: !Text,
         localFile :: !FilePath,
-        localTags :: Set Text
+        localTags :: Set Text,
+        localFromLang :: !(Maybe Lang),
+        localToLang :: !(Maybe Lang)
       }
   deriving (Eq, Show)
 
@@ -183,6 +184,8 @@ instance FromJSON LocalInfo where
     localDesc <- o .: "desc"
     let localFile = ""
     localTags <- E.fromList . T.words . T.toLower <$> (o .:? "tag" .!= "")
+    localFromLang <- o .:? "from_lang"
+    localToLang <- o .:? "to_lang"
     return LocalInfo {..}
 
 instance ToJSON LocalInfo where
@@ -194,8 +197,28 @@ instance ToJSON LocalInfo where
         "updated" .= fmap renderDay localUpdated,
         "updated_iso8601" .= renderIso8601 (localNormalizedUpdated info),
         "desc" .= localDesc,
-        "file" .= ("/" ++ localFile)
+        "file" .= ("/" ++ localFile),
+        "from_lang" .= toJSON localFromLang,
+        "to_lang" .= toJSON localToLang
       ]
+
+-- | Languages.
+data Lang = EN | FR | RU
+  deriving (Eq, Show)
+
+instance FromJSON Lang where
+  parseJSON = withText "language" $ \txt ->
+    case T.toLower txt of
+      "en" -> return EN
+      "fr" -> return FR
+      "ru" -> return RU
+      _ -> fail "unrecognized language"
+
+instance ToJSON Lang where
+  toJSON x = toJSON $ case x of
+    EN -> "en" :: Text
+    FR -> "fr"
+    RU -> "ru"
 
 ----------------------------------------------------------------------------
 -- Menu items
@@ -203,9 +226,8 @@ instance ToJSON LocalInfo where
 -- | Menu items.
 data MenuItem
   = Posts
-  | Notes
+  | Translations
   | LearnHaskell
-  | OSS
   | Resume
   | About
   deriving (Eq, Ord, Show, Enum, Bounded)
@@ -214,9 +236,8 @@ data MenuItem
 menuItemTitle :: MenuItem -> Text
 menuItemTitle = \case
   Posts -> "Posts"
-  Notes -> "Notes"
+  Translations -> "Translations"
   LearnHaskell -> "Learn Haskell"
-  OSS -> "OSS"
   Resume -> "Resume"
   About -> "About"
 
@@ -333,7 +354,7 @@ main = shakeArgs shakeOptions $ do
       [menuItem About env, v]
       output
   buildRoute ossR $ \_ output ->
-    justFromTemplate (Right OSS) "oss" output
+    justFromTemplate (Left "blah") "oss" output
   buildRoute learnHaskellR $ \_ output -> do
     env <- commonEnv
     ts <- templates
@@ -366,6 +387,21 @@ main = shakeArgs shakeOptions $ do
         provideAs "post" ps,
         provideAs "tag" tags,
         mkTitle Posts
+      ]
+      output
+  buildRoute translationsR $ \_ output -> do
+    env <- commonEnv
+    ts <- templates
+    ps <-
+      fmap InternalPost
+        <$> gatherLocalInfo translationR (Down . localPublished)
+    renderAndWrite
+      ts
+      ["translations", "default"]
+      Nothing
+      [ menuItem Translations env,
+        provideAs "translations" ps,
+        mkTitle Translations
       ]
       output
   buildRoute tagsR $ \_ output -> do
@@ -405,25 +441,20 @@ main = shakeArgs shakeOptions $ do
       (Just content)
       [menuItem LearnHaskell env, v, mkLocation output]
       output
-
--- buildRoute notesR $ \_ output -> do
---   env <- commonEnv
---   ts  <- templates
---   es  <- gatherLocalInfo noteR (Down . localPublished)
---   renderAndWrite ts ["notes","default"] Nothing
---     [ menuItem Notes env
---     , provideAs "post" es
---     , mkTitle Notes ]
---     output
-
--- buildRoute noteR $ \input output -> do
---   env <- commonEnv
---   ts  <- templates
---   need [input]
---   (v, content) <- getPost input
---   renderAndWrite ts ["post","default"] (Just content)
---     [menuItem Notes env, v, mkLocation output]
---     output
+  buildRoute translationR $ \input output -> do
+    env <- commonEnv
+    ts <- templates
+    need [input]
+    (v, content) <- getPost input
+    renderAndWrite
+      ts
+      ["post", "default"]
+      (Just content)
+      [ menuItem Translations env,
+        v,
+        mkLocation output
+      ]
+      output
 
 ----------------------------------------------------------------------------
 -- Custom MMark extensions

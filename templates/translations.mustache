@@ -1,0 +1,13 @@
+<h1>Translations</h1>
+
+<table class="table table-striped">
+  {{# translations }}
+  <tr>
+    <td>{{ published }}</td>
+    <td><code>{{ from_lang }}</code> &#8594; <code>{{ to_lang }}</code></td>
+    <td>
+      <a href="{{ file }}">{{ title }}</a>
+    </td>
+  </tr>
+  {{/ translations }}
+</table>

@@ -3,6 +3,7 @@ title: Digital photography workflow for Linux
 desc: Digital photgraphy workflow I use on Linux.
 date:
   published: November 16, 2019
+  updated: December 4, 2019
 tag: photography
 ---
 
@@ -130,10 +131,13 @@ So here is how to set things up:
 
 1. Install `git` and `git-lfs` from the repositories of your distribution.
 
-2. Register on [GitHub][github]. Create a repository there. Now GitHub
+2. Do `git lfs install` and make sure it finished successfully. This will
+   add the necessary entries to your `.gitconfig`.
+
+3. Register on [GitHub][github]. Create a repository there. Now GitHub
    provides unlimited private repositories for free.
 
-3. Clone the repository:
+4. Clone the repository:
 
    ```
    $ git clone git@github.com:user-name/repo-name.git destination-folder
@@ -142,9 +146,9 @@ So here is how to set things up:
    This will require first setting your SSH key on GitHub (I will not cover
    it here).
 
-4. Copy your files in the repository.
+5. Copy your files in the repository.
 
-5. Create `.gitignore` file which will disable tracking of the rendered
+6. Create `.gitignore` file which will disable tracking of the rendered
    files. This means that it could contain, e.g. something like
 
    ```
@@ -152,7 +156,7 @@ So here is how to set things up:
    *.jpeg
    ```
 
-6. Tell Git to treat your DNG files specially by using `git-lfs`:
+7. Tell Git to treat your DNG files specially by using `git-lfs`:
 
    ```
    $ git lfs track "*.dng"
@@ -160,7 +164,7 @@ So here is how to set things up:
 
    this will create a `gitattributes` file.
 
-7. Add all the files, commit them, and push to GitHub:
+8. Add all the files, commit them, and push to GitHub:
 
    ```
    $ git add -A
@@ -172,7 +176,7 @@ So here is how to set things up:
    you need to deal with data that changes over time. You can also keep all
    sorts of files and notes together with your photos this way.
 
-8. GitHub [says][github-lfs-limits] it allows us to use 1Gb of storage for
+9. GitHub [says][github-lfs-limits] it allows us to use 1Gb of storage for
    free and then you can pay 5$ per month for 50 Gb. Which is OK if you ask
    me.
 

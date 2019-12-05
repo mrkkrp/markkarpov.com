@@ -54,7 +54,7 @@ let
       cp *-resume.pdf $out/resume.pdf
     '';
   };
-  site = pkgs.stdenv.mkDerivation {
+  site = doValidation: pkgs.stdenv.mkDerivation {
     name = "mk-com";
     buildInputs = [
       pkgs.glibcLocales
@@ -64,13 +64,16 @@ let
     buildPhase = ''
       cp ${resume}/resume.pdf resume/resume.pdf
       ${app}/bin/mk-com
-      ${html5validator}/bin/html5validator --root _build/ --show-warnings
-    '';
+    '' + (if doValidation
+            then "${html5validator}/bin/html5validator --root _build/ --show-warnings"
+            else "");
     installPhase = ''
       mkdir "$out"
       cp -r _build "$out/_build"
     '';
   };
 in {
-   inherit app resume site;
+   inherit app resume;
+   site = site true;
+   site-quick = site false;
 }

@@ -22,8 +22,8 @@ lives in the desert.
 
 ## OCaml and Haskell
 
-OCaml and Haskell may be closer to each other than to any other popular
-programming languages, some differences are:
+[OCaml and Haskell][haskell-vs-ocaml] may be closer to each other than to
+any other popular programming languages, some differences are:
 
 * OCaml is strict, while Haskell is ~~lazy~~, err… non-strict.
 * OCaml has polymorphic variants and objects, which are essentially a form
@@ -290,6 +290,7 @@ useful). If you want to learn OCaml or just read about its features, try
 [*Real World OCaml*][real-world-ocaml].
 
 [retreat]: http://retreat.mirage.io/
+[haskell-vs-ocaml]: /post/haskell-vs-ocaml.html
 [functors-and-type-abstraction]: http://caml.inria.fr/pub/docs/manual-ocaml/moduleexamples.html#sec24
 [backpack]: https://gitlab.haskell.org/ghc/ghc/wikis/backpack
 [type-classes-vs-the-world]: https://www.youtube.com/watch?v=hIZxTQP1ifo

@@ -1,52 +1,54 @@
-{-# LANGUAGE DataKinds           #-}
-{-# LANGUAGE LambdaCase          #-}
-{-# LANGUAGE OverloadedStrings   #-}
-{-# LANGUAGE PolyKinds           #-}
-{-# LANGUAGE QuasiQuotes         #-}
-{-# LANGUAGE RankNTypes          #-}
-{-# LANGUAGE RecordWildCards     #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE PolyKinds #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Main (main) where
+module Main
+  ( main,
+  )
+where
 
 import Control.Lens hiding ((.=), (<.>))
 import Control.Monad
 import Control.Monad.IO.Class
 import Data.Aeson
 import Data.Aeson.Lens
-import Data.List (sortOn, foldl1', foldl')
+import qualified Data.HashMap.Strict as HM
+import Data.List (foldl', foldl1', sortOn)
 import Data.List.NonEmpty (NonEmpty (..))
 import Data.Maybe (fromMaybe, mapMaybe)
 import Data.Ord (Down (..))
 import Data.Set (Set)
+import qualified Data.Set as E
 import Data.Text (Text)
+import qualified Data.Text as T
+import qualified Data.Text.IO as T
+import qualified Data.Text.Lazy as TL
+import qualified Data.Text.Lazy.IO as TL
 import Data.Time
+import qualified Data.Vector as V
+import qualified Data.Yaml as Y
 import Development.Shake
 import Development.Shake.FilePath
-import Text.Mustache
-import Text.URI (URI)
-import Text.URI.Lens (uriPath)
-import Text.URI.QQ (scheme)
-import qualified Data.HashMap.Strict  as HM
-import qualified Data.Set             as E
-import qualified Data.Text            as T
-import qualified Data.Text.IO         as T
-import qualified Data.Text.Lazy       as TL
-import qualified Data.Text.Lazy.IO    as TL
-import qualified Data.Vector          as V
-import qualified Data.Yaml            as Y
-import qualified Lucid                as L
-import qualified Text.MMark           as MMark
+import qualified Lucid as L
+import qualified Text.MMark as MMark
 import qualified Text.MMark.Extension as Ext
 import qualified Text.MMark.Extension.Common as Ext
-import qualified Text.Megaparsec      as M
-import qualified Text.URI             as URI
+import qualified Text.Megaparsec as M
+import Text.Mustache
+import Text.URI (URI)
+import qualified Text.URI as URI
+import Text.URI.Lens (uriPath)
+import Text.URI.QQ (scheme)
 
 ----------------------------------------------------------------------------
 -- Settings
 
 -- | Top-level output directory of the site.
-
 outdir :: FilePath
 outdir = "_build"
 
@@ -56,19 +58,22 @@ outdir = "_build"
 -- | A route equipped with 'FilePattern' for input source files and a
 -- function how to get output file name from input file name. The function
 -- should not mess with 'outdir', that will be done for users automatically.
-
 data Route
-  = Ins FilePattern (FilePath -> FilePath) -- ^ Produced from inputs
-  | Gen FilePath                           -- ^ Generated, fixed file
-  | GenPat FilePath                        -- ^ Generated, pattern
+  = -- | Produced from inputs
+    Ins FilePattern (FilePath -> FilePath)
+  | -- | Generated, fixed file
+    Gen FilePath
+  | -- | Generated, pattern
+    GenPat FilePath
 
 -- | This function allows to translate my clear vision of build system to
 -- his.
-
-buildRoute
-  :: Route                      -- ^ 'Route' we want to build
-  -> (FilePath -> FilePath -> Action ()) -- ^ Input file, output file
-  -> Rules ()
+buildRoute ::
+  -- | 'Route' we want to build
+  Route ->
+  -- | Input file, output file
+  (FilePath -> FilePath -> Action ()) ->
+  Rules ()
 buildRoute (Ins pat mapOut') f = do
   let mapOut x = outdir </> mapOut' x
   action $
@@ -92,105 +97,110 @@ buildRoute (GenPat outFile') f = do
 ----------------------------------------------------------------------------
 -- Routes
 
-cssR
-  , jsR
-  , imgR
-  , rawR
-  , attachmentR
-  , notFoundR
-  , atomFeedR
-  , resumeHtmlR
-  , resumePdfR
-  , aboutR
-  , ossR
-  , learnHaskellR
-  , postsR
+cssR,
+  jsR,
+  imgR,
+  rawR,
+  attachmentR,
+  notFoundR,
+  atomFeedR,
+  resumeHtmlR,
+  resumePdfR,
+  aboutR,
+  ossR,
+  learnHaskellR,
+  postsR,
   -- , notesR
-  , postR
-  , tagsR
-  , tutorialR
-  -- , noteR
-    :: Route
-cssR          = Ins "static/css/*.css" id
-jsR           = Ins "static/js/*.js" id
-imgR          = Ins "static/img/*" id
-rawR          = Ins "raw/*" dropDirectory1
-attachmentR   = Ins "attachment/*" id
-notFoundR     = Gen "404.html"
-atomFeedR     = Gen "feed.atom"
-resumeHtmlR   = Ins "resume/resume.md" (\x -> dropDirectory1 x -<.> "html")
-resumePdfR    = Ins "resume/resume.pdf" dropDirectory1
-aboutR        = Ins "about.md" (-<.> "html")
-ossR          = Gen "oss.html"
+  postR,
+  tagsR,
+  tutorialR ::
+    -- , noteR
+    Route
+cssR = Ins "static/css/*.css" id
+jsR = Ins "static/js/*.js" id
+imgR = Ins "static/img/*" id
+rawR = Ins "raw/*" dropDirectory1
+attachmentR = Ins "attachment/*" id
+notFoundR = Gen "404.html"
+atomFeedR = Gen "feed.atom"
+resumeHtmlR = Ins "resume/resume.md" (\x -> dropDirectory1 x -<.> "html")
+resumePdfR = Ins "resume/resume.pdf" dropDirectory1
+aboutR = Ins "about.md" (-<.> "html")
+ossR = Gen "oss.html"
 learnHaskellR = Gen "learn-haskell.html"
-postsR        = Gen "posts.html"
-tagsR         = GenPat "tag/*.html"
+postsR = Gen "posts.html"
+tagsR = GenPat "tag/*.html"
 -- notesR        = Gen "notes.html"
-postR         = Ins "post/*.md" (-<.> "html")
-tutorialR     = Ins "tutorial/*.md" (-<.> "html")
+postR = Ins "post/*.md" (-<.> "html")
+tutorialR = Ins "tutorial/*.md" (-<.> "html")
+
 -- noteR         = Ins "notes/*.md" (-<.> "html")
 
 ----------------------------------------------------------------------------
 -- Post info
 
 -- | Information about post.
-
 data PostInfo
-  = InternalPost LocalInfo     -- ^ 'LocalInfo' injection
-  | ExternalPost Day Text Text -- ^ Published, title, URL
+  = -- | 'LocalInfo' injection
+    InternalPost LocalInfo
+  | -- | Published, title, URL
+    ExternalPost Day Text Text
   deriving (Eq, Show)
 
 -- | The instance is only used for atom feed.
-
 instance ToJSON PostInfo where
   toJSON (InternalPost localInfo) = toJSON localInfo
-  toJSON (ExternalPost published title url) = object
-    [ "title"             .= title
-    , "published"         .= renderDay published
-    , "published_iso8601" .= renderIso8601 published
-    , "updated"           .= renderDay published
-    , "updated_iso8601"   .= renderIso8601 published
-    , "desc"              .= ("" :: Text)
-    , "url"               .= url ]
+  toJSON (ExternalPost published title url) =
+    object
+      [ "title" .= title,
+        "published" .= renderDay published,
+        "published_iso8601" .= renderIso8601 published,
+        "updated" .= renderDay published,
+        "updated_iso8601" .= renderIso8601 published,
+        "desc" .= ("" :: Text),
+        "url" .= url
+      ]
 
 -- | Information about a post that is hosted on my site.
-
-data LocalInfo = LocalInfo
-  { localTitle      :: !Text
-  , localPublished  :: !Day
-  , localUpdated    :: !(Maybe Day)
-  , localDesc       :: !Text
-  , localFile       :: !FilePath
-  , localTags       :: Set Text
-  } deriving (Eq, Show)
+data LocalInfo
+  = LocalInfo
+      { localTitle :: !Text,
+        localPublished :: !Day,
+        localUpdated :: !(Maybe Day),
+        localDesc :: !Text,
+        localFile :: !FilePath,
+        localTags :: Set Text
+      }
+  deriving (Eq, Show)
 
 instance FromJSON LocalInfo where
   parseJSON = withObject "local post metadata" $ \o -> do
-    localTitle     <- o .: "title"
+    localTitle <- o .: "title"
     localPublished <- (o .: "date") >>= (.: "published") >>= parseDay
-    localUpdated   <- (o .: "date") >>= (.:? "updated")  >>=
-      maybe (pure Nothing) (fmap Just . parseDay)
-    localDesc      <- o .: "desc"
+    localUpdated <-
+      (o .: "date") >>= (.:? "updated")
+        >>= maybe (pure Nothing) (fmap Just . parseDay)
+    localDesc <- o .: "desc"
     let localFile = ""
     localTags <- E.fromList . T.words . T.toLower <$> (o .:? "tag" .!= "")
     return LocalInfo {..}
 
 instance ToJSON LocalInfo where
-  toJSON info@LocalInfo {..} = object
-    [ "title"             .= localTitle
-    , "published"         .= renderDay localPublished
-    , "published_iso8601" .= renderIso8601 localPublished
-    , "updated"           .= fmap renderDay localUpdated
-    , "updated_iso8601"   .= renderIso8601 (localNormalizedUpdated info)
-    , "desc"              .= localDesc
-    , "file"              .= ("/" ++ localFile)
-    ]
+  toJSON info@LocalInfo {..} =
+    object
+      [ "title" .= localTitle,
+        "published" .= renderDay localPublished,
+        "published_iso8601" .= renderIso8601 localPublished,
+        "updated" .= fmap renderDay localUpdated,
+        "updated_iso8601" .= renderIso8601 (localNormalizedUpdated info),
+        "desc" .= localDesc,
+        "file" .= ("/" ++ localFile)
+      ]
 
 ----------------------------------------------------------------------------
 -- Menu items
 
 -- | Menu items.
-
 data MenuItem
   = Posts
   | Notes
@@ -201,208 +211,219 @@ data MenuItem
   deriving (Eq, Ord, Show, Enum, Bounded)
 
 -- | Get human-readable title of 'MenuItem'.
-
 menuItemTitle :: MenuItem -> Text
 menuItemTitle = \case
-  Posts        -> "Posts"
-  Notes        -> "Notes"
+  Posts -> "Posts"
+  Notes -> "Notes"
   LearnHaskell -> "Learn Haskell"
-  OSS          -> "OSS"
-  Resume       -> "Resume"
-  About        -> "About"
+  OSS -> "OSS"
+  Resume -> "Resume"
+  About -> "About"
 
 ----------------------------------------------------------------------------
 -- Build system
 
 main :: IO ()
 main = shakeArgs shakeOptions $ do
-
   -- Helpers
 
   phony "clean" $ do
     putNormal ("Cleaning files in " ++ outdir)
     removeFilesAfter outdir ["//*"]
-
   commonEnv <- fmap ($ ()) . newCache $ \() -> do
     let commonEnvFile = "config/env.yaml"
     need [commonEnvFile]
     r <- liftIO (Y.decodeFileEither commonEnvFile)
     case r of
-      Left  err   -> fail (Y.prettyPrintParseException err)
+      Left err -> fail (Y.prettyPrintParseException err)
       Right value -> return value
-
   templates <- fmap ($ ()) . newCache $ \() -> do
     let templateP = "templates/*.mustache"
     getMatchingFiles templateP >>= need
     liftIO (compileMustacheDir "default" (takeDirectory templateP))
-
   getPost <- newCache $ \path -> do
     env <- commonEnv
     getPostHelper env path
-
-  let gatherLocalInfo :: Ord a
-        => Route
-        -> (LocalInfo -> a)
-        -> Action [LocalInfo]
+  let gatherLocalInfo ::
+        Ord a =>
+        Route ->
+        (LocalInfo -> a) ->
+        Action [LocalInfo]
       gatherLocalInfo (Ins pat mapOut) f = do
         ps' <- getMatchingFiles pat
         fmap (sortOn f) . forM ps' $ \post -> do
           need [post]
           v <- getPost post >>= interpretValue . fst
-          return v { localFile = mapOut post }
+          return v {localFile = mapOut post}
       gatherLocalInfo (Gen outFile) _ =
         fail $ "cannot gather local info about: " ++ outFile
       gatherLocalInfo (GenPat pat) _ =
         fail $ "cannot gather local info about: " ++ pat
-
-      justFromTemplate
-        :: Either Text MenuItem
-        -> PName
-        -> FilePath
-        -> Action ()
+      justFromTemplate ::
+        Either Text MenuItem ->
+        PName ->
+        FilePath ->
+        Action ()
       justFromTemplate etitle template output = do
         env <- commonEnv
-        ts  <- templates
-        renderAndWrite ts [template,"default"] Nothing
-          [ either (const env) (`menuItem` env) etitle
-          , provideAs "title" (either id menuItemTitle etitle) ]
+        ts <- templates
+        renderAndWrite
+          ts
+          [template, "default"]
+          Nothing
+          [ either (const env) (`menuItem` env) etitle,
+            provideAs "title" (either id menuItemTitle etitle)
+          ]
           output
-
   allPosts <- fmap ($ ()) . newCache $ \() -> do
     env <- commonEnv
-    ips <- fmap InternalPost
-      <$> gatherLocalInfo postR (Down . localPublished)
+    ips <-
+      fmap InternalPost
+        <$> gatherLocalInfo postR (Down . localPublished)
     let ets = parseExternalPosts "external_posts" env
     return $
       sortOn (Down . postInfoPublished) (ips ++ ets)
-
   -- Page implementations
 
   buildRoute cssR copyFile'
-
   buildRoute jsR copyFile'
-
   buildRoute imgR copyFile'
-
   buildRoute rawR copyFile'
-
   buildRoute attachmentR copyFile'
-
   buildRoute notFoundR $ \_ output ->
     justFromTemplate (Left "404 Not Found") "404" output
-
   buildRoute atomFeedR $ \_ output -> do
     env <- commonEnv
-    ts  <- templates
+    ts <- templates
     ps <- allPosts
-    let feedUpdated = renderIso8601 $
-          maximum (normalizedUpdated <$> ps)
-    renderAndWrite ts ["atom-feed"] Nothing
-      [ env
-      , provideAs "entry" ps
-      , provideAs "feed_file" (dropDirectory1 output)
-      , provideAs "feed_updated" feedUpdated ]
+    let feedUpdated =
+          renderIso8601 $
+            maximum (normalizedUpdated <$> ps)
+    renderAndWrite
+      ts
+      ["atom-feed"]
+      Nothing
+      [ env,
+        provideAs "entry" ps,
+        provideAs "feed_file" (dropDirectory1 output),
+        provideAs "feed_updated" feedUpdated
+      ]
       output
-
   buildRoute resumeHtmlR $ \input output -> do
     env <- commonEnv
-    ts  <- templates
+    ts <- templates
     need [input]
     (v, content) <- getPost input
-    renderAndWrite ts ["post","default"] (Just content)
+    renderAndWrite
+      ts
+      ["post", "default"]
+      (Just content)
       [menuItem Resume env, v]
       output
-
   buildRoute resumePdfR copyFile'
-
   buildRoute aboutR $ \input output -> do
     env <- commonEnv
-    ts  <- templates
+    ts <- templates
     need [input]
     (v, content) <- getPost input
-    renderAndWrite ts ["post", "default"] (Just content)
+    renderAndWrite
+      ts
+      ["post", "default"]
+      (Just content)
       [menuItem About env, v]
       output
-
   buildRoute ossR $ \_ output ->
     justFromTemplate (Right OSS) "oss" output
-
   buildRoute learnHaskellR $ \_ output -> do
     env <- commonEnv
-    ts  <- templates
-    its <- fmap InternalPost <$>
-      gatherLocalInfo tutorialR (Down . localPublished)
+    ts <- templates
+    its <-
+      fmap InternalPost
+        <$> gatherLocalInfo tutorialR (Down . localPublished)
     let ets = parseExternalPosts "external_tutorials" env
-    renderAndWrite ts ["learn-haskell","default"] Nothing
-      [ menuItem LearnHaskell env
-      , provideAs "my_tutorials"
-          (sortOn (Down . postInfoPublished) (its ++ ets))
-      , mkTitle LearnHaskell ]
+    renderAndWrite
+      ts
+      ["learn-haskell", "default"]
+      Nothing
+      [ menuItem LearnHaskell env,
+        provideAs
+          "my_tutorials"
+          (sortOn (Down . postInfoPublished) (its ++ ets)),
+        mkTitle LearnHaskell
+      ]
       output
-
   buildRoute postsR $ \_ output -> do
     env <- commonEnv
-    ts  <- templates
+    ts <- templates
     ps <- allPosts
     let tags = getTags ps
     need (tagToPath <$> E.toList tags)
-    renderAndWrite ts ["posts","default"] Nothing
-      [ menuItem Posts env
-      , provideAs "post" ps
-      , provideAs "tag" tags
-      , mkTitle Posts
+    renderAndWrite
+      ts
+      ["posts", "default"]
+      Nothing
+      [ menuItem Posts env,
+        provideAs "post" ps,
+        provideAs "tag" tags,
+        mkTitle Posts
       ]
       output
-
   buildRoute tagsR $ \_ output -> do
     let tag = pathToTag output
     env <- commonEnv
     ts <- templates
     ps <- allPosts
-    renderAndWrite ts ["posts","default"] Nothing
-      [ menuItem Posts env
-      , provideAs "post" (filterByTag tag ps)
-      , provideAs "tag" (getTags ps)
-      , mkTitle Posts
+    renderAndWrite
+      ts
+      ["posts", "default"]
+      Nothing
+      [ menuItem Posts env,
+        provideAs "post" (filterByTag tag ps),
+        provideAs "tag" (getTags ps),
+        mkTitle Posts
       ]
       output
-
   buildRoute postR $ \input output -> do
     env <- commonEnv
-    ts  <- templates
+    ts <- templates
     need [input]
     (v, content) <- getPost input
-    renderAndWrite ts ["post","default"] (Just content)
+    renderAndWrite
+      ts
+      ["post", "default"]
+      (Just content)
       [menuItem Posts env, v, mkLocation output]
       output
-
   buildRoute tutorialR $ \input output -> do
     env <- commonEnv
-    ts  <- templates
+    ts <- templates
     need [input]
     (v, content) <- getPost input
-    renderAndWrite ts ["post","default"] (Just content)
+    renderAndWrite
+      ts
+      ["post", "default"]
+      (Just content)
       [menuItem LearnHaskell env, v, mkLocation output]
       output
 
-  -- buildRoute notesR $ \_ output -> do
-  --   env <- commonEnv
-  --   ts  <- templates
-  --   es  <- gatherLocalInfo noteR (Down . localPublished)
-  --   renderAndWrite ts ["notes","default"] Nothing
-  --     [ menuItem Notes env
-  --     , provideAs "post" es
-  --     , mkTitle Notes ]
-  --     output
+-- buildRoute notesR $ \_ output -> do
+--   env <- commonEnv
+--   ts  <- templates
+--   es  <- gatherLocalInfo noteR (Down . localPublished)
+--   renderAndWrite ts ["notes","default"] Nothing
+--     [ menuItem Notes env
+--     , provideAs "post" es
+--     , mkTitle Notes ]
+--     output
 
-  -- buildRoute noteR $ \input output -> do
-  --   env <- commonEnv
-  --   ts  <- templates
-  --   need [input]
-  --   (v, content) <- getPost input
-  --   renderAndWrite ts ["post","default"] (Just content)
-  --     [menuItem Notes env, v, mkLocation output]
-  --     output
+-- buildRoute noteR $ \input output -> do
+--   env <- commonEnv
+--   ts  <- templates
+--   need [input]
+--   (v, content) <- getPost input
+--   renderAndWrite ts ["post","default"] (Just content)
+--     [menuItem Notes env, v, mkLocation output]
+--     output
 
 ----------------------------------------------------------------------------
 -- Custom MMark extensions
@@ -416,12 +437,13 @@ addTableClasses = Ext.blockRender $ \old block ->
 addImageClasses :: MMark.Extension
 addImageClasses = Ext.inlineRender $ \old inline ->
   case inline of
-    (Ext.Image inner src (Just "my_photo")) -> L.with
-      (old $ Ext.Image inner src Nothing)
-      [ L.class_  "float-right d-none d-md-block ml-3"
-      , L.width_  "300"
-      , L.height_ "400"
-      ]
+    (Ext.Image inner src (Just "my_photo")) ->
+      L.with
+        (old $ Ext.Image inner src Nothing)
+        [ L.class_ "float-right d-none d-md-block ml-3",
+          L.width_ "300",
+          L.height_ "400"
+        ]
     i@Ext.Image {} -> L.with (old i) [L.class_ "img-fluid"]
     other -> old other
 
@@ -430,14 +452,14 @@ provideSocialUrls v = Ext.inlineTrans $ \case
   l@(Ext.Link inner uri mtitle) ->
     if URI.uriScheme uri == Just [scheme|social|]
       then case uri ^. uriPath of
-             [x] ->
-               case v ^? key "social" . key (URI.unRText x) . _String . getURI of
-                 Nothing -> Ext.Plain "!lookup failed!"
-                 Just t  ->
-                   if Ext.asPlainText inner == "x"
-                     then Ext.Link (Ext.Plain (URI.render t) :| []) t mtitle
-                     else Ext.Link inner t mtitle
-             _ -> l
+        [x] ->
+          case v ^? key "social" . key (URI.unRText x) . _String . getURI of
+            Nothing -> Ext.Plain "!lookup failed!"
+            Just t ->
+              if Ext.asPlainText inner == "x"
+                then Ext.Link (Ext.Plain (URI.render t) :| []) t mtitle
+                else Ext.Link inner t mtitle
+        _ -> l
       else l
   other -> other
 
@@ -451,29 +473,37 @@ getMatchingFiles :: FilePattern -> Action [FilePath]
 getMatchingFiles = getDirectoryFiles "" . pure
 
 selectTemplate :: PName -> Template -> Template
-selectTemplate name t = t { templateActual = name }
+selectTemplate name t = t {templateActual = name}
 
-renderAndWrite :: MonadIO m
-  => Template          -- ^ Templates to use
-  -> [PName]           -- ^ Names of templates, in order
-  -> Maybe TL.Text     -- ^ First inner value to interpolate
-  -> [Value]           -- ^ Rendering context
-  -> FilePath          -- ^ File path where to write rendered file
-  -> m ()
+renderAndWrite ::
+  MonadIO m =>
+  -- | Templates to use
+  Template ->
+  -- | Names of templates, in order
+  [PName] ->
+  -- | First inner value to interpolate
+  Maybe TL.Text ->
+  -- | Rendering context
+  [Value] ->
+  -- | File path where to write rendered file
+  FilePath ->
+  m ()
 renderAndWrite ts pnames minner context out =
   liftIO . TL.writeFile out $
     foldl f (fromMaybe TL.empty minner) pnames
   where
-    f inner pname = renderMustache
-      (selectTemplate pname ts)
-      (mkContext (provideAs "inner" inner : context))
+    f inner pname =
+      renderMustache
+        (selectTemplate pname ts)
+        (mkContext (provideAs "inner" inner : context))
 
 menuItem :: MenuItem -> Value -> Value
 menuItem item = over (key "main_menu" . _Array) . V.map $ \case
-  Object m -> Object $
-    if HM.lookup "title" m == (Just . String . menuItemTitle) item
-      then HM.insert "active" (Bool True) m
-      else m
+  Object m ->
+    Object $
+      if HM.lookup "title" m == (Just . String . menuItemTitle) item
+        then HM.insert "active" (Bool True) m
+        else m
   v -> v
 
 getTags :: [PostInfo] -> Set Text
@@ -487,8 +517,9 @@ tagToPath :: Text -> FilePath
 tagToPath tag = outdir </> "tag" </> T.unpack tag <.> "html"
 
 pathToTag :: FilePath -> Text
-pathToTag path = T.pack . dropExtensions $
-  makeRelative (outdir </> "tag") path
+pathToTag path =
+  T.pack . dropExtensions $
+    makeRelative (outdir </> "tag") path
 
 filterByTag :: Text -> [PostInfo] -> [PostInfo]
 filterByTag tag = filter f
@@ -504,22 +535,23 @@ getPostHelper env path = do
     Left bundle -> fail (M.errorBundlePretty bundle)
     Right doc -> do
       let toc = MMark.runScanner doc (Ext.tocScanner (\x -> x > 1 && x < 5))
-          r   = MMark.useExtensions
-            [ Ext.fontAwesome
-            , Ext.footnotes
-            , Ext.kbd
-            , Ext.linkTarget
-            , Ext.mathJax (Just '$')
-            , Ext.obfuscateEmail "protected-email"
-            , Ext.punctuationPrettifier
-            , Ext.ghcSyntaxHighlighter
-            , Ext.skylighting
-            , Ext.toc "toc" toc
-            , addTableClasses
-            , addImageClasses
-            , provideSocialUrls env
-            ]
-            doc
+          r =
+            MMark.useExtensions
+              [ Ext.fontAwesome,
+                Ext.footnotes,
+                Ext.kbd,
+                Ext.linkTarget,
+                Ext.mathJax (Just '$'),
+                Ext.obfuscateEmail "protected-email",
+                Ext.punctuationPrettifier,
+                Ext.ghcSyntaxHighlighter,
+                Ext.skylighting,
+                Ext.toc "toc" toc,
+                addTableClasses,
+                addImageClasses,
+                provideSocialUrls env
+              ]
+              doc
           v = fromMaybe (object []) (MMark.projectYaml doc)
       return (v, L.renderText (MMark.render r))
 
@@ -533,7 +565,7 @@ mkContext :: [Value] -> Value
 mkContext = foldl1' f
   where
     f (Object m0) (Object m1) = Object (HM.union m0 m1)
-    f _ _                     = error "context merge failed"
+    f _ _ = error "context merge failed"
 
 mkTitle :: MenuItem -> Value
 mkTitle = provideAs "title" . menuItemTitle
@@ -554,7 +586,7 @@ localNormalizedUpdated LocalInfo {..} =
 normalizedUpdated :: PostInfo -> Day
 normalizedUpdated = \case
   InternalPost localInfo -> localNormalizedUpdated localInfo
-  ExternalPost published _ _  -> published
+  ExternalPost published _ _ -> published
 
 renderDay :: Day -> String
 renderDay = formatTime defaultTimeLocale "%B %e, %Y"
@@ -565,17 +597,18 @@ renderIso8601 = formatTime defaultTimeLocale fmt
     fmt = iso8601DateFormat (Just "00:00:00Z")
 
 parseExternalPosts :: Text -> Value -> [PostInfo]
-parseExternalPosts k v = fromMaybe [] $
-  v ^? key k . _Array . to (mapMaybe parseExternalPost . V.toList)
+parseExternalPosts k v =
+  fromMaybe [] $
+    v ^? key k . _Array . to (mapMaybe parseExternalPost . V.toList)
 
 parseExternalPost :: Value -> Maybe PostInfo
 parseExternalPost o = do
   published <- (o ^? key "published" . _String) >>= parseDay
-  title     <- o ^? key "title" . _String
-  url       <- o ^? key "url" . _String
+  title <- o ^? key "title" . _String
+  url <- o ^? key "url" . _String
   return (ExternalPost published title url)
 
 postInfoPublished :: PostInfo -> Day
 postInfoPublished = \case
- InternalPost localInfo     -> localPublished localInfo
- ExternalPost published _ _ -> published
+  InternalPost localInfo -> localPublished localInfo
+  ExternalPost published _ _ -> published

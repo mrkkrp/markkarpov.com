@@ -3,6 +3,7 @@ title: Haskell vs OCaml
 desc: This is a comparison between the two languages by someone who has written code professionally in both.
 date:
   published: December 6, 2019
+  updated: December 11, 2019
 tag: haskell
 ---
 
@@ -45,18 +46,35 @@ not perfect. For example, you would expect a modern Unicode-aware string
 type in your language of choice. While Haskell has `Text`, OCaml mostly uses
 its built-in `string` type, which is simply an array of bytes. There is the
 [`uutf`][uutf] library, but it is essentially just byte-by-byte
-encoder/decoder. Regardless if its technical merits, this is not what users
-expect—they want a Unicode-aware string type to pass around. Lack of such a
-type is why `string` is still the de-facto standard.
+encoder/decoder. Regardless if its technical merits, the story about Unicode
+in OCaml is incomplete.
+
+When discussing the issue with OCaml programmers, I was told to [read how
+the library works][uucp-explanation], or to introduce implicit invariants *(I'll
+validate all my `string`s on the boundaries of my system),* or to define
+Unicode-aware string type on per-project basis. It is important to
+understand that all of this is not good enough:
+
+* To use a Unicode-aware string type one should not need to read a wall of
+  text, unless you need to hack on lower level or to work on the Unicode
+  library itself.
+
+* To use a Unicode-aware string type one should not need to re-define it
+  every time.
+
+* The fact that we have a valid Unicode text must be reflected on the type
+  level and the same type must be used by most libraries in the ecosystem.
+  If I have a value of this type, the string inside must be correct Unicode
+  text. It is a basic way to leverage the type system.
+
+* There should be a vocabulary of operations for that Unicode type.
+
+Another annoying fact is that for OCaml there is no place where to lookup
+library documentation online. You have to build it locally.
 
 In general, I'd compare the library situation to that of [Common
 Lisp][lisp-and-haskell]—individual projects may be high quality, but the
 integration between libraries and coverage are lacking.
-
-For OCaml, there is no place where to lookup library documentation online.
-You have to build it locally. The markup language for documentation in OCaml
-is more limited than Haskell's Haddock. For example, you can't describe each
-argument of a function. So people mostly do not bother.
 
 ## Tooling
 
@@ -78,13 +96,11 @@ doesn't always predict correct types for expressions, for example it
 frequently confuses `bytes` and `string`. Still it's better than nothing.
 The package manager is `opam` and the most popular build system is
 [`dune`][dune]. The combo works if you are a hacker and you know how to use
-it. Otherwise it can be rough. I know of a company which has to have their
-own `opam` server because sometimes users would upload broken code to `opam`
-and it would break their build. This is in comparison to several options in
-Haskell that allow you to ensure that you have a set of packages which all
-compile, pass tests, and work together well. Nix support for OCaml doesn't
-look as mature as for Haskell, so I wouldn't use it unless I'm working for a
-big enough company that could invest in Nix support for OCaml.
+it. Otherwise it can be rough. To get a package set which is known to be
+good and is under your control, you'd need to setup your own `opam` server.
+You do not need to do it with Haskell. Nix support for OCaml doesn't look as
+mature as for Haskell, so I wouldn't use it unless I'm working for a big
+enough company that could invest in Nix support for OCaml.
 
 Overall, Haskell is doing better with respect to tooling. With Stack you can
 build a project with a single command without knowing much about the
@@ -150,6 +166,13 @@ provides are not a good idea. Granted, this is just my opinion. Here is why:
     password you cannot mix them up and you'll be forced to pass them in the
     right order—no mistake is possible.
 
+    Note that consistent naming with labeled arguments in OCaml makes it
+    very unlikely that you'll mix up two arguments of the same type. Yet, it
+    is only true as long as you pass the arguments unchanged and follow a
+    consistent naming scheme. There is a difference between *correct because
+    it is easier this way* and *correct because it is the only way it
+    compiles*.
+
   * *When you have many arguments and you don't want to remember their exact
     order.* The problem here is that you do not really need to pass many
     arguments to a function. Perhaps 5 or 6 is the maximum. If you have more
@@ -174,8 +197,18 @@ provides are not a good idea. Granted, this is just my opinion. Here is why:
 
 The OCaml module system is [refreshing and interesting][humped-critter], but
 it has its own flaws. For example, we have to endlessly repeat the type
-definitions and signatures in `.ml` and `.mli` files. One could say that
-`.mli` files can be generated automatically, but then why make it part of
+definitions and signatures in `.ml` and `.mli` files. There are some tricks
+to avoid duplication but they can be a real pain sometimes. I mention this
+because even though I can understand that it is nice to have your API in a
+single file, I found the workflow a lot less ergonomic than in Haskell. You
+end up in a web of modules and endless repetitions of signatures. Many times
+when I changed or moved a function I'd have to read through lengthy module
+signatures to find where to perform the adjustments to make it compile
+again. You do it by looking at the entire signature of a module—often
+several hundreds of lines.
+
+One could say that `.mli` files can be generated automatically (which I do
+not recommend, it's just a possible objection), but then why make it part of
 the source code that is supposed to be written by the programmer?
 
 ## Conclusion
@@ -207,6 +240,7 @@ are great and have rather unique and interesting features.
 [jane-street]: https://www.janestreet.com
 [ocaml-companies]: https://ocaml.org/learn/companies.html
 [uutf]: https://erratique.ch/software/uutf/doc/Uutf
+[uucp-explanation]: https://erratique.ch/software/uucp/doc/Uucp.html#uminimal
 [lisp-and-haskell]: /post/lisp-and-haskell.html
 [ghcid]: https://hackage.haskell.org/package/ghcid
 [nix]: https://nixos.org

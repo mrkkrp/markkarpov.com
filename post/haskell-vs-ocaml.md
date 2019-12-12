@@ -189,7 +189,7 @@ provides are not a good idea. Granted, this is just my opinion. Here is why:
 * **Optional arguments** can be replaced by explicit `Maybe` or `option`
   wrappers. This is a bit verbose, but there is not much to gain from that
   little extra brevity (as pointed out above, we do not want too many
-  arguments). On the other, optional arguments do not play nicely with
+  arguments). On the other hand, optional arguments do not play nicely with
   currying. The last argument of a function cannot be optional, this is why
   some OCaml functions take a dummy unit `()` as their last argument, which
   is not nice.

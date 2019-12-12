@@ -29,11 +29,12 @@ that French research projects like [Coq][coq] are written in OCaml. Many
 companies that focus on OCaml ecosystem and tooling are located in France. I
 know of at least [OCamlPRO][ocamlpro] and [Tarides][tarides]. Who is the
 consumer of those tooling efforts? The crypto boom gave money to the
-crypto-currency [Tezos][tezos] which is being developed by a French company
-called [Nomadic Labs][nomadic-labs]. Many people there come from the French
-academy. Another big player in the OCaml world is [Jane Street][jane-street]
-which is a trading firm in the US. Facebook and Bloomberg also use OCaml, as
-well [as a few other companies][ocaml-companies].
+crypto-currency [Tezos][tezos] which is being developed by several players
+including a French company called [Nomadic Labs][nomadic-labs]. Many people
+there come from the French academy. Another big player in the OCaml world is
+[Jane Street][jane-street] which is a trading firm in the US. Facebook and
+Bloomberg also use OCaml, as well [as a few other
+companies][ocaml-companies].
 
 ## Libraries and ecosystem
 

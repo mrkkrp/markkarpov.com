@@ -2570,7 +2570,7 @@ data Custom
 
 instance ShowErrorComponent Custom where
   showErrorComponent (TrivialWithLocation stack us es) =
-    parseErrorTextPretty (TrivialError @Char @Void undefined us es)
+    parseErrorTextPretty (TrivialError @Text @Void undefined us es)
       ++ showPosStack stack
   showErrorComponent (FancyWithLocation stack cs) =
     parseErrorTextPretty (FancyError @Text @Void undefined (Set.singleton cs))

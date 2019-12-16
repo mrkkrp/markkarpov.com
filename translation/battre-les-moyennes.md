@@ -352,32 +352,32 @@ TODO
 
   3. Tous les langages sont également puissants dans le sens d'être
      équivalentes à Turing, mais ce n'est pas le sens du mot auquel les
-     programmeurs se intéressent. La type de pouvoir qui intéresse les
-     programmeurs peut ne pas être formellement définissable, mais
-
-     one way to
-     explain it would be to say that it refers to features you could only
-     get in the less powerful language by writing an interpreter for the
-     more powerful language in it. If language A has an operator for
-     removing spaces from strings and language B doesn't, that probably
-     doesn't make A more powerful, because you can probably write a
-     subroutine to do it in B. But if A supports, say, recursion, and B
-     doesn't, that's not likely to be something you can fix by writing
-     library functions.
+     programmeurs se intéressent. (Personne ne veut programmer une machine
+     Turing.) Le type de pouvoir qui intéresse les programmeurs peut ne pas
+     être formellement définissable, mais une façon de l'expliquer ce serait
+     de dire qu'il réfère à des fonctionnalités que vous ne pouvez obtenir
+     dans le langage moins puissant que en écrivant un interpréteur pour le
+     langage plus puissant. Si le langage A a un opérateur pour suppression
+     d'espaces des strings et langage B n'en a pas, ça ne rend probablement
+     pas A plus puissant, parce que vous pouvez sûrement écrire un
+     sous-programme pour le faire en B. Mais si A soutien, disons,
+     récursivité et B ne le soutien pas, ce n'est pas probable que quelqu'un
+     peut le corriger en écrivant des fonctions de bibliothèque.
 
   4. Note aux nerds : ou peut-être le treillis se rétrécissant vers le haut
      ; ce n'est pas la forme qui compte ici mais l'idée qu'il y a au moins
      un ordre partiel.
 
-  5. It is a bit misleading to treat macros as a separate feature. In
-     practice their usefulness is greatly enhanced by other Lisp features
-     like lexical closures and rest parameters.
+  5. C'est un peu déroutant de traiter les macros comme une fonctionnalité
+     distincte. En pratique, leur utilité est grandement améliorée par les
+     autres caractéristique de Lisp comme fermetures lexicales et les rest
+     paramètres.
 
-  6. As a result, comparisons of programming languages either take the form
-     of religious wars or undergraduate textbooks so determinedly neutral
-     that they're really works of anthropology. People who value their
-     peace, or want tenure, avoid the topic. But the question is only half a
-     religious one; there is something there worth studying, especially if
-     you want to design new languages.
+  6. Par conséquent, comparisons of programming languages either take the
+     form of religious wars or undergraduate textbooks so determinedly
+     neutral that they're really works of anthropology. People who value
+     their peace, or want tenure, avoid the topic. But the question is only
+     half a religious one; there is something there worth studying,
+     especially if you want to design new languages.
 
 [quotes]: http://paulgraham.com/quotes.html

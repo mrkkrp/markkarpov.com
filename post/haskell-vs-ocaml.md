@@ -232,6 +232,9 @@ like something caught in the middle of the mutation from conventional
 imperative language to something Haskell-like. In the end, both languages
 are great and have rather unique and interesting features.
 
+See also this ~~parody~~ alternative point of view:
+<https://blog.regnat.ovh/posts/ocaml-vs-haskell/>.
+
 [why-haskell-is-important]: https://www.tweag.io/posts/2019-09-06-why-haskell-is-important.html
 [coq]: https://coq.inria.fr
 [ocamlpro]: http://www.ocamlpro.com

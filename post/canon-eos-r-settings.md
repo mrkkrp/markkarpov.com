@@ -3,6 +3,7 @@ title: Canon EOS R settings I use
 desc: Tweaks I made to the configuration of the Canon EOS R camera with explanations why.
 date:
   published: November 16, 2019
+  updated: December 25, 2019
 tag: photography
 ---
 
@@ -79,12 +80,20 @@ This is the orange menu with camera icon with some sort of meter underneath.
   without looking.
 
   * The `AF-ON` button does exactly the same thing as half-pressed shooting
-    button, and yet it occupies a very good spot. I use it to set AF point
-    to center, because I often move AF point temporarily and always want to
-    restore it later when I'm done with the scene.
+    button, and yet it occupies a very ergonomic spot. I use it to set AF
+    point to center, because I often move AF point temporarily and always
+    want to restore it later when I'm done with the scene.
 
-  * `AE Lock button` is close to `AF-ON` and also is pretty easy to reach
-    without looking. I use it to switch between one shot AF and servo AF.
+  * `AE lock button` is close to `AF-ON` and also is pretty easy to reach
+    without looking. I use it for depth of field preview. By default you see
+    the depth of field with wide open aperture—it does not adjust in real
+    time as you change your aperture value to let the camera auto-focus
+    better is low light and have better image in the view finder. Depth of
+    field preview is a useful function which is not assigned to any button
+    by default.
+
+  * `AF point button` is also in the same region. I use it to switch between
+    one-shoot AF and servo AF.
 
 * `Customize dials` (page 4). The two standard dials are OK, except the
   so-called `Quick control dial` (closer to you) is harder to rotate and by

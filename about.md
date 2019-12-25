@@ -12,8 +12,8 @@ I authored a number of [open source projects](/oss.html) and several
 for easy access, I hope you'll find something that interests you.
 
 Would you be interested to know my hobbies? Probably not, but here you are,
-on the page about me. I'm currently into photography (digital/medium format
-film), swimming, and meditation. I travel a bit and read a lot.
+on the page about me. I'm currently into photography, swimming, and
+meditation. I travel a bit and read a lot.
 
 Here are my contacts and social accounts:
 

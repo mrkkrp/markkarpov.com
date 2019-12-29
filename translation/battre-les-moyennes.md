@@ -74,7 +74,7 @@ qui écrit des logiciels plus rapidement et mieux, toutes choses égales par
 ailleurs, mettra ses concurrents en faillite. Et lorsque vous démarrez une
 startup, vous le ressentez très fort. Les startups ont tendance à être une
 proposition tout ou rien. Soit vous devenez riche, soit vous n'obtenez rien.
-Dans un startup, si vous misez sur la mauvaise technologie, vos concurrents
+Dans une startup, si vous misez sur la mauvaise technologie, vos concurrents
 vous écraseront.
 
 Robert et moi connaissions bien Lisp, et nous ne pouvions voir aucune raison
@@ -86,7 +86,7 @@ faut ignorer ce que les autres font et considérer seulement ce qui
 fonctionnera le mieux.
 
 C'est particulièrement vrai dans les startups. Dans une grande entreprise on
-peut faire ce que les autres grandes entreprises font. Mais un startup ne
+peut faire ce que les autres grandes entreprises font. Mais une startup ne
 peut pas faire ce que les autres startups font. Je ne crois pas que beaucoup
 de gens s'en rendent compte, même dans les startups.
 
@@ -95,12 +95,12 @@ dirigez une grande entreprise et faites tout comme une grande entreprise
 moyenne le fait, vous pouvez vous attendre à faire aussi bien que le grande
 entreprise moyenne — c'est-à-dire à grandir par d'environ 10% par an.
 
-Bien sûr, la même chose arrivera si vous dirigez un startup. Si vous faites
-tout comme un startup moyen, vous pouvez anticiper performance moyenne. Le
+Bien sûr, la même chose arrivera si vous dirigez une startup. Si vous faites
+tout comme une startup moyen, vous pouvez anticiper performance moyenne. Le
 problème est, la performance moyenne signifie que vous serez mets en
 faillite. Le taux de survie pour startups est beaucoup moins de cinquante
-pourcent. Ça veut dire que si vous dirigez un startup, vous ferriez mieux de
-faire quelque chose de bizarre. Sinon, vous avez des problèmes.
+pourcent. Ça veut dire que si vous dirigez une startup, vous ferriez mieux
+de faire quelque chose de bizarre. Sinon, vous avez des problèmes.
 
 En 1995, nous savions quelque chose que je ne crois pas que nos concurrents
 comprenaient, et peu comprennent même maintenant : quand vous écrivez
@@ -184,7 +184,7 @@ Et donc, je suis un peu gêné de dire que je n'avait jamais rien dit
 publiquement à propos de Lisp pendent que nous travaillions sur Viaweb. On
 n'en parlait jamais à la presse, et si vous cherchiez Lisp sur notre site
 Web, vous ne trouveriez que les titres de deux livres dans ma bio. Ce
-n'était pas un accident. Un startup doit donner ses concurrents le moins
+n'était pas un accident. Une startup doit donner ses concurrents le moins
 d'informations possible. S'ils ne saivaient pas en quel langage notre
 logiciel était écrit ou ne s'en souciaient pas, je voulais que ça reste
 ainsi[2](footnote:2).
@@ -362,7 +362,7 @@ programme fait de choses que vous ne pouvez pas facilement faire dans un
 autre langage. Aussi sceptique que le programmeur Blub puisse être sur mes
 prétentions pour les pouvoirs mystérieux de Lisp, cela devrait le rendre
 curieux. Nous n'écrivions pas ce code pour notre propre plaisir. Nous étions
-un tout petit startup, programmant aussi dur que possible pour mettre des
+une tout petite startup, programmant aussi dur que possible pour mettre des
 barrières techniques entre nous et nos concurrents.
 
 Une personne suspecte pourrait commencer à se demander s'il avait une
@@ -374,7 +374,75 @@ fil. Il y a peut-être plus que ne discerne l'œil.
 
 ## Aikido pour Startups
 
-TODO
+Mais je ne m'attends pas à convaincre quiconque ([plus de 25 ans][scheme])
+d'apprendre Lisp. Le but de cet article n'est pas de change d'avis, mais de
+rassurer les personnes déjà intéressées par l'utilisation de Lisp — les
+personnes qui savent que Lisp est un langage puissant, mais s'inquiètent
+parce que il n'est pas largement utilisé. Dans une situation
+concurrentielle, c'est un avantage. La puissance de Lisp est multipliée par
+le fait que vos concurrents ne la comprennent pas.
+
+Si vous songez à utiliser Lisp dans une startup, vous ne devriez pas vous
+inquiéter qu'il ne soit pas largement compris. Vous devriez espérer que cela
+reste ainsi. Et c'est probable. C'est la nature des langages de
+programmation de rendre la plupart de gens satisfaits de tout ce qu'ils
+utilisent actuellement. Le hardware change tellement plus rapidement que les
+habitudes personnelles que la pratique de la programmation a généralement
+dix à vingt ans en retard par rapport au processeur. Dans les intitutions
+comme le MIT, les gens écrivaient des programmes dans des langages haut
+niveau au début des années 1960, mais de nombreuses entreprises ont continué
+à écrire du code en langage machine jusque dans les années 1980. Je parie
+que beaucoup de gens ont continué à écrire du langage machine jusqu'à ce que
+le processeur, comme un barman désireux de fermer et rentre chez lui, les
+ait finalement expulsés en passant à un ensemble d'instructions RISC.
+
+Habituellement, la technologie change rapidement. Mais les langages de
+programmation sont différents : les langages de programmation ne sont pas
+seulement une technologie, mais ce en quoi les programmeurs pensent. Ils
+sont à moitié une technologie et à moitié une religion[6](footnote:6). Et
+donc le langage médian, c'est-à-dire quel que soit le langage utilisé par le
+programmeur médian, se déplace aussi lentement qu'un iceberg.
+
+Ramasse-miettes, introduite par Lisp vers 1960 est maintenant largement
+considéré comme une bonne chose. Runtime typing, idem, gagne en popularité.
+Les fermetures lexicales, introduites par Lisp au début des années 1970,
+sont maintenant, à peine, sur l'écran radar. Les macros, introduits par Lisp
+au milieu des années 60, sont toujours terra incognita.
+
+Évidemment, le langage médian a un élan énorme. Je ne propose pas que vous
+puissiez combattre cette force puissante. Ce que je propose est exactement
+contraire : comme un pratiquant d'Aïkido, vous pouvez l'utiliser contre vos
+adversaires.
+
+Si vous travaillez pour une grande entreprise, cela peut ne pas être facile.
+Vous aurez du mal à convaincre le pointy-haired boss de vous laisser
+construire des choses en Lisp quand il vient de lire dans le journal qu'un
+autre langage s'apprête à conquérir le monde, comme Ada était il y a vingt
+ans. Mais si vouz travaillez pour une startup qui n'a pas encore de
+pointy-haired bosses, vous pouvez, comme nous l'avons fait, mettre à profit
+le paradoxe de Blub : vous pouvez utiliser la technologie que vos
+concurrents, collés immobile au langage médiane, ne pourront jamais égaler.
+
+Si jamais vous vous trouvez à travailler pour une startup, voici un conseil
+pratique pour évaluer les concurrents. Lisez leurs listes d'emplois. Tout le
+reste sur leur site peut être des photos de stock ou l'équivalent en prose,
+mais les offres d'emploi doivent être précises, sinon ils trouveront les
+mauvais candidats.
+
+Pendant les années où nous avons travaillé sur Viaweb, j'ai lu beaucoup de
+descriptions de poste. Un nouveau concurrent semblait émerger de menuiserie
+chaque moins environ. La première chose que je ferais, après avoir vérifié
+s'ils avaient une démo en ligne en direct, était de consulter leurs listes
+d'emplois. Après quelques années, je pourrais savoir desquelles entreprises
+se soucier et desquelles ne pas se soucier (LAID!). Plus des descriptions de
+poste avaient une saveur informatique, mois l'entreprise était dangereuse.
+Les types les plus saufs étaient ceux qui voulaient une expérience Oracle.
+Vous ne deviez jamais vous soucier de ceux-ci. Vous étiez également en
+sécurité s'ils disaient qu'ils voulaient des développeurs C++ ou Java. S'ils
+voulaient des programmeurs Per ou Python, ce serait un peu effrayant — cela
+commence à ressembler à une entreprise où le côté technique, au moins, est
+géré par de vrais hackers. Si j'avais déjà vu une offre d'emploi à la
+recherche de hackers Lisp, j'aurais été très inquiet.
 
 ## Notes
 
@@ -432,4 +500,5 @@ TODO
      nouveaux langages.
 
 [ansi-common-lisp]: http://paulgraham.com/acl.html
+[scheme]: http://www.trollope.org/scheme.html
 [quotes]: http://paulgraham.com/quotes.html

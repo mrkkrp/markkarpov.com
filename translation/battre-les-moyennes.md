@@ -320,7 +320,57 @@ choses que je trouve manquantes lorsque je regarde les quatre autres
 langages. Je pense à moi : comment on peut arrive à rien avec eux, sans
 macros[5](footnote:5) ?
 
-TODO
+Plusieurs langages ont quelques choses qui s'appellent un « macro ». Mais
+les macro de Lisp sont uniques. Et croyez-le ou non, ce qu'ils font est lié
+aux parenthèses. Les concepteurs de Lisp n'ont pas mis toutes ces
+parenthèses dans le langage juste pour être différents. Pour le programmeur
+Blub, le code Lisp semble bizarre. Mais ces parenthèses sont là pour une
+raison. Elle sont la preuve extérieure d'une différence fondamentale entre
+Lisp et les autres langages.
+
+Le code Lisp est constitué d'objets de données Lisp. Et pas dans le sens
+trivial que les fichiers source contiennent des caractères, et les chaînes
+sont un des types de données soutenus par le langage. Le code Lisp, après
+avoir été lu par le parser est constitué de structures de données que vous
+pouvez parcourir.
+
+Si vous comprenez comment fonctionnent les compilateurs, ce qui se passe
+vraiment n'est pas tant que Lisp a une syntaxe étrange mais que Lisp n'a pas
+de syntaxe. Vous écrivez des programmes dans les arbres d'analyse qui sont
+générés dans le compilateur lorsque d'autres langages sont analysés. Mais
+ces arbres d'analyse sont entièrement accessibles à vos programmes. Vous
+pouvez écrire des programmes qui les manipulent. En Lisp, ces programmes
+s'appellent macros. Ils sont les programmes qui écrivent des programmes.
+
+Les programmes qui écrivent des programmes ? Quand voudriez-vous faire ça ?
+Pas très souvent si vous pensez en Cobol. Tout le temps, si vous pensez en
+Lisp. Ce serait utile si je pourrais donner un exemple d'un marco puissant
+et dire voilà ! comment ça ? Mais si je le faisais, ça ressemblerait à du
+charabia à quelqu'un qui ne connaissait pas Lisp. Il n'y a pas de place ici
+pour expliquer tout ce que vous devez savoir pour comprendre ce que cela
+signifie. Dans [ANSI Common Lisp][ansi-common-lisp] je tentais de faire
+avancer les choses aussi vite que possible, et même ainsi, je n'ai pas pu
+arriver aux macros jusqu'à la page 160.
+
+Mais je pense que je peux donner une sorte d'argument qui pourrait être
+convaincant. Le code source de l'éditeur de Viaweb consistait sans doute
+d'environ 20 à 25% de macros. Macros sont plus difficiles à écrire que les
+fonctions ordinaires, et il est considéré un mauvais style de les utiliser
+quand ils ne sont pas nécessaires. Donc, chaque macro dans ce code est là
+car il doit y être. Cela signifie qu'au moins 20 à 25% du code de ce
+programme fait de choses que vous ne pouvez pas facilement faire dans un
+autre langage. Aussi sceptique que le programmeur Blub puisse être sur mes
+prétentions pour les pouvoirs mystérieux de Lisp, cela devrait le rendre
+curieux. Nous n'écrivions pas ce code pour notre propre plaisir. Nous étions
+un tout petit startup, programmant aussi dur que possible pour mettre des
+barrières techniques entre nous et nos concurrents.
+
+Une personne suspecte pourrait commencer à se demander s'il avait une
+corrélation ici. Une grande partie de notre code faisait des choses qui sont
+très difficiles à faire dans d'autres langues. Le logiciel résultant faisait
+des chose que les logiciels de nos concurrents ne pouvaient pas faire.
+Peut-être qu'il y avait une sorte de lien. Je vous encourage à suivre ce
+fil. Il y a peut-être plus que ne discerne l'œil.
 
 ## Aikido pour Startups
 
@@ -361,7 +411,7 @@ TODO
      d'espaces des strings et langage B n'en a pas, ça ne rend probablement
      pas A plus puissant, parce que vous pouvez sûrement écrire un
      sous-programme pour le faire en B. Mais si A soutien, disons,
-     récursivité et B ne le soutien pas, ce n'est pas probable que quelqu'un
+     récursivité et B ne la soutien pas, ce n'est pas probable que quelqu'un
      peut le corriger en écrivant des fonctions de bibliothèque.
 
   4. Note aux nerds : ou peut-être le treillis se rétrécissant vers le haut
@@ -373,11 +423,13 @@ TODO
      autres caractéristique de Lisp comme fermetures lexicales et les rest
      paramètres.
 
-  6. Par conséquent, comparisons of programming languages either take the
-     form of religious wars or undergraduate textbooks so determinedly
-     neutral that they're really works of anthropology. People who value
-     their peace, or want tenure, avoid the topic. But the question is only
-     half a religious one; there is something there worth studying,
-     especially if you want to design new languages.
+  6. Par conséquent, les comparaisons des langages de programmation prennent
+     la forme de guerres de religion ou de manuels de premier cycle si
+     résolument neutres qu'ils sont vraiment des œuvres d'anthropologie. Les
+     gens qui apprécient leur paix ou veulent la permanence, évitent le
+     sujet. Mais la question n'est qu'à moitié religieuse ; il y a quelque
+     chose qui mérite d'être étudié, surtout si vous voulez concevoir de
+     nouveaux langages.
 
+[ansi-common-lisp]: http://paulgraham.com/acl.html
 [quotes]: http://paulgraham.com/quotes.html

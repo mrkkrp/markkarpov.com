@@ -20,7 +20,7 @@ utilisant des pages Web ordinaires comme interface.
 Beaucoup de monde aurait pu avoir cette idée à ce moment-là, mais pour
 autant que je sache, Viaweb était la première application Web-based. Cela
 nous a semblé une idée si innovante que nous avons nommé notre société
-d'après elle: Viaweb, parce que notre logiciel marchait via le Web, au lieu
+d'après elle : Viaweb, parce que notre logiciel marchait via le Web, au lieu
 de fonctionner sur votre ordinateur de bureau.
 
 Une autre chose inhabituelle par rapport à ce logiciel était le fait qu'il a
@@ -36,7 +36,7 @@ celui-ci, entre autres, il dit aux hackers potentiels quels langages ils
 doivent apprendre. Il suggère de commencer par Python et Java, car ils sont
 faciles à apprendre. Le hacker sérieux voudra aussi apprendre C, pour hacker
 Unix, et Perl pour l'administration des systèmes et des scripts CGI. Enfin,
-le hacker véritablement sérieux doit considérer d'apprendre Lisp:
+le hacker véritablement sérieux doit considérer d'apprendre Lisp :
 
 > Lisp vaut la peine d'être appris pour l'expérience de l'illumination
   profonde qu'on aura quand on l'a finalement appris ; cette expérience fera
@@ -47,7 +47,7 @@ C'est le même argument que vous avez tendance à entendre parler de
 l'apprentissage du Latin. Ça ne vous donnera pas de travail, sauf peut-être
 en tant que professeur de lettres classiques, mais il améliora votre esprit
 et ferra de vous un meilleur écrivain en langues que vous voulez utiliser,
-comme anglais.
+comme l'anglais.
 
 Mais attendez un moment. Cette métaphore ne va pas si loin. La raison pour
 laquelle le latin ne vous trouvera pas un emploi est que personne ne le
@@ -55,14 +55,14 @@ parle. Si vous écrivez en latin, personne ne peut vous comprendre. Mais Lisp
 est un langage de programmation, et les ordinateurs parlent quel que soit le
 langage que vous leur dites de parler.
 
-Donc si Lisp fait de vous un meilleur programmeur, comme il dit, pourquoi ne
-voudriez-vous pas l'utiliser ? Si un peintre se voyait offrir un pinceau qui
-pourrait faire de lui un meilleur peintre, il me semble qu'il veuille
-l'utiliser dans toutes leurs peintures, n'est-ce pas ? Je n'essaie pas de me
-moquer d'Eric Raymond. Dans l'ensemble, ses conseils sont bons. Ce qu'il dit
-de Lisp est plutôt sagesse conventionnelle. Mais il y a une contradiction
-dans la sagesse conventionnelle : Lisp ferra de vous un meilleur programmeur
-et pourtant vous n'allez pas l'utiliser.
+Donc si Lisp fait de vous un meilleur programmeur, pourquoi ne voudriez-vous
+pas l'utiliser ? Si un peintre se voyait offrir un pinceau qui pourrait
+faire de lui un meilleur peintre, il me semble qu'il veuille l'utiliser dans
+toutes leurs peintures, n'est-ce pas ? Je n'essaie pas de me moquer d'Eric
+Raymond. Dans l'ensemble, ses conseils sont bons. Ce qu'il dit de Lisp est
+plutôt sagesse conventionnelle. Mais il y a une contradiction dans la
+sagesse conventionnelle : Lisp ferra de vous un meilleur programmeur et
+pourtant vous n'allez pas l'utiliser.
 
 Pourquoi pas ? Les langages de programmation ne sont que des outils, après
 tout. Si Lisp produit vraiment de meilleurs programmes, vous devez
@@ -80,9 +80,9 @@ vous écraseront.
 Robert et moi connaissions bien Lisp, et nous ne pouvions voir aucune raison
 de ne pas faire confiance à notre instinct et ne pas aller avec Lisp. On
 savait que tous les autres écrivaient leurs logiciels en C++ et Perl. Mais
-on savait aussi que ça ne faisait rien. Si vous choisissez la technologie de
-cette façon, vous utiliseriez Windows. Quand on choisit la technologie, il
-faut ignorer ce que les autres font et considérer seulement ce qui
+on savait aussi que ça ne faisait rien. Si vous choisissiez la technologie
+de cette façon, vous utiliseriez Windows. Quand on choisit la technologie,
+il faut ignorer ce que les autres font et considérer seulement ce qui
 fonctionnera le mieux.
 
 C'est particulièrement vrai dans les startups. Dans une grande entreprise on
@@ -97,10 +97,10 @@ entreprise moyenne — c'est-à-dire à grandir par d'environ 10% par an.
 
 Bien sûr, la même chose arrivera si vous dirigez une startup. Si vous faites
 tout comme une startup moyen, vous pouvez anticiper performance moyenne. Le
-problème est, la performance moyenne signifie que vous serez mets en
-faillite. Le taux de survie pour startups est beaucoup moins de cinquante
-pourcent. Ça veut dire que si vous dirigez une startup, vous ferriez mieux
-de faire quelque chose de bizarre. Sinon, vous avez des problèmes.
+problème est, la performance moyenne signifie que vous ferrez faillite. Le
+taux de survie pour startups est beaucoup moins de cinquante pourcent. Ça
+veut dire que si vous dirigez une startup, vous ferriez mieux de faire
+quelque chose de bizarre. Sinon, vous avez des problèmes.
 
 En 1995, nous savions quelque chose que je ne crois pas que nos concurrents
 comprenaient, et peu comprennent même maintenant : quand vous écrivez
@@ -193,14 +193,14 @@ Ce sont nos clients qui comprenaient le mieux notre technologie. Ils se
 fichaient du langage en lequel Viaweb était écrit, mais ils ont remarqué
 qu'il fonctionnait très bien. Ça leur a permis de créer de superbes magasins
 en ligne en quelques minutes. Et donc, de bouche à oreille surtout, nous
-avions eu de plus d'utilisateurs. À la fin de 1996, nous avions environ 70
+avions eu plus d'utilisateurs. À la fin de 1996, nous avions environ 70
 magasins en ligne. À la fin de 1997, nous avions 500. Six moins après, quand
 Yahoo nous a acheté, nous avions 1070 utilisateurs. Aujourd'hui, comme Yahoo
-Store, ce logiciel continue de dominer son marché. C'est l'une des pièces
-les plus rentables de Yahoo, et les magasins construits avec ça sont la base
-de Yahoo Shopping. J'ai quitté Yahoo en 1999, et donc je ne sait pas
-exactement combien utilisateurs ils ont au moment, mais la dernière fois que
-j'ai entendu parler, il y en avait environ 20 000.
+Store, ce logiciel continue de dominer son marché. C'est une des pièces les
+plus rentables de Yahoo, et les magasins construits avec ça sont la base de
+Yahoo Shopping. J'ai quitté Yahoo en 1999, et donc je ne sait pas exactement
+combien utilisateurs ils ont au moment, mais la dernière fois que j'ai
+entendu parler, il y en avait environ 20 000.
 
 ## Le paradoxe de Blub
 
@@ -222,13 +222,13 @@ puissant que le langage machine. Aujourd'hui, la plupart des programmeurs
 conviendraient que vous ne voulez pas, en règle générale, programmer en
 langage machine. Au lieu de cela, vous devez programmer dans un langage de
 haut niveau et demander à un compilateur de le traduire en langage machine
-pour vous. Cette idée fait même maintenant partie intégrante de hardware:
+pour vous. Cette idée fait même maintenant partie intégrante de hardware :
 depuis des années 1980, les jeux d'instructions ont été conçus pour les
 compilateurs plutôt que pour les programmeurs.
 
 Tout le monde sait que c'est une erreur d'écrire tout votre programme à la
 main en langage machine. Ce qui est moins souvent compris, c'est qu'il y a
-un principe plus général: si vous avez le choix entre plusieurs langages,
+un principe plus général : si vous avez le choix entre plusieurs langages,
 toutes choses étant égales par ailleurs, c'est une erreur de programmer en
 tous les langages sauf le plus puissant[3](footnote:3).
 
@@ -270,11 +270,11 @@ des cas particuliers, vous devez utiliser le plus puissant possible.
 Cependant, cette idée est rarement suivie jusqu'à sa conclusion. Après un
 certain âge, les programmeurs changent rarement de langages volontairement.
 Quel que soit le langage auquel les gens sont habitués, ils ont tendance à
-considérer juste assez bon.
+le considérer juste assez bon.
 
-Les programmeurs sont très attachés à leurs langages préférées, et je ne
-veux blesser personne, donc pour expliquer ce point je vais utiliser un
-langage hypothétique appelé Blub. Blub tombe au milieu du continuum de
+Les programmeurs sont très attachés à leurs langages préférés, et je ne veux
+blesser personne, donc pour expliquer ce point je vais utiliser un langage
+hypothétique appelé Blub. Blub tombe au milieu du continuum de
 l'abstraction. Il n'est pas le langage le plus puissant, mais il est plus
 puissant que Cobol ou le langage machine.
 
@@ -289,21 +289,21 @@ moins puissants que Blub sont évidemment moins puissants, car il leur manque
 une fonctionnalité à laquelle il est habitué. Mais quand notre hypothétique
 programmeur Blub regarde dans l'autre sens, vers le haut du continuum de
 puissance, il ne se rend pas compte de ce qu'il regarde. Ce qu'il voit n'est
-que des langage étranges. Il les considère probablement comme équivalents en
-puissance à Blub, mais avec tous ces autres trucs bizarres ajoutés. Blub est
-assez bon pour lui, car il pense à Blub.
+que des langages étranges. Il les considère probablement comme équivalents
+en puissance à Blub, mais avec tous ces autres trucs bizarres ajoutés. Blub
+est assez bon pour lui, car il pense à Blub.
 
-Lorsque nous passons au point de vue d'un programmeur utilisant l'une des
+Lorsque nous passons au point de vue d'un programmeur utilisant un des
 langages plus haut dans le continuum du puissance, cependant, nous
 constatons qu'il à son tour, méprise Blub. Comment on peut arriver à rien
-rien avec Blub? Il n'a même pas Y.
+rien avec Blub ? Il n'a même pas Y.
 
 Par induction, les seuls programmeurs en mesure de voir toutes les
 différences de pouvoir entre les différents langages sont ceux qui
 comprennent le plus puissant. (C'est probablement ce que Eric Raymond
 voulait dire à propos de Lisp qui faisait de vous un meilleur programmeur.)
 Vous ne pouvez pas faire confience aux avis des autres, à cause du paradoxe
-Blub: ils sont satisfaits du langage qu'ils utilisent, car cela dicte leur
+Blub : ils sont satisfaits du langage qu'ils utilisent, car cela dicte leur
 façon de penser aux programmes.
 
 Je le sait de ma propre expérience, comme un lycéen qui écrivait ses
@@ -320,7 +320,7 @@ choses que je trouve manquantes lorsque je regarde les quatre autres
 langages. Je pense à moi : comment on peut arrive à rien avec eux, sans
 macros[5](footnote:5) ?
 
-Plusieurs langages ont quelques choses qui s'appellent un « macro ». Mais
+Plusieurs langages ont quelques choses qui s'appellent une « macro ». Mais
 les macro de Lisp sont uniques. Et croyez-le ou non, ce qu'ils font est lié
 aux parenthèses. Les concepteurs de Lisp n'ont pas mis toutes ces
 parenthèses dans le langage juste pour être différents. Pour le programmeur
@@ -329,9 +329,9 @@ raison. Elle sont la preuve extérieure d'une différence fondamentale entre
 Lisp et les autres langages.
 
 Le code Lisp est constitué d'objets de données Lisp. Et pas dans le sens
-trivial que les fichiers source contiennent des caractères, et les chaînes
+trivial que les fichiers source contiennent des caractères, et les strings
 sont un des types de données soutenus par le langage. Le code Lisp, après
-avoir été lu par le parser est constitué de structures de données que vous
+avoir été lu par l'analyseur est constitué de structures de données que vous
 pouvez parcourir.
 
 Si vous comprenez comment fonctionnent les compilateurs, ce qui se passe
@@ -372,7 +372,7 @@ des chose que les logiciels de nos concurrents ne pouvaient pas faire.
 Peut-être qu'il y avait une sorte de lien. Je vous encourage à suivre ce
 fil. Il y a peut-être plus que ne discerne l'œil.
 
-## Aikido pour Startups
+## Aïkido pour Startups
 
 Mais je ne m'attends pas à convaincre quiconque ([plus de 25 ans][scheme])
 d'apprendre Lisp. Le but de cet article n'est pas de change d'avis, mais de
@@ -393,7 +393,7 @@ comme le MIT, les gens écrivaient des programmes dans des langages haut
 niveau au début des années 1960, mais de nombreuses entreprises ont continué
 à écrire du code en langage machine jusque dans les années 1980. Je parie
 que beaucoup de gens ont continué à écrire du langage machine jusqu'à ce que
-le processeur, comme un barman désireux de fermer et rentre chez lui, les
+le processeur, comme un barman désireux de fermer et rentrer chez lui, les
 ait finalement expulsés en passant à un ensemble d'instructions RISC.
 
 Habituellement, la technologie change rapidement. Mais les langages de
@@ -415,16 +415,16 @@ contraire : comme un pratiquant d'Aïkido, vous pouvez l'utiliser contre vos
 adversaires.
 
 Si vous travaillez pour une grande entreprise, cela peut ne pas être facile.
-Vous aurez du mal à convaincre le pointy-haired boss de vous laisser
+Vous aurez du mal à convaincre le pointy-haired boss (???) de vous laisser
 construire des choses en Lisp quand il vient de lire dans le journal qu'un
 autre langage s'apprête à conquérir le monde, comme Ada était il y a vingt
 ans. Mais si vouz travaillez pour une startup qui n'a pas encore de
 pointy-haired bosses, vous pouvez, comme nous l'avons fait, mettre à profit
 le paradoxe de Blub : vous pouvez utiliser la technologie que vos
-concurrents, collés immobile au langage médiane, ne pourront jamais égaler.
+concurrents, collés immobiles au langage médiane, ne pourront jamais égaler.
 
 Si jamais vous vous trouvez à travailler pour une startup, voici un conseil
-pratique pour évaluer les concurrents. Lisez leurs listes d'emplois. Tout le
+pratique pour évaluer les concurrents. Lisez leurs listes d'emploi. Tout le
 reste sur leur site peut être des photos de stock ou l'équivalent en prose,
 mais les offres d'emploi doivent être précises, sinon ils trouveront les
 mauvais candidats.
@@ -433,13 +433,13 @@ Pendant les années où nous avons travaillé sur Viaweb, j'ai lu beaucoup de
 descriptions de poste. Un nouveau concurrent semblait émerger de menuiserie
 chaque moins environ. La première chose que je ferais, après avoir vérifié
 s'ils avaient une démo en ligne en direct, était de consulter leurs listes
-d'emplois. Après quelques années, je pourrais savoir desquelles entreprises
+d'emploi. Après quelques années, je pourrais savoir desquelles entreprises
 se soucier et desquelles ne pas se soucier (LAID!). Plus des descriptions de
 poste avaient une saveur informatique, mois l'entreprise était dangereuse.
 Les types les plus saufs étaient ceux qui voulaient une expérience Oracle.
 Vous ne deviez jamais vous soucier de ceux-ci. Vous étiez également en
 sécurité s'ils disaient qu'ils voulaient des développeurs C++ ou Java. S'ils
-voulaient des programmeurs Per ou Python, ce serait un peu effrayant — cela
+voulaient des programmeurs Perl ou Python, ce serait un peu effrayant — cela
 commence à ressembler à une entreprise où le côté technique, au moins, est
 géré par de vrais hackers. Si j'avais déjà vu une offre d'emploi à la
 recherche de hackers Lisp, j'aurais été très inquiet.

@@ -4,7 +4,7 @@ desc: This is a Megaparsec tutorial which originally was written as a chapter fo
 difficulty: 1
 date:
   published: February 23, 2019
-  updated: November 7, 2019
+  updated: December 31, 2019
 ---
 
 *This is the Megaparsec tutorial which originally was written as a chapter
@@ -305,7 +305,7 @@ single :: MonadParsec e s m
 single t = token testToken expected
   where
     testToken x = if x == t then Just x else Nothing
-    expected    = E.singleton (Tokens (t:|[]))
+    expected    = Set.singleton (Tokens (t:|[]))
 ```
 
 The `Tokens` data type constructor has nothing in common with the type
@@ -355,10 +355,10 @@ chunk :: MonadParsec e s m
 chunk = tokens (==)
 
 -- from "Text.Megaparsec.Char" and "Text.Megaparsec.Byte":
-string' :: (MonadParsec e s m, CI.FoldCase (Tokens s))
+string' :: (MonadParsec e s m, Data.CaseInsensitive.FoldCase (Tokens s))
   => Tokens s
   -> m (Tokens s)
-string' = tokens ((==) `on` CI.mk)
+string' = tokens ((==) `on` Data.CaseInsensitive.mk)
 ```
 
 They match fixed chunks of input, `chunk` (which has type-constrained
@@ -835,6 +835,10 @@ Important points here:
 * In (5) and (6) we assemble `Authority` and `Uri` values using the
   `RecordWildCards` language extension.
 
+* `void :: Functor f => f a -> f ()` is used to explicitly discard the
+  result to parsing, without we would get warnings about unused values from
+  GHC.
+
 Play with `pUri` in GHCi and see for yourself that it works:
 
 ```
@@ -886,7 +890,8 @@ expecting end of input
 ```
 
 The parse error could be better! What to do? The easiest way to figure out
-what is going on is to use the built-in `dbg` helper:
+what is going on is to use the built-in `dbg` helper from the
+`Text.Megaparsec.Debug` module:
 
 ```haskell
 dbg :: (Stream s, ShowToken (Token s), ShowErrorComponent e, Show a)
@@ -1959,7 +1964,7 @@ section:
 
 module Main (main) where
 
-import Control.Applicative
+import Control.Applicative hiding (some)
 import Control.Monad (void)
 import Data.Text (Text)
 import Data.Void
@@ -2319,7 +2324,8 @@ data ErrorItem t
   | EndOfInput               -- ^ End of input
 ```
 
-And here is `ErrorFancy`:
+`NonEmpty` is a type for non-empty lists, it comes from
+`Data.List.NonEmpty`. And here is `ErrorFancy`:
 
 ```haskell
 data ErrorFancy e
@@ -2446,7 +2452,7 @@ incorrectIndent :: MonadParsec e s m
   -> Pos               -- ^ Reference indentation level
   -> Pos               -- ^ Actual indentation level
   -> m a
-incorrectIndent ord ref actual = fancyFailure . E.singleton $
+incorrectIndent ord ref actual = fancyFailure . Set.singleton $
   ErrorIndentation ord ref actual
 ```
 
@@ -2549,7 +2555,7 @@ Here is a complete program demonstrating typical usage of `observing`:
 
 module Main (main) where
 
-import Control.Applicative
+import Control.Applicative hiding (some)
 import Data.List (intercalate)
 import Data.Set (Set)
 import Data.Text (Text)
@@ -2832,7 +2838,7 @@ Let us start with an example:
 
 module Main (main) where
 
-import Control.Applicative
+import Control.Applicative hiding (some)
 import Data.Text (Text)
 import Data.Void
 import Test.Hspec

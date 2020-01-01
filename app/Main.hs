@@ -442,7 +442,7 @@ addImageClasses = Ext.inlineRender $ \old inline ->
         (old $ Ext.Image inner src Nothing)
         [ L.class_ "float-right d-none d-md-block ml-3",
           L.width_ "300",
-          L.height_ "400"
+          L.height_ "450"
         ]
     i@Ext.Image {} -> L.with (old i) [L.class_ "img-fluid"]
     other -> old other

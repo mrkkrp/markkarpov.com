@@ -2,7 +2,7 @@
 title: About me
 ---
 
-![Mark Karpov](/static/img/my-photo.png 'my_photo')
+![Mark Karpov](/static/img/my-photo.jpg 'my_photo')
 
 Hey there! I'm a software engineer, currently working at
 [Tweag](https://tweag.io). At the moment I live in Paris, France.

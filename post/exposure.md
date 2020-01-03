@@ -16,8 +16,8 @@ parameters.
 ## ISO
 
 I always shoot in the manual mode, but with ISO set to auto. While aperture
-and shutter speed are often can be used for artistic purposes, ISO value for
-a good exposure is something that is easily deducible given the other two
+and shutter speed often can be used for artistic purposes, ISO value for a
+good exposure is something that is easily deducible given the other two
 parameters and the amount of light you have. Your camera can set ISO for
 you—tweaking it manually is a waste of time. In addition to that, auto ISO
 will automatically take care of minor changes in light, e.g. if you're

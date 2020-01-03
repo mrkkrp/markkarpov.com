@@ -19,10 +19,12 @@ I always shoot in the manual mode, but with ISO set to auto. While aperture
 and shutter speed are often can be used for artistic purposes, ISO value for
 a good exposure is something that is easily deducible given the other two
 parameters and the amount of light you have. Your camera can set ISO for
-you—tweaking it manually is a waste of time.
+you—tweaking it manually is a waste of time. In addition to that, auto ISO
+will automatically take care of minor changes in light, e.g. if you're
+shooting outdoors.
 
 It is important to understand that we want the lowest ISO possible in all
-our shots—ideally it should be always between 100 and 500. High ISO will
+our shots—ideally it should be always between 100 and 2000. High ISO will
 cause your photos to look grainy. We're talking not about that that nice
 film grain, but about nasty digital grain which many people find much less
 aesthetically pleasing. Few people know that high ISO will also make digital

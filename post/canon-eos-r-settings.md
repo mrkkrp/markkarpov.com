@@ -88,7 +88,7 @@ This is the orange menu with camera icon with some sort of meter underneath.
     without looking. I use it for depth of field preview. By default you see
     the depth of field with wide open aperture—it does not adjust in real
     time as you change your aperture value to let the camera auto-focus
-    better is low light and have better image in the view finder. Depth of
+    better in low light and have better image in the view finder. Depth of
     field preview is a useful function which is not assigned to any button
     by default.
 

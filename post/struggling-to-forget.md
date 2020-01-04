@@ -89,8 +89,8 @@ later by case-analysis.
 
 ## Solution
 
-If GHC had proper existential quantification we wouldn't need CPS, but right
-now it is the only way to get the required flexibility on the type level:
+If GHC had proper existential quantification we wouldn't need [CPS][CPS], but 
+right now it is the only way to get the required flexibility on the type level:
 
 ```haskell
 mk ::
@@ -204,3 +204,4 @@ proponent of using *simple* Haskell? People will be confused.
 
 [path]: https://hackage.haskell.org/package/path
 [existential-quantification]: /post/existential-quantification.html
+[CPS]: https://en.wikipedia.org/wiki/Continuation-passing_style

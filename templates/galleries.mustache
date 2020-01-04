@@ -1,0 +1,14 @@
+<h1>Galleries</h1>
+
+Here you can browse my photo galleries.
+
+<table class="table table-striped mt-3">
+  {{# gallery }}
+  <tr>
+    <td>{{ updated }}</td>
+    <td>
+      <a href="/gallery/{{ file }}">{{ title }}</a>
+    </td>
+  </tr>
+  {{/ gallery }}
+</table>

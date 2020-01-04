@@ -100,6 +100,7 @@ buildRoute (GenPat outFile') f = do
 cssR,
   jsR,
   imgR,
+  imgGalleryR,
   rawR,
   attachmentR,
   notFoundR,
@@ -108,17 +109,18 @@ cssR,
   resumePdfR,
   aboutR,
   ossR,
+  galleriesR,
+  galleryR,
   learnHaskellR,
   postsR,
-  -- , notesR
   postR,
   tagsR,
   tutorialR ::
-    -- , noteR
     Route
 cssR = Ins "static/css/*.css" id
 jsR = Ins "static/js/*.js" id
 imgR = Ins "static/img/*" id
+imgGalleryR = Ins "static/img/gallery/*" id
 rawR = Ins "raw/*" dropDirectory1
 attachmentR = Ins "attachment/*" id
 notFoundR = Gen "404.html"
@@ -127,14 +129,13 @@ resumeHtmlR = Ins "resume/resume.md" (\x -> dropDirectory1 x -<.> "html")
 resumePdfR = Ins "resume/resume.pdf" dropDirectory1
 aboutR = Ins "about.md" (-<.> "html")
 ossR = Gen "oss.html"
+galleriesR = Gen "galleries.html"
+galleryR = GenPat "gallery/*.html"
 learnHaskellR = Gen "learn-haskell.html"
 postsR = Gen "posts.html"
 tagsR = GenPat "tag/*.html"
--- notesR        = Gen "notes.html"
 postR = Ins "post/*.md" (-<.> "html")
 tutorialR = Ins "tutorial/*.md" (-<.> "html")
-
--- noteR         = Ins "notes/*.md" (-<.> "html")
 
 ----------------------------------------------------------------------------
 -- Post info
@@ -205,7 +206,7 @@ data MenuItem
   = Posts
   | Notes
   | LearnHaskell
-  | OSS
+  | Galleries
   | Resume
   | About
   deriving (Eq, Ord, Show, Enum, Bounded)
@@ -216,9 +217,78 @@ menuItemTitle = \case
   Posts -> "Posts"
   Notes -> "Notes"
   LearnHaskell -> "Learn Haskell"
-  OSS -> "OSS"
+  Galleries -> "Galleries"
   Resume -> "Resume"
   About -> "About"
+
+----------------------------------------------------------------------------
+-- Galleries
+
+-- | Information about a gallery.
+data Gallery
+  = Gallery
+      { galleryTitle :: !Text,
+        galleryFile :: !FilePath,
+        galleryUpdated :: !Day,
+        galleryDesc :: !Text,
+        galleryPhotos :: ![Photo]
+      }
+  deriving (Eq, Show)
+
+instance FromJSON Gallery where
+  parseJSON = withObject "gallery" $ \o -> do
+    galleryTitle <- o .: "title"
+    galleryFile <- o .: "file"
+    galleryUpdated <- (o .: "updated") >>= parseDay
+    galleryDesc <- o .: "desc"
+    galleryPhotos <- o .: "photos"
+    return Gallery {..}
+
+instance ToJSON Gallery where
+  toJSON Gallery {..} =
+    object
+      [ "title" .= galleryTitle,
+        "file" .= galleryFile,
+        "updated" .= renderDay galleryUpdated,
+        "desc" .= galleryDesc,
+        "photos" .= galleryPhotos
+      ]
+
+-- | Description of a photo in a gallery.
+data Photo
+  = Photo
+      { photoFile :: !FilePath,
+        photoDate :: !Day,
+        photoCamera :: !Text,
+        photoLens :: !Text,
+        photoAperture :: !Text,
+        photoExposure :: !Text,
+        photoIso :: !Text
+      }
+  deriving (Eq, Show)
+
+instance FromJSON Photo where
+  parseJSON = withObject "photo" $ \o -> do
+    photoFile <- o .: "file"
+    photoDate <- (o .: "date") >>= parseDay
+    photoCamera <- o .: "camera"
+    photoLens <- o .: "lens"
+    photoAperture <- o .: "aperture"
+    photoExposure <- o .: "exposure"
+    photoIso <- o .: "iso"
+    return Photo {..}
+
+instance ToJSON Photo where
+  toJSON Photo {..} =
+    object
+      [ "file" .= photoFile,
+        "date" .= renderDay photoDate,
+        "camera" .= photoCamera,
+        "lens" .= photoLens,
+        "aperture" .= photoAperture,
+        "exposure" .= photoExposure,
+        "iso" .= photoIso
+      ]
 
 ----------------------------------------------------------------------------
 -- Build system
@@ -288,6 +358,7 @@ main = shakeArgs shakeOptions $ do
   buildRoute cssR copyFile'
   buildRoute jsR copyFile'
   buildRoute imgR copyFile'
+  buildRoute imgGalleryR copyFile'
   buildRoute rawR copyFile'
   buildRoute attachmentR copyFile'
   buildRoute notFoundR $ \_ output ->
@@ -332,8 +403,39 @@ main = shakeArgs shakeOptions $ do
       (Just content)
       [menuItem About env, v]
       output
+  buildRoute galleriesR $ \_ output -> do
+    env <- commonEnv
+    ts <- templates
+    gs <- getGalleries env
+    need (galleryToPath <$> gs)
+    renderAndWrite
+      ts
+      ["galleries", "default"]
+      Nothing
+      [ menuItem Galleries env,
+        provideAs "gallery" gs,
+        mkTitle Galleries
+      ]
+      output
+  buildRoute galleryR $ \_ output -> do
+    env <- commonEnv
+    ts <- templates
+    gs <- getGalleries env
+    thisGallery <- case dropWhile ((/= output) . galleryToPath) gs of
+      [] ->
+        fail $
+          "Trying to build " ++ output ++ " but no matching galleries found"
+      (g : _) -> return g
+    renderAndWrite
+      ts
+      ["gallery", "default"]
+      Nothing
+      [ menuItem Galleries env,
+        toJSON thisGallery
+      ]
+      output
   buildRoute ossR $ \_ output ->
-    justFromTemplate (Right OSS) "oss" output
+    justFromTemplate (Left "Open source software") "oss" output
   buildRoute learnHaskellR $ \_ output -> do
     env <- commonEnv
     ts <- templates
@@ -405,25 +507,6 @@ main = shakeArgs shakeOptions $ do
       (Just content)
       [menuItem LearnHaskell env, v, mkLocation output]
       output
-
--- buildRoute notesR $ \_ output -> do
---   env <- commonEnv
---   ts  <- templates
---   es  <- gatherLocalInfo noteR (Down . localPublished)
---   renderAndWrite ts ["notes","default"] Nothing
---     [ menuItem Notes env
---     , provideAs "post" es
---     , mkTitle Notes ]
---     output
-
--- buildRoute noteR $ \input output -> do
---   env <- commonEnv
---   ts  <- templates
---   need [input]
---   (v, content) <- getPost input
---   renderAndWrite ts ["post","default"] (Just content)
---     [menuItem Notes env, v, mkLocation output]
---     output
 
 ----------------------------------------------------------------------------
 -- Custom MMark extensions
@@ -527,6 +610,15 @@ filterByTag tag = filter f
     f = \case
       InternalPost LocalInfo {..} -> tag `elem` localTags
       ExternalPost {} -> False
+
+getGalleries :: Value -> Action [Gallery]
+getGalleries o =
+  case o ^? key "gallery" of
+    Nothing -> error "Failed to find definitions of galleries"
+    Just v -> interpretValue v
+
+galleryToPath :: Gallery -> FilePath
+galleryToPath Gallery {..} = outdir </> "gallery" </> galleryFile
 
 getPostHelper :: Value -> FilePath -> Action (Value, TL.Text)
 getPostHelper env path = do

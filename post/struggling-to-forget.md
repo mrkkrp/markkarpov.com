@@ -7,7 +7,8 @@ tag: haskell
 ---
 
 In this post I show a use case and a way to implement conditional fixing of
-existentially quantified variables by universally quantified variables.
+[existentially quantified][existential-quantification] variables by
+universally quantified variables.
 
 ## Motivation
 
@@ -202,3 +203,4 @@ proponent of using *simple* Haskell? People will be confused.
      of quasi-quotes or TH helpers.
 
 [path]: https://hackage.haskell.org/package/path
+[existential-quantification]: /post/existential-quantification.html

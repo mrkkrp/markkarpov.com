@@ -120,7 +120,8 @@ want to do that? The answer is: *sometimes we want to work with types that
 we don't know at compile time*. The types typically depend on the state of
 external world: they could depend on user's input, on contents of a file
 we're trying to parse, etc. Fortunately Haskell's type system is powerful
-enough to allow us to do interesting things even in that case.
+enough to allow us to do [interesting things][struggling-to-forget] even in
+that case.
 
 ## How to make use of existentials
 
@@ -316,3 +317,4 @@ meaningful programs.
 
 [decision]: https://hackage.haskell.org/package/singletons/docs/Data-Singletons-Decide.html#t:Decision
 [type-eq]: https://hackage.haskell.org/package/singletons/docs/Data-Singletons-Decide.html#t::-126-:
+[struggling-to-forget]: /post/struggling-to-forget.html

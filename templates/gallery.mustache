@@ -1,7 +1,10 @@
 <h1>{{ title }}</h1>
 
 {{# photos }}
-<img src="/static/img/gallery/{{ file }}" alt="{{ date }}" class="img-fluid">
-<p>{{ date }}. {{ camera }} with {{ lens }}
-  at {{ aperture }} {{ exposure }} sec ISO {{ iso }}.</p>
+<figure>
+  <img src="/static/img/gallery/{{ file }}" alt="{{ date }}" class="img-fluid">
+  <figcaption>
+    {{ date }}. {{ camera }} with {{ lens }} at {{ aperture }} {{ exposure}} sec ISO {{ iso }}.
+  </figcaption>
+</figure>
 {{/ photos }}

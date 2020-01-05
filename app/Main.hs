@@ -230,7 +230,6 @@ data Gallery
       { galleryTitle :: !Text,
         galleryFile :: !FilePath,
         galleryUpdated :: !Day,
-        galleryDesc :: !Text,
         galleryPhotos :: ![Photo]
       }
   deriving (Eq, Show)
@@ -240,7 +239,6 @@ instance FromJSON Gallery where
     galleryTitle <- o .: "title"
     galleryFile <- o .: "file"
     galleryUpdated <- (o .: "updated") >>= parseDay
-    galleryDesc <- o .: "desc"
     galleryPhotos <- o .: "photos"
     return Gallery {..}
 
@@ -250,7 +248,6 @@ instance ToJSON Gallery where
       [ "title" .= galleryTitle,
         "file" .= galleryFile,
         "updated" .= renderDay galleryUpdated,
-        "desc" .= galleryDesc,
         "photos" .= galleryPhotos
       ]
 

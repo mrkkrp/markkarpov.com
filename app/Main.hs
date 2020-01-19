@@ -20,6 +20,8 @@ import Data.Aeson.Lens
 import qualified Data.HashMap.Strict as HM
 import Data.List (foldl', foldl1', sortOn)
 import Data.List.NonEmpty (NonEmpty (..))
+import qualified Data.Map.Strict as Map
+import Data.Map.Strict (Map)
 import Data.Maybe (fromMaybe, mapMaybe)
 import Data.Ord (Down (..))
 import Data.Set (Set)
@@ -224,6 +226,27 @@ menuItemTitle = \case
 ----------------------------------------------------------------------------
 -- Galleries
 
+-- | Photo inventory.
+data PhotoInventory
+  = PhotoInventory
+      { photoCameras :: !(Map Text Text),
+        photoLenses :: !(Map Text Text)
+      }
+  deriving (Eq, Show)
+
+instance FromJSON PhotoInventory where
+  parseJSON = withObject "photo inventory" $ \o -> do
+    photoCameras <- o .: "cameras"
+    photoLenses <- o .: "lenses"
+    return PhotoInventory {..}
+
+instance ToJSON PhotoInventory where
+  toJSON PhotoInventory {..} =
+    object
+      [ "cameras" .= photoCameras,
+        "lenses" .= photoLenses
+      ]
+
 -- | Information about a gallery.
 data Gallery
   = Gallery
@@ -422,7 +445,8 @@ main = shakeArgs shakeOptions $ do
   buildRoute galleryR $ \_ output -> do
     env <- commonEnv
     ts <- templates
-    gs <- getGalleries env
+    inventory <- getPhotoInventory env
+    gs <- resolvePhotoInventory inventory <$> getGalleries env
     thisGallery <- case dropWhile ((/= output) . galleryToPath) gs of
       [] ->
         fail $
@@ -613,6 +637,12 @@ filterByTag tag = filter f
       InternalPost LocalInfo {..} -> tag `elem` localTags
       ExternalPost {} -> False
 
+getPhotoInventory :: Value -> Action PhotoInventory
+getPhotoInventory o =
+  case o ^? key "photo_inventory" of
+    Nothing -> error "Failed to find photo inventory"
+    Just v -> interpretValue v
+
 getGalleries :: Value -> Action [Gallery]
 getGalleries o =
   case o ^? key "gallery" of
@@ -621,6 +651,24 @@ getGalleries o =
 
 galleryToPath :: Gallery -> FilePath
 galleryToPath Gallery {..} = outdir </> "gallery" </> galleryFile
+
+resolvePhotoInventory :: PhotoInventory -> [Gallery] -> [Gallery]
+resolvePhotoInventory PhotoInventory {..} = fmap $ \g ->
+  g {galleryPhotos = resolvePhoto <$> galleryPhotos g}
+  where
+    resolvePhoto p =
+      p
+        { photoCamera = case Map.lookup (photoCamera p) photoCameras of
+            Nothing ->
+              error $
+                "Failed to resolve camera: " ++ T.unpack (photoCamera p)
+            Just x -> x,
+          photoLens = case Map.lookup (photoLens p) photoLenses of
+            Nothing ->
+              error $
+                "Failed to resolve lens: " ++ T.unpack (photoLens p)
+            Just x -> x
+        }
 
 getPostHelper :: Value -> FilePath -> Action (Value, TL.Text)
 getPostHelper env path = do

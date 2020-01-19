@@ -260,7 +260,8 @@ data Photo
         photoLens :: !Text,
         photoAperture :: !Text,
         photoExposure :: !Text,
-        photoIso :: !Text
+        photoIso :: !Text,
+        photoComment :: !(Maybe Text)
       }
   deriving (Eq, Show)
 
@@ -273,6 +274,7 @@ instance FromJSON Photo where
     photoAperture <- o .: "aperture"
     photoExposure <- o .: "exposure"
     photoIso <- o .: "iso"
+    photoComment <- o .:? "comment"
     return Photo {..}
 
 instance ToJSON Photo where
@@ -284,7 +286,8 @@ instance ToJSON Photo where
         "lens" .= photoLens,
         "aperture" .= photoAperture,
         "exposure" .= photoExposure,
-        "iso" .= photoIso
+        "iso" .= photoIso,
+        "comment" .= photoComment
       ]
 
 ----------------------------------------------------------------------------
@@ -292,6 +295,7 @@ instance ToJSON Photo where
 
 main :: IO ()
 main = shakeArgs shakeOptions $ do
+
   -- Helpers
 
   phony "clean" $ do
@@ -350,6 +354,7 @@ main = shakeArgs shakeOptions $ do
     let ets = parseExternalPosts "external_posts" env
     return $
       sortOn (Down . postInfoPublished) (ips ++ ets)
+
   -- Page implementations
 
   buildRoute cssR copyFile'

@@ -82,7 +82,7 @@ The full list can be found at <https://markkarpov.com/oss.html>.
 * Flexible and open to criticism. If I'm presented with good arguments, I
   can change my opinion. It's not hard for me to admit that I may be wrong.
 * Active in discussion, good communicator.
-* I speak Russian (native), English (fluent), and French (intermediate).
+* I speak Russian (native), English (fluent), and French (fluent).
 
 ## Education
 

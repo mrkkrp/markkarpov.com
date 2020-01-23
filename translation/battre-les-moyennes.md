@@ -19,9 +19,9 @@ Web ordinaires comme interface.
 
 Beaucoup de monde aurait pu avoir cette idée à ce moment-là, mais pour
 autant que je sache, Viaweb était la première application Web-based. Cette
-idée nous a semblé une idée si innovante que nous avons baptisé notre
-société d'après elle : Viaweb, parce que notre logiciel marchait via le Web,
-au lieu de fonctionner sur votre ordinateur de bureau.
+idée nous a semblé une idée que nous avons baptisé notre société d'après
+elle&nbsp;: Viaweb, parce que notre logiciel marchait via le Web, au lieu de
+fonctionner sur votre ordinateur de bureau.
 
 Une autre chose inhabituelle concernant ce logiciel était le fait qu'il a
 été écrit dans un langage de programmation appelé Lisp. En fait, c'était une
@@ -36,12 +36,12 @@ leqeul, entre autres, il dit aux hackers potentiels quels langages ils
 doivent apprendre. Il suggère de commencer par Python et Java, car ils sont
 faciles à apprendre. Le hacker sérieux voudra aussi apprendre C, pour hacker
 Unix, et Perl pour l'administration des systèmes et des scripts CGI. Enfin,
-le hacker véritablement sérieux doit considérer d'apprendre Lisp :
+le hacker véritablement sérieux doit considérer d'apprendre Lisp&nbsp;:
 
 > Lisp vaut la peine d'être appris pour l'expérience de l'illumination
-  profonde qu'on aura quand on l'a finalement appris ; cette expérience fera
-  de vous un meilleur programmeur pour le reste de vos jours, même si vous
-  n'utiliserez jamais beaucoup Lisp.
+  profonde qu'on aura quand on l'a finalement appris&nbsp;; cette expérience
+  fera de vous un meilleur programmeur pour le reste de vos jours, même si
+  vous n'utiliserez jamais beaucoup Lisp.
 
 C'est le même argument dont vous avez tendance à entendre parler de
 l'apprentissage du Latin. Ça ne vous donnera pas de travail, sauf peut-être
@@ -56,17 +56,17 @@ langage de programmation, et les ordinateurs parlent n'importe quel langage
 que vous leur dites de parler.
 
 Donc si Lisp fait de vous un meilleur programmeur, pourquoi ne voudriez-vous
-pas l'utiliser ? Si un peintre se voyait offrir un pinceau qui pourrait
+pas l'utiliser&nbsp;? Si un peintre se voyait offrir un pinceau qui pourrait
 faire de lui un meilleur peintre, il me semble qu'il voudrait l'utiliser
-pour toutes ses peintures, n'est-ce pas ? Je n'essaie pas de me moquer
+pour toutes ses peintures, n'est-ce pas&nbsp;? Je n'essaye pas de me moquer
 d'Eric Raymond. Dans l'ensemble, ses conseils sont bons. Ce qu'il dit de
 Lisp est plutôt empreint de sagesse conventionnelle. Mais il y a une
-contradiction dans la sagesse conventionnelle : Lisp fera de vous un
+contradiction dans la sagesse conventionnelle&nbsp;: Lisp fera de vous un
 meilleur programmeur et pourtant vous n'allez pas l'utiliser.
 
-Pourquoi pas ? Les langages de programmation ne sont que des outils, après
-tout. Si Lisp produit vraiment de meilleurs programmes, vous devez
-l'utiliser. Et sinon, qui en a besoin ?
+Pourquoi pas&nbsp;? Les langages de programmation ne sont que des outils,
+après tout. Si Lisp produit vraiment de meilleurs programmes, vous devez
+l'utiliser. Et sinon, qui en a besoin&nbsp;?
 
 Ce n'est pas juste une question théorique. Le développement de logiciels est
 une activité très compétitive, sujet aux monopoles naturels. Une entreprise
@@ -103,34 +103,34 @@ pour cent. Ça veut dire que si vous dirigez une startup, vous feriez mieux
 de faire quelque chose de non conventionnel. Sinon, vous avez des problèmes.
 
 En 1995, nous savions quelque chose que je ne crois pas que nos concurrents
-comprenaient, et que peu comprennent même maintenant : quand vous écrivez un
-logiciel qui ne va fonctionner que sur vos propres serveurs, vous pouvez
-utiliser le langage de programmation de votre choix. Quand vous écrivez un
-logiciel de bureau, il y a un fort biais pour l'écrire dans le même langage
-que le système d'exploitation. Il y a dix ans, écrire des applications
-signifiait écrire des applications en C. Mais avec un logiciel basé sur le
-Web, surtout si vous avez le code source du langage et du système
-d'exploitation, vous pouvez utiliser le langage de votre choix.
+comprenaient, et que peu comprennent même maintenant&nbsp;: quand vous
+écrivez un logiciel qui ne va fonctionner que sur vos propres serveurs, vous
+pouvez utiliser le langage de programmation de votre choix. Quand vous
+écrivez un logiciel de bureau, il y a un fort biais pour l'écrire dans le
+même langage que le système d'exploitation. Il y a dix ans, écrire des
+applications signifiait écrire des applications en C. Mais avec un logiciel
+basé sur le Web, surtout si vous avez le code source du langage et du
+système d'exploitation, vous pouvez utiliser le langage de votre choix.
 
 Cette nouvelle liberté est cependant une arme à double tranchant. Maintenant
 que vous pouvez utiliser n'importe quel langage, vous devez déterminer
 lequel utiliser. Les entreprises qui essayent de prétendre que rien n'a
 changé risquent de découvrir que leurs concurrents ne le pensent pas.
 
-Si vous pouvez utiliser n'importe quel langage, quel langage utiliser ? Nous
-avions choisi Lisp. D'un côté, il était évident qu'un développement rapide
-serait important sur ce marché. Nous tous partions de zéro ; ainsi, une
-entreprise qui pourrait obtenir de nouvelles fonctionnalités avant ses
-concurrents aurait un gros avantage. On sait que Lisp était un langage
-vraiment pertinent pour écrire un logiciel vite, et les applications basées
-sur des serveurs amplifient l'effet de vitesse de développement car vous
-pouvez publier un logiciel dans la minute suivant sa conception.
+Si vous pouvez utiliser n'importe quel langage, quel langage utiliser&nbsp;?
+Nous avions choisi Lisp. D'un côté, il était évident qu'un développement
+rapide serait important sur ce marché. Nous tous partions de zéro&nbsp;;
+ainsi, une entreprise qui pourrait obtenir de nouvelles fonctionnalités
+avant ses concurrents aurait un gros avantage. On sait que Lisp était un
+langage vraiment pertinent pour écrire un logiciel vite, et les applications
+basées sur des serveurs amplifient l'effet de vitesse de développement car
+vous pouvez publier un logiciel dans la minute suivant sa conception.
 
 Si les autres entreprises n'utilisaient pas Lisp, tant mieux. Cela pourrait
 nous donner un avantage technologique, et on avait besoin de toute l'aide
 qu'on pouvait obtenir. Quand nous avons lancé Viaweb, nous n'avons aucune
-expérience en affaires. On ne savait rien à propos du marketing, ou
-recrutement, ou levée de fonds, ni de l'acquisition de clients. Aucun de
+expérience en affaires. On ne savait rien à propos du marketing, du
+recrutement, de la levée de fonds, ni de l'acquisition de clients. Aucun de
 nous n'avait même jamais eu ce que vous appelleriez un vrai travail. La
 seule chose dans laquelle nous étions bons était l'écriture de logiciels. On
 espérait que ça nous sauverait. Tout avantage que nous pourrions obtenir en
@@ -139,26 +139,26 @@ matière d'ingénierie logicielle serait bon à prendre.
 On pourrait donc dire que Lisp était une expérience. Notre hypothèse était
 que si nous écrivons notre logiciel en Lisp, nous pourrions obtenir des
 fonctionnalités plus rapidement que nos concurrents et faire des choses
-qu'ils ne pouvaient pas faire. Et puisque Lisp est de si performant, nous
+qu'ils ne pouvaient pas faire. Et puisque Lisp est si performant, nous
 n'aurions pas besoin d'une grande équipe de développement, donc nos coûts
 seraient plus bas. Si c'était le cas, nous pourrions offrir un meilleure
 produit à moindre coût, et malgré tout être profitable. Nous finirions par
 capter tous les utilisateurs, nos concurrents n'en auraient aucun, et
 finiraient par faire faillite. C'est ce qu'on espérait.
 
-Quels ont été les résultats de cette expérience ? Assez étonnamment, cela a
-fonctionné. Nous avons finalement eu beaucoup de concurrents, de l'ordre de
-vingt à trente, mais aucun de leurs logiciels ne pouvait rivaliser avec le
-nôtre. Nous avions un éditeur WYSIWYG de boutique en ligne qui fonctionnait
-sur le serveur et pourtant donnait l'impression d'être une application de
-bureau. Nos concurrents avaient des scripts CGI. Nous étions toujours loin
-devant eux en termes de fonctionnalités. Des fois, en désespoir de cause,
-les concurrents tentaient d'introduire des fonctionnalités qu'on n'avait
-pas. Mais avec Lisp notre cycle de développement était si rapide qu'on
-pouvait des fois dupliquer une nouvelle fonctionnalité dans un délai d'un
-jour ou deux après un communiqué de presse. Au moment où les journalistes
-couvrant le communiqué de presse nous appelaient, nous avionsn nous aussi la
-nouvelle fonctionnalité.
+Quels ont été les résultats de cette expérience&nbsp;? Assez étonnamment,
+cela a fonctionné. Nous avons finalement eu beaucoup de concurrents, de
+l'ordre de vingt à trente, mais aucun de leurs logiciels ne pouvait
+rivaliser avec le nôtre. Nous avions un éditeur WYSIWYG de boutique en ligne
+qui fonctionnait sur le serveur et pourtant donnait l'impression d'être une
+application de bureau. Nos concurrents avaient des scripts CGI. Nous étions
+toujours loin devant eux en termes de fonctionnalités. Des fois, en
+désespoir de cause, les concurrents tentaient d'introduire des
+fonctionnalités qu'on n'avait pas. Mais avec Lisp notre cycle de
+développement était si rapide qu'on pouvait des fois dupliquer une nouvelle
+fonctionnalité dans un délai d'un jour ou deux après un communiqué de
+presse. Au moment où les journalistes couvrant le communiqué de presse nous
+appelaient, nous avionsn nous aussi la nouvelle fonctionnalité.
 
 Nos concurrents ont dû penser que nous avions une sorte d'arme secrète — que
 nous décodions leur trafic Enigma ou quelque chose du genre. Nous avions
@@ -202,13 +202,13 @@ marché. C'est l'une des branches les plus rentables de Yahoo, et les
 boutiques construits avec sont la base de Yahoo Shopping. Ayant quitté Yahoo
 en 1999, et donc je ne sais pas exactement combien d'utilisateurs ils ont
 actuellement, mais la dernière fois que j'entendais parler, il en était fait
-mention d'environ 20 000.
+mention d'environ 20&nbsp;000.
 
 ## Le paradoxe de Blub
 
-En quoi Lisp est-il si génial ? Et si Lisp est si génial, pourquoi tout le
-monde ne l'utilise pas ? Ces questions ont l'air rhétorique, mais en fait,
-il y a des réponses simples. Lisp est si génial pas tant du fait d'une
+En quoi Lisp est-il si génial&nbsp;? Et si Lisp est si génial, pourquoi tout
+le monde ne l'utilise pas&nbsp;? Ces questions ont l'air rhétorique, mais en
+fait, il y a des réponses simples. Lisp est si génial pas tant du fait d'une
 quelconque faculté magique qui ne serait visible des passionnés, mais parce
 qu'il est simplement le langage le plus puissant disponible. Et la raison
 pour laquelle tout le monde ne l'utilise pas, c'est que les langages de
@@ -216,8 +216,8 @@ programmation ne sont pas simplement des technologies, mais également des
 habitudes de réflexion, et rien ne change plus lentement. Ces deux réponses
 ont sans doute besoin d'explications.
 
-Je vais commencer par une déclaration scandaleusement controversée : les
-langages de programmation varient en puissance.
+Je vais commencer par une déclaration scandaleusement controversée&nbsp;:
+les langages de programmation varient en puissance.
 
 Peu contesteront, tout au moins, que les langages de haut niveau sont plus
 puissants que le langage machine. Aujourd'hui, la plupart des programmeurs
@@ -225,14 +225,14 @@ conviendront qu'il n'est pas souhaitable, en règle générale, de programmer
 en langage machine. Il est plutôt préférable de programmer dans un langage
 de haut niveau et demander à un compilateur de le traduire en langage
 machine pour vous. Cette idée fait même maintenant partie intégrante du
-hardware : depuis les années 1980, les jeux d'instructions ont été conçus
-pour les compilateurs plutôt que pour les programmeurs.
+hardware&nbsp;: depuis les années 1980, les jeux d'instructions ont été
+conçus pour les compilateurs plutôt que pour les programmeurs.
 
 Tout le monde sait que c'est une erreur d'écrire tout son programme à la
 main en langage machine. Ce qui est moins souvent compris, c'est qu'il y a
-un principe plus général : si vous avez le choix entre plusieurs langages,
-toutes choses égales par ailleurs, c'est une erreur de programmer dans tout
-autre langage que le plus puissant[3](footnote:3).
+un principe plus général&nbsp;: si vous avez le choix entre plusieurs
+langages, toutes choses égales par ailleurs, c'est une erreur de programmer
+dans tout autre langage que le plus puissant[3](footnote:3).
 
 Il y a de nombreuses exceptions à cette règle. Si vous devez écrire un
 programme qui va travailler en étroite collaboration avec un programme écrit
@@ -251,18 +251,18 @@ programmation en langage machine.
 Il est admis que le langage machine est de très bas niveau. Mais, au moins
 comme une sorte de convention sociale, les langages de haut niveau sont
 souvent tous traités comme équivalents. Ils ne le sont pas. Techniquement,
-le terme « langage de haut niveau » ne signifie rien de très précis. Il n'y
-a pas de ligne de démarcation entre les langages machine d'un côté et tous
-les langages de haut niveau de l'autre. Les langages s'inscrivent dans un
-continuum[4](footnote:4) d'abstraction, des plus puissants aux langages
-machine, dont la puissance varie.
+le terme «&nbsp;langage de haut niveau&nbsp;» ne signifie rien de très
+précis. Il n'y a pas de ligne de démarcation entre les langages machine d'un
+côté et tous les langages de haut niveau de l'autre. Les langages
+s'inscrivent dans un continuum[4](footnote:4) d'abstraction, des plus
+puissants aux langages machine, dont la puissance varie.
 
 Prenons le cas de Cobol. Cobol est un langage de haut niveau, dans le sens
 où il est compilé en langage machine. Quelqu'un pourrait-il sérieusement
-affirmer que Cobol a un pouvoir équivalent à, disons, Python ? Il est
+affirmer que Cobol a un pouvoir équivalent à, disons, Python&nbsp;? Il est
 probablement plus proche du langage machine que Python.
 
-Ou qu'en serait-il de Perl 4 ? Entre Perl 4 et Perl 5, les fermetures
+Ou qu'en serait-il de Perl 4&nbsp;? Entre Perl 4 et Perl 5, les fermetures
 lexicales ont été ajoutées au langage. La plupart des hackers Perl
 conviendront que Perl 5 est plus puissant que Perl 4. Mais une fois cela
 admis, il est établi qu'un langage de haut niveau peut être plus puissant
@@ -299,15 +299,15 @@ assez bon pour lui, car il pense Blub.
 Lorsque nous passons au point de vue d'un programmeur utilisant un des
 langages plus haut dans le continuum de puissance, cependant, nous
 constatons qu'à son tour, il méprise Blub. Comment peut-on arriver à quoi
-que soit avec Blub ? Il n'a même pas Y.
+que soit avec Blub&nbsp;? Il n'a même pas Y.
 
 Par induction, les seuls programmeurs en mesure de voir toutes les
 différences de pouvoir entre les différents langages sont ceux qui
 comprennent le plus puissant (c'est probablement ce que Eric Raymond voulait
-dire à propos de Lisp qui ferait de vous un meilleur programmeur.) Vous ne
-pouvez pas faire confiance aux avis des autres, à cause du paradoxe Blub :
-ils sont satisfaits du langage qu'ils utilisent, car cela dicte leur façon
-de penser aux programmes.
+dire à propos de Lisp qui ferait de vous un meilleur programmeur). Vous ne
+pouvez pas faire confiance aux avis des autres, à cause du paradoxe
+Blub&nbsp;: ils sont satisfaits du langage qu'ils utilisent, car cela dicte
+leur façon de penser aux programmes.
 
 Je le sais de ma propre expérience, comme un lycéen qui écrivait ses
 programmes en Basic. Ce langage ne supportait même pas la récursivité. Il
@@ -321,7 +321,7 @@ rapport aux autres est un sujet sensible. Cependant, je pense que Lisp est
 au sommet. Pour soutenir cette affirmation, je vais vous parler d'une des
 choses que je trouve manquantes lorsque je regarde les quatre autres
 langages. Comment peut-on arriver à quoi que ce soit avec eux, sans
-macros[5](footnote:5) ?
+macros[5](footnote:5)&nbsp;?
 
 Plusieurs langages ont quelque chose appelé une « macro ». Mais les macros
 de Lisp sont uniques. Et croyez-le ou non, ce qu'ils font est lié aux
@@ -345,23 +345,23 @@ ces arbres d'analyse sont entièrement accessibles à vos programmes. Vous
 pouvez écrire des programmes qui les manipulent. En Lisp, ces programmes
 s'appellent macros. Ils sont les programmes qui écrivent des programmes.
 
-Des programmes qui écrivent des programmes ? Quand voudriez-vous faire ça ?
-Pas très souvent si vous pensez en Cobol. Tout le temps, si vous pensez en
-Lisp. Ce serait utile si je pouvais donner un exemple d'une marco puissante
-et dire voilà ! Comment donc ? Mais si je le faisais, ça ressemblerait à du
-charabia pour quiconque ne connaîtrait pas Lisp. Il n'y a pas de place ici
-pour expliquer tout ce que vous devez savoir pour comprendre ce que cela
-signifie. Dans [ANSI Common Lisp][ansi-common-lisp] je tentais de faire
-avancer les choses aussi vite que possible, et même ainsi, je n'ai pu
-arriver aux macros qu'à la page 160.
+Des programmes qui écrivent des programmes&nbsp;? Quand voudriez-vous faire
+ça&nbsp;? Pas très souvent si vous pensez en Cobol. Tout le temps, si vous
+pensez en Lisp. Ce serait utile si je pouvais donner un exemple d'une marco
+puissante et dire voilà&nbsp;! Comment donc&nbsp;? Mais si je le faisais, ça
+ressemblerait à du charabia pour quiconque ne connaîtrait pas Lisp. Il n'y a
+pas de place ici pour expliquer tout ce que vous devez savoir pour
+comprendre ce que cela signifie. Dans [ANSI Common Lisp][ansi-common-lisp]
+je tentais de faire avancer les choses aussi vite que possible, et même
+ainsi, je n'ai pu arriver aux macros qu'à la page 160.
 
 Mais je pense que je peux donner une sorte d'argument qui pourrait être
 convaincant. Le code source de l'éditeur de Viaweb consistait sans doute en
 environ 20 à 25% de macros. Les macros sont plus difficiles à écrire que les
 fonctions ordinaires, et il n'est pas jugé bon de les utiliser quand elles
-ne sont pas nécessaires. Chaque macro dans est donc présente dans ce code
-est là car elle doit y être. Cela signifie qu'au moins 20 à 25% du code de
-ce programme fait de choses que vous ne pouvez pas facilement faire dans un
+ne sont pas nécessaires. Chaque macro est donc présente dans ce code est là
+car elle doit y être. Cela signifie qu'au moins 20 à 25% du code de ce
+programme fait de choses que vous ne pouvez pas facilement faire dans un
 autre langage. Aussi sceptique que le programmeur Blub puisse être sur mes
 prétentions concernant les pouvoirs mystérieux de Lisp, cela devrait le
 rendre curieux. Nous n'écrivions pas ce code pour notre propre plaisir. Nous
@@ -378,7 +378,7 @@ suivre ce fil. Ce n'est peut-être que la partie visible de l'iceberg.
 ## Aïkido pour Startups
 
 Mais je ne m'attends pas à convaincre quiconque ([plus de 25 ans][scheme])
-d'apprendre Lisp. Le but de cet article n'est pas de change d'avis, mais de
+d'apprendre Lisp. Le but de cet article n'est pas de changer d'avis, mais de
 rassurer les personnes déjà intéressées par l'utilisation de Lisp — les
 personnes qui savent que Lisp est un langage puissant, mais s'inquiètent
 parce qu'il n'est pas largement utilisé. Dans une situation concurrentielle,
@@ -400,11 +400,11 @@ le processeur, comme un barman désireux de fermer et rentrer chez lui, les
 ait finalement expulsés en passant à un ensemble d'instructions RISC.
 
 Habituellement, la technologie change rapidement. Mais les langages de
-programmation sont différents : les langages de programmation ne sont pas
-seulement des technologies, mais ce en quoi les programmeurs pensent. Ils
-sont à moitié des technologie et à moitié des religions[6](footnote:6). Et
-donc le langage médian, c'est-à-dire le langage utilisé par le programmeur
-médian, se déplace aussi lentement qu'un iceberg.
+programmation sont différents&nbsp;: les langages de programmation ne sont
+pas seulement des technologies, mais ce en quoi les programmeurs pensent.
+Ils sont à moitié des technologie et à moitié des religions[6](footnote:6).
+Et donc le langage médian, c'est-à-dire le langage utilisé par le
+programmeur médian, se déplace aussi lentement qu'un iceberg.
 
 Les ramasse-miettes, introduite par Lisp vers 1960 sont maintenant largement
 considéré comme une bonne chose. Le typage au runtime, de même, gagne en
@@ -414,8 +414,8 @@ introduites par Lisp au milieu des années 60, sont toujours terra incognita.
 
 Évidemment, le langage médian a un élan énorme. Je ne propose pas que vous
 puissiez combattre cette force puissante. Ce que je propose est exactement
-le contraire : comme un pratiquant d'Aïkido, vous pouvez l'utiliser contre
-vos adversaires.
+le contraire&nbsp;: comme un pratiquant d'Aïkido, vous pouvez l'utiliser
+contre vos adversaires.
 
 Si vous travaillez pour une grande entreprise, cela peut ne pas être facile.
 Vous aurez du mal à convaincre le pointy-haired boss (???) de vous laisser
@@ -455,7 +455,7 @@ recherche de hackers Lisp, j'aurais été très inquiet.
      que les gens utilisaient pour construire leurs sites, et le système de
      commandes, écrit en C, qui gérait les commandes. La première version
      était surtout en Lisp, parce que le système de commandes était petit.
-     Plus tard, nous avons ajouté deux modules supplémentaires : un
+     Plus tard, nous avons ajouté deux modules supplémentaires&nbsp;: un
      générateur d'images écrit en C, et un responsable back-office écrit
      surtout en Perl.
 
@@ -468,8 +468,8 @@ recherche de hackers Lisp, j'aurais été très inquiet.
 
   2. Robert Morris dit que je n'avais pas besoin d'être si secret, parce que
      même si nos concurrents savaient qu'on utilisaient Lisp, ils n'aurait
-     pas compris pourquoi : « s'ils étaient si intelligents, ils auraient
-     déjà programmé en Lisp ».
+     pas compris pourquoi&nbsp;: «&nbsp;s'ils étaient si intelligents, ils
+     auraient déjà programmé en Lisp&nbsp;».
 
   3. Tous les langages sont également puissants dans le sens où ils sont
      Turing-équivalentes, mais ce n'est pas le sens du mot auquel les
@@ -485,9 +485,9 @@ recherche de hackers Lisp, j'aurais été très inquiet.
      récursivité et B ne la supporte pas, ce n'est pas probable que
      quelqu'un puisse le corriger en écrivant des fonctions de bibliothèque.
 
-  4. Note aux nerds : ou peut-être le treillis se rétrécissant vers le haut
-     ; ce n'est pas la forme qui compte ici mais l'idée qu'il y a au moins
-     un ordre partiel.
+  4. Note aux nerds&nbsp;: ou peut-être le treillis se rétrécissant vers le
+     haut&nbsp;; ce n'est pas la forme qui compte ici mais l'idée qu'il y a
+     au moins un ordre partiel.
 
   5. C'est un peu déroutant de traiter les macros comme une fonctionnalité
      distincte. En pratique, leur utilité est grandement améliorée par les
@@ -498,9 +498,9 @@ recherche de hackers Lisp, j'aurais été très inquiet.
      la forme de guerres de religion ou de manuels de premier cycle si
      résolument neutres qu'ils sont vraiment des œuvres d'anthropologie. Les
      gens qui apprécient leur paix ou veulent la permanence, évitent le
-     sujet. Mais la question n'est qu'à moitié religieuse ; il y a quelque
-     chose qui mérite d'être étudié, surtout si vous voulez concevoir de
-     nouveaux langages.
+     sujet. Mais la question n'est qu'à moitié religieuse&nbsp;; il y a
+     quelque chose qui mérite d'être étudié, surtout si vous voulez
+     concevoir de nouveaux langages.
 
 [ansi-common-lisp]: http://paulgraham.com/acl.html
 [scheme]: http://www.trollope.org/scheme.html

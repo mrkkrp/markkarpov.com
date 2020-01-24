@@ -14,7 +14,7 @@ jobs:
       - run:
           name: Setup Cachix
           command: |
-            nix-env -f nix/nixpkgs/ -iA cachix
+            nix-env -iA cachix -f https://cachix.org/api/v1/install
             USER=dummy cachix use mrkkrp
       - run:
           name: Build environment

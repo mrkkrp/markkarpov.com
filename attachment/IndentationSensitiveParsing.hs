@@ -4,8 +4,8 @@ module Main (main) where
 
 import Control.Applicative (empty)
 import Control.Monad (void)
-import Data.Void
 import Data.Char (isAlphaNum)
+import Data.Void
 import Text.Megaparsec
 import Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
@@ -36,20 +36,20 @@ pComplexItem = L.indentBlock scn p
   where
     p = do
       header <- pItem
-      return (L.IndentMany Nothing (return . (header, )) pLineFold)
+      return (L.IndentMany Nothing (return . (header,)) pLineFold)
 
 pLineFold :: Parser String
 pLineFold = L.lineFold scn $ \sc' ->
   let ps = takeWhile1P Nothing f `sepBy1` try sc'
       f x = isAlphaNum x || x == '-'
-  in unwords <$> ps <* sc
+   in unwords <$> ps <* sc
 
 pItemList :: Parser (String, [(String, [String])])
 pItemList = L.nonIndented scn (L.indentBlock scn p)
   where
     p = do
       header <- pItem
-      return (L.IndentSome Nothing (return . (header, )) pComplexItem)
+      return (L.IndentSome Nothing (return . (header,)) pComplexItem)
 
 parser :: Parser (String, [(String, [String])])
 parser = pItemList <* eof

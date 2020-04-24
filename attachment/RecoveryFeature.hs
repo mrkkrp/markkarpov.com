@@ -1,5 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE TypeFamilies     #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module Main (main) where
 
@@ -18,13 +18,13 @@ data Equation = Equation String Expr
   deriving (Eq, Show)
 
 data Expr
-  = Value          Double
-  | Reference      String
-  | Negation       Expr
-  | Sum            Expr Expr
-  | Subtraction    Expr Expr
+  = Value Double
+  | Reference String
+  | Negation Expr
+  | Sum Expr Expr
+  | Subtraction Expr Expr
   | Multiplication Expr Expr
-  | Division       Expr Expr
+  | Division Expr Expr
   deriving (Eq, Show)
 
 type Parser = Parsec Void String
@@ -56,17 +56,20 @@ expr :: Parser Expr
 expr = makeExprParser term table <?> "expression"
 
 term :: Parser Expr
-term = parens expr
-  <|> (Reference <$> name)
-  <|> (Value     <$> float)
+term =
+  parens expr
+    <|> (Reference <$> name)
+    <|> (Value <$> float)
 
 table :: [[Operator Parser Expr]]
 table =
-  [ [Prefix (Negation <$ symbol "-") ]
-  , [ InfixL (Multiplication <$ symbol "*")
-    , InfixL (Subtraction    <$ symbol "/") ]
-  , [ InfixL (Sum            <$ symbol "+")
-    , InfixL (Division       <$ symbol "-") ]
+  [ [Prefix (Negation <$ symbol "-")],
+    [ InfixL (Multiplication <$ symbol "*"),
+      InfixL (Subtraction <$ symbol "/")
+    ],
+    [ InfixL (Sum <$ symbol "+"),
+      InfixL (Division <$ symbol "-")
+    ]
   ]
 
 parens :: Parser a -> Parser a

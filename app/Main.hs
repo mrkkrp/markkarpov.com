@@ -7,10 +7,7 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Main
-  ( main,
-  )
-where
+module Main (main) where
 
 import Control.Lens hiding ((.=), (<.>))
 import Control.Monad
@@ -165,15 +162,14 @@ instance ToJSON PostInfo where
       ]
 
 -- | Information about a post that is hosted on my site.
-data LocalInfo
-  = LocalInfo
-      { localTitle :: !Text,
-        localPublished :: !Day,
-        localUpdated :: !(Maybe Day),
-        localDesc :: !Text,
-        localFile :: !FilePath,
-        localTags :: Set Text
-      }
+data LocalInfo = LocalInfo
+  { localTitle :: !Text,
+    localPublished :: !Day,
+    localUpdated :: !(Maybe Day),
+    localDesc :: !Text,
+    localFile :: !FilePath,
+    localTags :: Set Text
+  }
   deriving (Eq, Show)
 
 instance FromJSON LocalInfo where
@@ -227,11 +223,10 @@ menuItemTitle = \case
 -- Galleries
 
 -- | Photo inventory.
-data PhotoInventory
-  = PhotoInventory
-      { photoCameras :: !(Map Text Text),
-        photoLenses :: !(Map Text Text)
-      }
+data PhotoInventory = PhotoInventory
+  { photoCameras :: !(Map Text Text),
+    photoLenses :: !(Map Text Text)
+  }
   deriving (Eq, Show)
 
 instance FromJSON PhotoInventory where
@@ -248,13 +243,12 @@ instance ToJSON PhotoInventory where
       ]
 
 -- | Information about a gallery.
-data Gallery
-  = Gallery
-      { galleryTitle :: !Text,
-        galleryFile :: !FilePath,
-        galleryUpdated :: !Day,
-        galleryPhotos :: ![Photo]
-      }
+data Gallery = Gallery
+  { galleryTitle :: !Text,
+    galleryFile :: !FilePath,
+    galleryUpdated :: !Day,
+    galleryPhotos :: ![Photo]
+  }
   deriving (Eq, Show)
 
 instance FromJSON Gallery where
@@ -275,17 +269,16 @@ instance ToJSON Gallery where
       ]
 
 -- | Description of a photo in a gallery.
-data Photo
-  = Photo
-      { photoFile :: !FilePath,
-        photoDate :: !Day,
-        photoCamera :: !Text,
-        photoLens :: !Text,
-        photoAperture :: !Text,
-        photoExposure :: !Text,
-        photoIso :: !Text,
-        photoComment :: !(Maybe Text)
-      }
+data Photo = Photo
+  { photoFile :: !FilePath,
+    photoDate :: !Day,
+    photoCamera :: !Text,
+    photoLens :: !Text,
+    photoAperture :: !Text,
+    photoExposure :: !Text,
+    photoIso :: !Text,
+    photoComment :: !(Maybe Text)
+  }
   deriving (Eq, Show)
 
 instance FromJSON Photo where
@@ -318,7 +311,6 @@ instance ToJSON Photo where
 
 main :: IO ()
 main = shakeArgs shakeOptions $ do
-
   -- Helpers
 
   phony "clean" $ do

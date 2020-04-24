@@ -51,7 +51,7 @@ type Parser = Parsec Void String
 sc :: Parser ()
 sc = L.space space1 lineCmnt blockCmnt
   where
-    lineCmnt  = L.skipLineComment "//"
+    lineCmnt = L.skipLineComment "//"
     blockCmnt = L.skipBlockComment "/*" "*/"
 
 lexeme :: Parser a -> Parser a
@@ -61,17 +61,14 @@ symbol :: String -> Parser String
 symbol = L.symbol sc
 
 -- | 'parens' parses something between parenthesis.
-
 parens :: Parser a -> Parser a
 parens = between (symbol "(") (symbol ")")
 
 -- | 'integer' parses an integer.
-
 integer :: Parser Integer
 integer = lexeme L.decimal
 
 -- | 'semi' parses a semicolon.
-
 semi :: Parser String
 semi = symbol ";"
 
@@ -79,15 +76,16 @@ rword :: String -> Parser ()
 rword w = (lexeme . try) (string w *> notFollowedBy alphaNumChar)
 
 rws :: [String] -- list of reserved words
-rws = ["if","then","else","while","do","skip","true","false","not","and","or"]
+rws = ["if", "then", "else", "while", "do", "skip", "true", "false", "not", "and", "or"]
 
 identifier :: Parser String
 identifier = (lexeme . try) (p >>= check)
   where
-    p       = (:) <$> letterChar <*> many alphaNumChar
-    check x = if x `elem` rws
-                then fail $ "keyword " ++ show x ++ " cannot be an identifier"
-                else return x
+    p = (:) <$> letterChar <*> many alphaNumChar
+    check x =
+      if x `elem` rws
+        then fail $ "keyword " ++ show x ++ " cannot be an identifier"
+        else return x
 
 whileParser :: Parser Stmt
 whileParser = between sc eof stmt
@@ -99,16 +97,17 @@ stmt = f <$> sepBy1 stmt' semi
     f l = if length l == 1 then head l else Seq l
 
 stmt' :: Parser Stmt
-stmt' = ifStmt
-  <|> whileStmt
-  <|> skipStmt
-  <|> assignStmt
-  <|> parens stmt
+stmt' =
+  ifStmt
+    <|> whileStmt
+    <|> skipStmt
+    <|> assignStmt
+    <|> parens stmt
 
 ifStmt :: Parser Stmt
 ifStmt = do
   rword "if"
-  cond  <- bExpr
+  cond <- bExpr
   rword "then"
   stmt1 <- stmt
   rword "else"
@@ -125,7 +124,7 @@ whileStmt = do
 
 assignStmt :: Parser Stmt
 assignStmt = do
-  var  <- identifier
+  var <- identifier
   void (symbol ":=")
   expr <- aExpr
   return (Assign var expr)
@@ -141,30 +140,35 @@ bExpr = makeExprParser bTerm bOperators
 
 aOperators :: [[Operator Parser AExpr]]
 aOperators =
-  [ [Prefix (Neg <$ symbol "-") ]
-  , [ InfixL (ABinary Multiply <$ symbol "*")
-    , InfixL (ABinary Divide   <$ symbol "/") ]
-  , [ InfixL (ABinary Add      <$ symbol "+")
-    , InfixL (ABinary Subtract <$ symbol "-") ]
+  [ [Prefix (Neg <$ symbol "-")],
+    [ InfixL (ABinary Multiply <$ symbol "*"),
+      InfixL (ABinary Divide <$ symbol "/")
+    ],
+    [ InfixL (ABinary Add <$ symbol "+"),
+      InfixL (ABinary Subtract <$ symbol "-")
+    ]
   ]
 
 bOperators :: [[Operator Parser BExpr]]
 bOperators =
-  [ [Prefix (Not <$ rword "not") ]
-  , [InfixL (BBinary And <$ rword "and")
-    , InfixL (BBinary Or <$ rword "or") ]
+  [ [Prefix (Not <$ rword "not")],
+    [ InfixL (BBinary And <$ rword "and"),
+      InfixL (BBinary Or <$ rword "or")
+    ]
   ]
 
 aTerm :: Parser AExpr
-aTerm = parens aExpr
-  <|> Var      <$> identifier
-  <|> IntConst <$> integer
+aTerm =
+  parens aExpr
+    <|> Var <$> identifier
+    <|> IntConst <$> integer
 
 bTerm :: Parser BExpr
-bTerm =  parens bExpr
-  <|> (BoolConst True  <$ rword "true")
-  <|> (BoolConst False <$ rword "false")
-  <|> rExpr
+bTerm =
+  parens bExpr
+    <|> (BoolConst True <$ rword "true")
+    <|> (BoolConst False <$ rword "false")
+    <|> rExpr
 
 rExpr :: Parser BExpr
 rExpr = do
@@ -174,8 +178,9 @@ rExpr = do
   return (RBinary op a1 a2)
 
 relation :: Parser RBinOp
-relation = (Greater <$ symbol ">")
-  <|> (Less <$ symbol "<")
+relation =
+  (Greater <$ symbol ">")
+    <|> (Less <$ symbol "<")
 
 main :: IO ()
 main = do

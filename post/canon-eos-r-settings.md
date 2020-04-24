@@ -3,7 +3,7 @@ title: Canon EOS R settings I use
 desc: Tweaks I made to the configuration of the Canon EOS R camera with explanations why.
 date:
   published: November 16, 2019
-  updated: December 25, 2019
+  updated: April 24, 2020
 tag: photography
 ---
 
@@ -63,6 +63,12 @@ pressing `M-Fn` button or `Q set` button, so I'll skip them here.
   relative, active touch area should be right. This way you can move the AF
   area using your right thumb while looking through the view finder.
 
+* `Focus guide` (page 2). This gives you a visual indication of your
+  focusing accuracy in manual mode. Can be useful sometimes, although if
+  you're focusing manually it's probably because the camera is having
+  problems with autofocusing in a particular situation, and so the focus
+  guide feature will also have the same problem.
+
 ## Set-up
 
 This is the yellow menu with wrench icon.
@@ -106,13 +112,9 @@ This is the orange menu with camera icon with some sort of meter underneath.
   functions so I just keep it as is.
 
 * `Customize M-Fn bar` (page 4). `M-Fn` bar is useful, but it doesn't do
-  anything by default. I set it to control ISO. Truth to be told, I almost
-  [always use `Auto-ISO`][exposure] anyway because adjusting it manually is
-  a waste of time and you'll be missing shots. Modern cameras can figure out
-  ISO pretty well these days, so you need to think about fewer things when
-  shooting. I disable the safety lock, because unlocking it takes time. If
-  you accidentally touch it once and tweak ISO, it's not the end of the
-  world, you can bring it back.
+  anything by default. I set it to control AF modes. I disable the safety
+  lock, because unlocking it takes time. If I accidentally touch it, it's
+  not the end of the world, I can bring it back quickly.
 
 ## Conclusion
 

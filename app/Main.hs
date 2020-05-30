@@ -31,7 +31,7 @@ import qualified Data.Text.Lazy.IO as TL
 import Data.Time
 import qualified Data.Vector as V
 import qualified Data.Yaml as Y
-import Development.Shake
+import Development.Shake hiding (Verbosity (..))
 import Development.Shake.FilePath
 import qualified Lucid as L
 import qualified Text.MMark as MMark
@@ -710,7 +710,7 @@ mkLocation = provideAs "location" . dropDirectory1
 provideAs :: ToJSON v => Text -> v -> Value
 provideAs k v = Object (HM.singleton k (toJSON v))
 
-parseDay :: Monad m => Text -> m Day
+parseDay :: MonadFail m => Text -> m Day
 parseDay = parseTimeM True defaultTimeLocale "%B %e, %Y" . T.unpack
 
 localNormalizedUpdated :: LocalInfo -> Day

@@ -1,5 +1,5 @@
 let
-  compiler = "ghc864";
+  compiler = "ghc883";
   pkgs = import ./nix/nixpkgs;
   appSourceRegex = [
     "^app.*$"
@@ -20,14 +20,10 @@ let
     "^about\.md$"
   ];
   haskellPackages = pkgs.haskell.packages.${compiler}.override
-    { overrides = (self: super:
-        super //
-        { "markkarpov-com" = super.callCabal2nix "markkarpov-com" (pkgs.lib.sourceByRegex ./. appSourceRegex) {};
-          "ghc-syntax-highlighter" = pkgs.haskell.lib.overrideCabal super.ghc-syntax-highlighter (drv: {
-            version = "0.0.4.0";
-            sha256 = "1kw1h7n4ydn1klzll24nwwg405j23wry9hg8g96vba51vah0wc47";
-          });
-        });
+    { overrides = (self: super: {
+        "markkarpov-com" = super.callCabal2nix "markkarpov-com"
+          (pkgs.lib.sourceByRegex ./. appSourceRegex) {};
+      });
     };
   html5validator = import ./nix/html5validator;
   texlive = import ./nix/texlive-custom;
@@ -42,16 +38,17 @@ let
     else haskellPackages.markkarpov-com;
   resume = pkgs.stdenv.mkDerivation {
     name = "resume-in-pdf";
+    src = pkgs.lib.sourceByRegex ./resume ["^resume\.tex$"];
     buildInputs = [
       texlive
     ];
-    unpackPhase = "true";
     buildPhase = ''
-      pdflatex ${./resume/resume.tex}
+      pdflatex resume.tex
+      ls -la
     '';
     installPhase = ''
       mkdir "$out"
-      cp *-resume.pdf $out/resume.pdf
+      cp resume.pdf $out/resume.pdf
     '';
   };
   site = doValidation: pkgs.stdenv.mkDerivation {

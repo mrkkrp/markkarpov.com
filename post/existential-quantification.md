@@ -3,6 +3,7 @@ title: Existential quantification
 desc: In this post I'm going to give an idea of how existentials can be useful in Haskell.
 date:
   published: November 11, 2018
+  updated: June 1, 2020
 tag: haskell
 ---
 
@@ -147,7 +148,7 @@ There are various degrees of how much we might want to preserve:
 
   ```haskell
   data Showable where
-    Showable :: forall a. Show a => Showable
+    Showable :: forall a. Show a => a -> Showable
   ```
 
   Pattern-matching on `Showable` will give us the corresponding dictionary

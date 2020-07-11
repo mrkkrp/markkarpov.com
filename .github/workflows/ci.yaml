@@ -1,0 +1,37 @@
+name: CI
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types:
+      - opened
+      - synchronize
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: nixos/nix:2.3.6
+    steps:
+      - uses: actions/checkout@v2
+      - uses: cachix/cachix-action@v6
+        with:
+          name: mrkkrp
+          skipPush: true
+      - name: Build the environment
+        run: nix-shell --attr site --pure --run true
+      - name: Push to Cachix
+        run: nix-store -qR --include-outputs $(nix-instantiate --attr site default.nix) | cachix push mrkkrp
+        env:
+          CACHIX_SIGNING_KEY: ${{ secrets.CACHIX_SIGNING_KEY }}
+      - name: Build the site
+        run: nix-build --attr site
+      - name: Install SSH key
+        uses: shimataro/ssh-key-action@v2.0.3
+        if: ${{ github.ref == 'ref/heads/master' }}
+        with:
+          key: ${{ secrets.SSH_KEY }}
+          known_hosts: ${{ secrets.KNOWN_HOSTS }}
+      - name: Copy to the droplet with rsync
+        if: ${{ github.ref == 'ref/heads/master' }}
+        run: |
+          nix run -f nix/nixpkgs rsync openssh -c rsync -rvzc -e "ssh -i /github/home/.ssh/id_rsa -p 2555 -o \"StrictHostKeyChecking no\"" result/_build/ admin@markkarpov.com:/home/admin/markkarpov.com

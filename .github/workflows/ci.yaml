@@ -27,11 +27,11 @@ jobs:
         run: nix-build --attr site
       - name: Install SSH key
         uses: shimataro/ssh-key-action@v2.0.3
-        if: ${{ github.ref == 'ref/heads/master' }}
+        if: ${{ github.ref == 'refs/heads/master' }}
         with:
           key: ${{ secrets.SSH_KEY }}
           known_hosts: ${{ secrets.KNOWN_HOSTS }}
       - name: Copy to the droplet with rsync
-        if: ${{ github.ref == 'ref/heads/master' }}
+        if: ${{ github.ref == 'refs/heads/master' }}
         run: |
           nix run -f nix/nixpkgs rsync openssh -c rsync -rvzc -e "ssh -i /github/home/.ssh/id_rsa -p 2555 -o \"StrictHostKeyChecking no\"" result/_build/ admin@markkarpov.com:/home/admin/markkarpov.com

@@ -148,7 +148,7 @@ action: there is one-to-one correspondence between the cache key and the
 cache contents. In particular, this means that if there is a cache hit the
 new cache contents won't be uploaded. This means that the cache key cannot
 be “sloppy”—every dependency should be reflected in it. Otherwise we risk
-living with increasingly old cashes while still getting cache hits.
+living with increasingly old caches while still getting cache hits.
 
 The official `cache` example for Haskell is an example of such setup where
 cache is never updated:

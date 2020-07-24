@@ -217,7 +217,7 @@ menuItemTitle = \case
   LearnHaskell -> "Learn Haskell"
   Galleries -> "Galleries"
   Resume -> "Resume"
-  About -> "About"
+  About -> "About me"
 
 ----------------------------------------------------------------------------
 -- Galleries
@@ -416,9 +416,9 @@ main = shakeArgs shakeOptions $ do
     (v, content) <- getPost input
     renderAndWrite
       ts
-      ["post", "default"]
+      ["about", "default"]
       (Just content)
-      [menuItem About env, v]
+      [menuItem About env, mkTitle About, v]
       output
   buildRoute galleriesR $ \_ output -> do
     env <- commonEnv
@@ -538,13 +538,6 @@ addTableClasses = Ext.blockRender $ \old block ->
 addImageClasses :: MMark.Extension
 addImageClasses = Ext.inlineRender $ \old inline ->
   case inline of
-    (Ext.Image inner src (Just "my_photo")) ->
-      L.with
-        (old $ Ext.Image inner src Nothing)
-        [ L.class_ "float-right d-none d-md-block ml-3",
-          L.width_ "300",
-          L.height_ "449"
-        ]
     i@Ext.Image {} -> L.with (old i) [L.class_ "img-fluid"]
     other -> old other
 

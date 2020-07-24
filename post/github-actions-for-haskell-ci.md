@@ -3,6 +3,7 @@ title: GitHub actions for Haskell CI
 desc: The post explains how I use GitHub actions to setup Haskell CI.
 date:
   published: July 15, 2020
+  updated: July 24, 2020
 tag: devops
 ---
 
@@ -154,11 +155,10 @@ The official `cache` example for Haskell is an example of such setup where
 cache is never updated:
 
 ```yaml
-- name: Cache ~/.cabal/packages, ~/.cabal/store and dist-newstyle
+- name: Cache ~/.cabal/store and dist-newstyle
   uses: actions/cache@v2
   with:
     path: |
-      ~/.cabal/packages
       ~/.cabal/store
       dist-newstyle
     key: ${{ runner.os }}-${{ matrix.ghc }}
@@ -189,7 +189,6 @@ cache hit for the primary key (the `key` pramater) does not happen. With
 Another question is *what to cache*? With Cabal I recommend caching three
 directories:
 
-* `~/.cabal/packages`
 * `~/.cabal/store`
 * `dist-newstyle`
 
@@ -207,7 +206,6 @@ steps:
   - uses: actions/cache@v2
     with:
       path: |
-        ~/.cabal/packages
         ~/.cabal/store
         dist-newstyle
       key: ${{ runner.os }}-${{ matrix.ghc }}-${{ hashFiles('cabal.project.freeze') }}
@@ -234,7 +232,6 @@ single line:
 There is just one little detail: the cache won't work. Obviously, the
 directories on Windows are named differently.
 
-* `~/.cabal/packages` → `C:\Users\runneradmin\AppData\Roaming\cabal\packages`
 * `~/.cabal/store` → `C:\sr`
 * `dist-newstyle` stays the same
 
@@ -266,7 +263,6 @@ build-windows:
     - uses: actions/cache@v2
       with:
         path: |
-          C:\\Users\\runneradmin\\AppData\\Roaming\\cabal\\packages
           ${{ steps.setup-haskell-cabal.outputs.cabal-store }}
           dist-newstyle
         key: ${{ runner.os }}-${{ matrix.ghc }}-${{ hashFiles('cabal.project.freeze') }}
@@ -283,7 +279,7 @@ build-windows:
 For reference, here is the complete example of typical Haskell CI setup that
 I use (Linux-only version):
 
-```haskell
+```yaml
 name: CI
 on:
   push:
@@ -305,6 +301,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-haskell@v1.1.2
+        id: setup-haskell-cabal
         with:
           ghc-version: ${{ matrix.ghc }}
           cabal-version: ${{ matrix.cabal }}
@@ -313,7 +310,6 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: |
-            ~/.cabal/packages
             ${{ steps.setup-haskell-cabal.outputs.cabal-store }}
             dist-newstyle
           key: ${{ runner.os }}-${{ matrix.ghc }}-${{ hashFiles('cabal.project.freeze') }}

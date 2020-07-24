@@ -402,9 +402,9 @@ main = shakeArgs shakeOptions $ do
     (v, content) <- getPost input
     renderAndWrite
       ts
-      ["post", "default"]
+      ["resume", "default"]
       (Just content)
-      [menuItem Resume env, v]
+      [menuItem Resume env, mkTitle Resume, v]
       output
   buildRoute resumePdfR copyFile'
   buildRoute aboutR $ \input output -> do

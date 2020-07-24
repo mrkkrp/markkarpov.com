@@ -23,6 +23,24 @@ let
     { overrides = (self: super: {
         "markkarpov-com" = super.callCabal2nix "markkarpov-com"
           (pkgs.lib.sourceByRegex ./. appSourceRegex) {};
+        "stache" = pkgs.haskell.lib.overrideCabal super.stache (_: {
+          version = "2.2.0";
+          revision = null;
+          editedCabalFile = null;
+          sha256 = "sha256-b/zhw8qgtQ6vVr3Zo5fq9aG30UqbZgscfokIoSGSjiU=";
+          isLibrary = true;
+          isExecutable = true;
+          executableHaskellDepends = with super; [
+            aeson
+            base
+            filepath
+            gitrev
+            optparse-applicative
+            text
+            unordered-containers
+            yaml
+          ];
+        });
       });
     };
   html5validator = import ./nix/html5validator;
@@ -38,17 +56,30 @@ let
     else haskellPackages.markkarpov-com;
   resume = pkgs.stdenv.mkDerivation {
     name = "resume-in-pdf";
-    src = pkgs.lib.sourceByRegex ./resume ["^resume\.tex$"];
+    src = pkgs.lib.sourceByRegex ./. [
+      "^config.*$"
+      "^resume.*$"
+    ];
     buildInputs = [
+      haskellPackages.stache
+      pkgs.pandoc
       texlive
     ];
+    LANG = "en_US.UTF-8";
+    FONTCONFIG_FILE = pkgs.makeFontsConf {
+      fontDirectories = [
+        pkgs.open-sans
+      ];
+    };
     buildPhase = ''
-      pdflatex resume.tex
-      ls -la
+      stache -o resume/pdf-only-prefix.md -c config/env.yaml pdf-only-prefix resume
+      pushd resume
+      pandoc --from=commonmark --to=pdf --pdf-engine=xelatex --metadata-file=metadata.yaml pdf-only-prefix.md resume.md -o resume.pdf
+      popd
     '';
     installPhase = ''
       mkdir "$out"
-      cp resume.pdf $out/resume.pdf
+      cp resume/resume.pdf $out/resume.pdf
     '';
   };
   site = doValidation: pkgs.stdenv.mkDerivation {

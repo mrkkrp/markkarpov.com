@@ -1,0 +1,5 @@
+documentclass: article
+mainfont: 'Open Sans Light'
+fontsize: 11pt
+pagenumbering: gobble
+linkcolor: blue

@@ -1,14 +1,3 @@
----
-title: Resume
----
-
-<fa:envelope> [x](social:email) \
-<fa:github> [x](social:github) \
-<fa:twitter> [x](social:twitter) \
-<fa:linkedin> [x](social:linkedin) \
-<fa:stack-overflow> [x](social:stackoverflow) \
-<fa:file-pdf-o> [PDF version of the resume](/resume.pdf)
-
 ## Summary
 
 I'm a software engineer specializing in functional programming using strong

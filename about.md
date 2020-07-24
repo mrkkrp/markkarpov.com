@@ -8,12 +8,12 @@ Hey there! I'm a software engineer, currently working at
 [Tweag](https://tweag.io). At the moment I live in Paris, France.
 
 I authored a number of [open source projects](/oss.html) and several
-[tutorials](/learn-haskell.html). On this site I collected some stuff I do
-for easy access, I hope you'll find something that interests you.
+[tutorials](/learn-haskell.html). On this site I have collected some
+materials and articles that may be of interest to others.
 
 Would you be interested to know my hobbies? Probably not, but here you are,
 on the page about me. I'm currently into [photography](/galleries.html) and
-meditation. I travel a bit and read a lot.
+writing (fiction). I travel a bit and read a lot.
 
 Here are my contacts and social accounts:
 

@@ -202,7 +202,6 @@ instance ToJSON LocalInfo where
 -- | Menu items.
 data MenuItem
   = Posts
-  | Notes
   | LearnHaskell
   | Galleries
   | Resume
@@ -213,7 +212,6 @@ data MenuItem
 menuItemTitle :: MenuItem -> Text
 menuItemTitle = \case
   Posts -> "Posts"
-  Notes -> "Notes"
   LearnHaskell -> "Learn Haskell"
   Galleries -> "Galleries"
   Resume -> "Resume"

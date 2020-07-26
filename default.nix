@@ -7,8 +7,9 @@ let
     "^README\.md$"
   ];
   siteSourceRegex = [
+    "^about\.md$"
     "^attachment.*$"
-    "^config.*$"
+    "^env\.yaml$"
     "^megaparsec.*$"
     "^notes.*$"
     "^post.*$"
@@ -17,7 +18,6 @@ let
     "^static.*$"
     "^templates.*$"
     "^tutorial.*$"
-    "^about\.md$"
   ];
   haskellPackages = pkgs.haskell.packages.${compiler}.override
     { overrides = (self: super: {
@@ -57,7 +57,7 @@ let
   resume = pkgs.stdenv.mkDerivation {
     name = "resume-in-pdf";
     src = pkgs.lib.sourceByRegex ./. [
-      "^config.*$"
+      "^env\.yaml$"
       "^resume.*$"
     ];
     buildInputs = [
@@ -72,7 +72,7 @@ let
       ];
     };
     buildPhase = ''
-      stache -o resume/pdf-only-prefix.md -c config/env.yaml pdf-only-prefix resume
+      stache -o resume/pdf-only-prefix.md -c env.yaml pdf-only-prefix resume
       pushd resume
       pandoc --from=commonmark --to=pdf --pdf-engine=xelatex --metadata-file=metadata.yaml pdf-only-prefix.md resume.md -o resume.pdf
       popd

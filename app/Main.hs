@@ -315,7 +315,7 @@ main = shakeArgs shakeOptions $ do
     putNormal ("Cleaning files in " ++ outdir)
     removeFilesAfter outdir ["//*"]
   commonEnv <- fmap ($ ()) . newCache $ \() -> do
-    let commonEnvFile = "config/env.yaml"
+    let commonEnvFile = "env.yaml"
     need [commonEnvFile]
     r <- liftIO (Y.decodeFileEither commonEnvFile)
     case r of

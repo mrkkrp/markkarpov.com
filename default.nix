@@ -11,7 +11,6 @@ let
     "^attachment.*$"
     "^env\.yaml$"
     "^megaparsec.*$"
-    "^notes.*$"
     "^post.*$"
     "^raw.*$"
     "^resume$" "^resume/resume\.md$"

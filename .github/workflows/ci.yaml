@@ -18,20 +18,40 @@ jobs:
           name: mrkkrp
           skipPush: true
       - name: Build the environment
-        run: nix-shell --attr site --pure --run true
+        run: |
+          nix-shell --attr site --pure --run true
+          nix-env -f default.nix -iA netlify-cli
+          nix-env -f default.nix -iA jq
       - name: Push to Cachix
-        run: nix-store -qR --include-outputs $(nix-instantiate --attr site default.nix) | cachix push mrkkrp
+        run: |
+          nix-store -qR --include-outputs $(nix-instantiate --attr site default.nix) | cachix push mrkkrp
+          nix-store -qR --include-outputs $(nix-instantiate --attr netlify-cli default.nix) | cachix push mrkkrp
         env:
           CACHIX_SIGNING_KEY: ${{ secrets.CACHIX_SIGNING_KEY }}
       - name: Build the site
-        run: nix-build --attr site
-      - name: Install SSH key
-        uses: shimataro/ssh-key-action@v2.0.3
-        if: ${{ github.ref == 'refs/heads/master' }}
-        with:
-          key: ${{ secrets.SSH_KEY }}
-          known_hosts: ${{ secrets.KNOWN_HOSTS }}
-      - name: Copy to the droplet with rsync
-        if: ${{ github.ref == 'refs/heads/master' }}
         run: |
-          nix run -f nix/nixpkgs rsync openssh -c rsync -rvzc -e "ssh -i /github/home/.ssh/id_rsa -p 2555 -o \"StrictHostKeyChecking no\"" result/ admin@markkarpov.com:/home/admin/markkarpov.com
+          if [ "$GITHUB_REF" = "refs/heads/master" ]
+          then nix-build --attr site
+          else nix-build --attr site-preview
+          fi
+      - name: Deploy to Netlify
+        id: deploy
+        run: |
+          [ "$GITHUB_REF" = "refs/heads/master" ] && flags==--prod
+          # Netlify does not see a symlink as a directory, so we have to
+          # copy the contents.
+          cp -R result/ publish/
+          netlify deploy $flags --json | tee result.json
+          echo -e "\n::set-output name=deploy_url::$(jq -r .deploy_url result.json)"
+        env:
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      - name: Add commit status
+        uses: Sibz/github-status-action@v1.1.0
+        with:
+          authToken: ${{ secrets.GITHUB_TOKEN }}
+          sha: ${{ github.event.pull_request.head.sha || github.sha }}
+          context: deploy/netlify
+          description: Deploy preview ready
+          state: success
+          target_url: ${{ steps.deploy.outputs.deploy_url }}

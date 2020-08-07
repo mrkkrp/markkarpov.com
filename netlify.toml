@@ -1,0 +1,13 @@
+[build]
+    command = "true"
+    publish = "publish/"
+
+[[redirects]]
+    from = "/"
+    to = "/posts.html"
+    status = 200
+
+[[redirects]]
+    from = "/megaparsec/*"
+    to = "/tutorial/megaparsec.html"
+    status = 301

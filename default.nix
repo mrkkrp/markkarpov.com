@@ -1,5 +1,5 @@
 let
-  compiler = "ghc883";
+  compiler = "ghc884";
   pkgs = import ./nix/nixpkgs;
   appSourceRegex = [
     "^app.*$"
@@ -12,7 +12,6 @@ let
     "^env\.yaml$"
     "^megaparsec.*$"
     "^post.*$"
-    "^raw.*$"
     "^resume$" "^resume/resume\.md$"
     "^static.*$"
     "^templates.*$"
@@ -22,37 +21,11 @@ let
     { overrides = (self: super: {
         "markkarpov-com" = super.callCabal2nix "markkarpov-com"
           (pkgs.lib.sourceByRegex ./. appSourceRegex) {};
-        "stache" = pkgs.haskell.lib.overrideCabal super.stache (_: {
-          version = "2.2.0";
-          revision = null;
-          editedCabalFile = null;
-          sha256 = "sha256-b/zhw8qgtQ6vVr3Zo5fq9aG30UqbZgscfokIoSGSjiU=";
-          isLibrary = true;
-          isExecutable = true;
-          executableHaskellDepends = with super; [
-            aeson
-            base
-            filepath
-            gitrev
-            optparse-applicative
-            text
-            unordered-containers
-            yaml
-          ];
-        });
+        "stache" = super.stache_2_2_0;
       });
     };
   html5validator = import ./nix/html5validator;
   texlive = import ./nix/texlive-custom;
-  app =
-    if pkgs.lib.inNixShell
-    then haskellPackages.shellFor
-      { packages = (ps: [ ps.markkarpov-com ]);
-        buildInputs = [
-          pkgs.cabal-install
-        ];
-      }
-    else haskellPackages.markkarpov-com;
   resume = pkgs.stdenv.mkDerivation {
     name = "resume-in-pdf";
     src = pkgs.lib.sourceByRegex ./. [
@@ -81,18 +54,24 @@ let
       cp resume/resume.pdf $out/resume.pdf
     '';
   };
-  site = doCheck: pkgs.stdenv.mkDerivation {
+  site = doCheck: isPreview: pkgs.stdenv.mkDerivation {
     name = "mk-com";
     buildInputs = [
-      pkgs.glibcLocales
+      haskellPackages.markkarpov-com
       html5validator
+      pkgs.glibcLocales
     ];
     LANG = "en_US.UTF-8";
     src = pkgs.lib.sourceByRegex ./. siteSourceRegex;
     buildPhase = ''
       cp ${resume}/resume.pdf resume/resume.pdf
-      ${app}/bin/mk-com
-    '';
+      mk-com
+      echo 'User-agent: *' > _build/robots.txt
+    '' + (if isPreview
+            then ''
+                 echo 'Disallow: /' >> _build/robots.txt
+                 ''
+            else "");
     inherit doCheck;
     checkPhase = ''
       html5validator --version
@@ -104,7 +83,11 @@ let
     '';
   };
 in {
-   inherit app resume;
-   site = site true;
-   site-quick = site false;
+   inherit resume;
+   netlify-cli = pkgs.netlify-cli;
+   jq = pkgs.jq;
+   app = haskellPackages.markkarpov-com;
+   site = site true false;
+   site-quick = site false false;
+   site-preview = site true true;
 }

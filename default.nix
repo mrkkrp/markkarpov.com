@@ -81,19 +81,23 @@ let
       cp resume/resume.pdf $out/resume.pdf
     '';
   };
-  site = doValidation: pkgs.stdenv.mkDerivation {
+  site = doCheck: pkgs.stdenv.mkDerivation {
     name = "mk-com";
     buildInputs = [
       pkgs.glibcLocales
+      html5validator
     ];
     LANG = "en_US.UTF-8";
     src = pkgs.lib.sourceByRegex ./. siteSourceRegex;
     buildPhase = ''
       cp ${resume}/resume.pdf resume/resume.pdf
       ${app}/bin/mk-com
-    '' + (if doValidation
-            then "${html5validator}/bin/html5validator --root _build/ --show-warnings"
-            else "");
+    '';
+    inherit doCheck;
+    checkPhase = ''
+      html5validator --version
+      html5validator --root _build/ --show-warnings --ignore "This document appears to be written in"
+    '';
     installPhase = ''
       mkdir "$out"
       cp -r _build "$out/_build"

@@ -34,4 +34,4 @@ jobs:
       - name: Copy to the droplet with rsync
         if: ${{ github.ref == 'refs/heads/master' }}
         run: |
-          nix run -f nix/nixpkgs rsync openssh -c rsync -rvzc -e "ssh -i /github/home/.ssh/id_rsa -p 2555 -o \"StrictHostKeyChecking no\"" result/_build/ admin@markkarpov.com:/home/admin/markkarpov.com
+          nix run -f nix/nixpkgs rsync openssh -c rsync -rvzc -e "ssh -i /github/home/.ssh/id_rsa -p 2555 -o \"StrictHostKeyChecking no\"" result/ admin@markkarpov.com:/home/admin/markkarpov.com

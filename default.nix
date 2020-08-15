@@ -100,7 +100,7 @@ let
     '';
     installPhase = ''
       mkdir "$out"
-      cp -r _build "$out/_build"
+      cp -r _build/. "$out/"
     '';
   };
 in {

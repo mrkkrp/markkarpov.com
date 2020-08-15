@@ -2,11 +2,11 @@ let
   pkgs = import ../nixpkgs;
 in with pkgs.python36Packages; buildPythonPackage rec {
    pname = "html5validator";
-   version = "0.3.1";
+   version = "0.3.3";
 
    src = fetchPypi {
      inherit pname version;
-     sha256 = "f587dac897b7d8f8009cfc8707f67d4cb4524facf9489c6e7a35c0801cc0e79e";
+     sha256 = "sha256-uSa+s7nHPC/vM3UJ9PTy8R0llmI9Wwat6ahgS4Tn20c=";
    };
 
    propagatedBuildInputs = [

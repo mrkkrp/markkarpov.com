@@ -1,10 +1,9 @@
 ---
 title: Megaparsec tutorial
 desc: This is a Megaparsec tutorial which originally was written as a chapter for the Intermediate Haskell book.
-difficulty: 1
 date:
   published: February 23, 2019
-  updated: December 31, 2019
+  updated: September 21, 2020
 ---
 
 *This is the Megaparsec tutorial which originally was written as a chapter
@@ -46,7 +45,7 @@ solve the same problem, and note various trade-offs they make:
   tutorials.
 
 It would be impractical to try to cover all these libraries, and so we will
-focus on `megaparsec`. More precisely, we are going to cover the version 8,
+focus on `megaparsec`. More precisely, we are going to cover the version 9,
 which by the time this book is published will probably have replaced the
 older versions almost everywhere.
 
@@ -894,11 +893,14 @@ what is going on is to use the built-in `dbg` helper from the
 `Text.Megaparsec.Debug` module:
 
 ```haskell
-dbg :: (Stream s, ShowToken (Token s), ShowErrorComponent e, Show a)
+dbg :: (VisualStream s, ShowToken (Token s), ShowErrorComponent e, Show a)
   => String            -- ^ Debugging label
   -> ParsecT e s m a   -- ^ Parser to debug
   -> ParsecT e s m a   -- ^ Parser that prints debugging messages
 ```
+
+The `VisualStream` type class is defined for input streams that can be
+printed out on the screen in readable form. We will not dwell on it here.
 
 Let us use it in `pUri`:
 
@@ -1900,7 +1902,7 @@ indentation-sensitive parser.
 Let us start with the simplest thing—`nonIndented`:
 
 ```haskell
-nonIndented :: MonadParsec e s m
+nonIndented :: (TraversableStream s, MonadParsec e s m)
   => m ()              -- ^ How to consume indentation (white space)
   -> m a               -- ^ Inner parser
   -> m a
@@ -1919,7 +1921,7 @@ So, how do we define a parser for indented block? Let us take a look at the
 signature of `indentBlock`:
 
 ```haskell
-indentBlock :: (MonadParsec e s m, Token s ~ Char)
+indentBlock :: (TraversableStream s, MonadParsec e s m, Token s ~ Char)
   => m ()              -- ^ How to consume indentation (white space)
   -> m (IndentOpt m a b) -- ^ How to parse “reference” token
   -> m a
@@ -2519,7 +2521,8 @@ function:
 -- rendered 'String' always ends with a newline.
 
 errorBundlePretty
-  :: ( Stream s
+  :: ( VisualStream s
+     , TraversableStream s
      , ShowErrorComponent e
      )
   => ParseErrorBundle s e -- ^ Parse error bundle to display
@@ -3014,11 +3017,15 @@ instance Stream MyStream where
   -- …
 ```
 
-`Stream` is well documented in the `Text.Megaparsec.Stream` module. Here we
-go straight to defining the missing methods:
+`Stream`, `VisualStream`, and `TraversableStream` are documented in the
+`Text.Megaparsec.Stream` module. Here we go straight to defining the
+methods:
 
 ```haskell
-  -- …
+instance Stream MyStream where
+  type Token  MyStream = WithPos MyToken
+  type Tokens MyStream = [WithPos MyToken]
+
   tokenToChunk Proxy x = [x]
   tokensToChunk Proxy xs = xs
   chunkToTokens Proxy = id
@@ -3042,10 +3049,14 @@ go straight to defining the missing methods:
     in case NE.nonEmpty x of
       Nothing -> (x, MyStream str s')
       Just nex -> (x, MyStream (drop (tokensLength pxy nex) str) s')
+
+instance VisualStream MyStream where
   showTokens Proxy = DL.intercalate " "
     . NE.toList
     . fmap (showMyToken . tokenVal)
   tokensLength Proxy xs = sum (tokenLength <$> xs)
+
+instance TraversableStream MyStream where
   reachOffset o PosState {..} =
     ( prefix ++ restOfLine
     , PosState
@@ -3091,7 +3102,10 @@ showMyToken = \case
 ```
 
 More background information about the `Stream` type class (and why it looks
-like this) can be found in [this blog post][more-speed-more-power].
+like this) can be found in [this blog post][more-speed-more-power]. Note
+that in the version 9 of `megaparsec` certain methods of `Stream` were moved
+to the classes `VisualStream` and `TraversableStream` to make it easier to
+define instances of `Stream` for certain custom input streams.
 
 Now we can define `Parser` for our custom stream:
 

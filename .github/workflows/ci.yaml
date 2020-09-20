@@ -37,7 +37,7 @@ jobs:
       - name: Deploy to Netlify
         id: deploy
         run: |
-          [ "$GITHUB_REF" = "refs/heads/master" ] && flags==--prod
+          [ "$GITHUB_REF" = "refs/heads/master" ] && flags=--prod
           # Netlify does not see a symlink as a directory, so we have to
           # copy the contents.
           cp -R result/ publish/

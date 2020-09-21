@@ -100,7 +100,6 @@ cssR,
   jsR,
   imgR,
   imgGalleryR,
-  attachmentR,
   notFoundR,
   atomFeedR,
   resumeHtmlR,
@@ -119,7 +118,6 @@ cssR = Ins "static/css/*.css" id
 jsR = Ins "static/js/*.js" id
 imgR = Ins "static/img/*" id
 imgGalleryR = Ins "static/img/gallery/*" id
-attachmentR = Ins "attachment/*" id
 notFoundR = Gen "404.html"
 atomFeedR = Gen "feed.atom"
 resumeHtmlR = Ins "resume/resume.md" (\x -> dropDirectory1 x -<.> "html")
@@ -372,7 +370,6 @@ main = shakeArgs shakeOptions $ do
   buildRoute jsR copyFile'
   buildRoute imgR copyFile'
   buildRoute imgGalleryR copyFile'
-  buildRoute attachmentR copyFile'
   buildRoute notFoundR $ \_ output ->
     justFromTemplate (Left "404 Not Found") "404" output
   buildRoute atomFeedR $ \_ output -> do

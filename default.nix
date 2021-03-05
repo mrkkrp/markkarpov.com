@@ -39,7 +39,7 @@ let
     LANG = "en_US.UTF-8";
     FONTCONFIG_FILE = pkgs.makeFontsConf {
       fontDirectories = [
-        pkgs.open-sans
+        pkgs.google-fonts
       ];
     };
     buildPhase = ''

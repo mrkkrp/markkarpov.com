@@ -17,8 +17,8 @@ import Data.Aeson.Lens
 import qualified Data.HashMap.Strict as HM
 import Data.List (foldl', foldl1', sortOn)
 import Data.List.NonEmpty (NonEmpty (..))
-import qualified Data.Map.Strict as Map
 import Data.Map.Strict (Map)
+import qualified Data.Map.Strict as Map
 import Data.Maybe (fromMaybe, mapMaybe)
 import Data.Ord (Down (..))
 import Data.Set (Set)

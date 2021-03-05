@@ -8,8 +8,14 @@ on:
       - opened
       - synchronize
 jobs:
+  ormolu:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2.3.4
+      - uses: mrkkrp/ormolu-action@v2
   build:
     runs-on: ubuntu-latest
+    needs: ormolu
     container: nixos/nix:2.3.6
     steps:
       - uses: actions/checkout@v2

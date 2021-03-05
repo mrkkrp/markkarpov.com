@@ -1,5 +1,5 @@
 let
-  compiler = "ghc884";
+  compiler = "ghc8103";
   pkgs = import ./nix/nixpkgs;
   appSourceRegex = [
     "^app.*$"
@@ -21,7 +21,6 @@ let
     { overrides = (self: super: {
         "markkarpov-com" = super.callCabal2nix "markkarpov-com"
           (pkgs.lib.sourceByRegex ./. appSourceRegex) {};
-        "stache" = super.stache_2_2_0;
       });
     };
   html5validator = import ./nix/html5validator;

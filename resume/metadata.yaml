@@ -1,5 +1,5 @@
 documentclass: article
-mainfont: 'Open Sans Light'
-fontsize: 11pt
+mainfont: 'Cardo'
+fontsize: 12pt
 pagenumbering: gobble
 linkcolor: blue

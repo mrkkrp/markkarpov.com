@@ -199,6 +199,7 @@ instance ToJSON LocalInfo where
 data MenuItem
   = Posts
   | LearnHaskell
+  | OSS
   | Galleries
   | Resume
   | About
@@ -209,6 +210,7 @@ menuItemTitle :: MenuItem -> Text
 menuItemTitle = \case
   Posts -> "Posts"
   LearnHaskell -> "Learn Haskell"
+  OSS -> "OSS"
   Galleries -> "Galleries"
   Resume -> "Resume"
   About -> "About me"
@@ -445,7 +447,7 @@ main = shakeArgs shakeOptions $ do
       ]
       output
   buildRoute ossR $ \_ output ->
-    justFromTemplate (Left "Open source software") "oss" output
+    justFromTemplate (Right OSS) "oss" output
   buildRoute learnHaskellR $ \_ output -> do
     env <- commonEnv
     ts <- templates

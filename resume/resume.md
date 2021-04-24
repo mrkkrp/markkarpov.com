@@ -1,13 +1,10 @@
 ## Summary
 
-I'm a software engineer specializing in functional programming using strong
-static type systems. I work as a consultant helping our clients design and
-build correct, robust, and maintainable software. Being a consultant allows
-me to participate in more projects that a typical software engineer gets to
-work on. I have developed the ability for critical thinking, making wise
-trade-offs, analyzing and exploiting advantages of various technologies to
-satisfy needs of businesses. My personal projects include high-profile
-Haskell libraries, tutorials, and a technical blog.
+I am a software engineer who applies the principles of functional
+programming to solve real-world problems. I work as a consultant helping our
+clients design and build correct, robust, and maintainable software. My
+personal projects include high-profile Haskell libraries, tutorials, and a
+technical blog.
 
 ## Professional experience
 
@@ -23,16 +20,13 @@ Haskell libraries, tutorials, and a technical blog.
   monadic parser combinator library.
 * [Ormolu](https://github.com/tweag/ormolu)—A formatter for Haskell source
   code.
-* [Req](https://github.com/mrkkrp/req)—Easy-to-use, type-safe, expandable,
-  high-level HTTP library.
-* [Zip](https://github.com/mrkkrp/zip)—Efficient library for manipulating
-  zip archives.
+* [Req](https://github.com/mrkkrp/req)—An HTTP client library.
 
 The full list can be found at <https://markkarpov.com/oss.html>.
 
 ## Writing
 
-* I've authored a number of tutorials as part of my job and on my own, see
+* I have authored a number of tutorials as part of my job and on my own, see
   <https://markkarpov.com/learn-haskell.html>.
 * Blog posts are available at <https://markkarpov.com/posts.html>, see e.g.
   [“Why Haskell is
@@ -49,13 +43,14 @@ The full list can be found at <https://markkarpov.com/oss.html>.
 * CI: GitHub actions, Travis CI, Circle CI, Buildkite.
 * Databases: PostgreSQL, MySQL.
 * Linux server.
-* Other languages I know: C, C++, Python, Common Lisp, Emacs Lisp.
+* Other languages I know: OCaml, C, C++, Python, Common Lisp, Emacs Lisp.
 
 ## Soft skills
 
-* Ability to work with people with diverse personalities and skill levels.
-* Flexible and open to criticism.
-* Active in discussion, good communicator.
+* The experience of leading teams.
+* The ability to work with people with diverse personalities and skill
+  levels.
+* Good communicator.
 * I speak Russian (native), English (fluent), and French (intermediate).
 
 ## Education

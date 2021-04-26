@@ -2,18 +2,11 @@ Hey there! I'm a software engineer based in Paris, France. I work at
 [Tweag][tweag].
 
 I come from a little town called [Biysk][biysk] in Russia. I learned about
-functional programming on my own while struggling with poverty and working
-hard to provide for myself. Soon, my enthusiasm paid off—I was able to start
-my career as a software engineer doing Haskell. Along the way, I authored a
-number of [open source projects][oss], [blog posts][posts], and
-[tutorials][tutorials]. In the beginning of 2018 I joined Tweag, which I
-regard as one of the most auspicious decisions in my life. Soon I moved to
-France.
-
-Haskell is nice, yet software engineering is bigger than Haskell. I went on
-to learn a number of different technologies and soft skills. I learned
-French and improved my English. I navigated an unfamiliar country while
-learning how to lead teams.
+functional programming on my own circa 2015. Soon, my enthusiasm paid off—I
+was able to start my career as a software engineer in 2016. Along the way, I
+authored some [open source projects][oss], [blog posts][posts], and
+[tutorials][tutorials]. In the beginning of 2018 I joined Tweag, and soon
+moved to France.
 
 I enjoy traveling and I am an avid reader. My hobbies include writing
 (mostly literary short stories in English), music,

@@ -25,7 +25,7 @@ jobs:
           skipPush: true
       - name: Build the environment
         run: |
-          nix-shell --attr site --pure --run true
+          nix-shell default.nix --attr site --pure --run true
           nix-env -f default.nix -iA netlify-cli
           nix-env -f default.nix -iA jq
       - name: Push to Cachix

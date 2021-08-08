@@ -1,6 +1,8 @@
+{ pkgs ? (import ./nix/nixpkgs),
+  compiler ? "ghc8103"
+}:
+
 let
-  compiler = "ghc8103";
-  pkgs = import ./nix/nixpkgs;
   appSourceRegex = [
     "^app.*$"
     "^markkarpov-com\.cabal$"

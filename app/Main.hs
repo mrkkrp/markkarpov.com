@@ -65,8 +65,7 @@ data Route
   | -- | Generated, pattern
     GenPat FilePath
 
--- | This function allows to translate my clear vision of build system to
--- his.
+-- | A helper for defining rules.
 buildRoute ::
   -- | 'Route' we want to build
   Route ->
@@ -117,7 +116,7 @@ cssR,
 cssR = Ins "static/css/*.css" id
 jsR = Ins "static/js/*.js" id
 imgR = Ins "static/img/*" id
-imgGalleryR = Ins "static/img/gallery/*" id
+imgGalleryR = Ins "static/img/gallery/**/*" id
 notFoundR = Gen "404.html"
 atomFeedR = Gen "feed.atom"
 resumeHtmlR = Ins "resume/resume.md" (\x -> dropDirectory1 x -<.> "html")
@@ -241,7 +240,7 @@ instance ToJSON PhotoInventory where
 -- | Information about a gallery.
 data Gallery = Gallery
   { galleryTitle :: !Text,
-    galleryFile :: !FilePath,
+    gallerySlug :: !FilePath,
     galleryUpdated :: !Day,
     galleryPhotos :: ![Photo]
   }
@@ -250,7 +249,7 @@ data Gallery = Gallery
 instance FromJSON Gallery where
   parseJSON = withObject "gallery" $ \o -> do
     galleryTitle <- o .: "title"
-    galleryFile <- o .: "file"
+    gallerySlug <- o .: "slug"
     galleryUpdated <- (o .: "updated") >>= parseDay
     galleryPhotos <- o .: "photos"
     return Gallery {..}
@@ -259,7 +258,7 @@ instance ToJSON Gallery where
   toJSON Gallery {..} =
     object
       [ "title" .= galleryTitle,
-        "file" .= galleryFile,
+        "slug" .= gallerySlug,
         "updated" .= renderDay galleryUpdated,
         "photos" .= galleryPhotos
       ]
@@ -443,7 +442,8 @@ main = shakeArgs shakeOptions $ do
       ["gallery", "default"]
       Nothing
       [ menuItem Galleries env,
-        toJSON thisGallery
+        toJSON thisGallery,
+        provideAs "slug" (gallerySlug thisGallery)
       ]
       output
   buildRoute ossR $ \_ output ->
@@ -629,7 +629,7 @@ getGalleries o =
     Just v -> interpretValue v
 
 galleryToPath :: Gallery -> FilePath
-galleryToPath Gallery {..} = outdir </> "gallery" </> galleryFile
+galleryToPath Gallery {..} = outdir </> "gallery" </> gallerySlug <.> "html"
 
 resolvePhotoInventory :: PhotoInventory -> [Gallery] -> [Gallery]
 resolvePhotoInventory PhotoInventory {..} = fmap $ \g ->

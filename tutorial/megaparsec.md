@@ -3058,7 +3058,7 @@ instance VisualStream MyStream where
 
 instance TraversableStream MyStream where
   reachOffset o PosState {..} =
-    ( prefix ++ restOfLine
+    ( Just (prefix ++ restOfLine)
     , PosState
         { pstateInput = MyStream
             { myStreamInput = postStr
@@ -3073,8 +3073,8 @@ instance TraversableStream MyStream where
     where
       prefix =
         if sameLine
-          then pstateLinePrefix ++ preStr
-          else preStr
+          then pstateLinePrefix ++ preLine
+          else preLine
       sameLine = sourceLine newSourcePos == sourceLine pstateSourcePos
       newSourcePos =
         case post of
@@ -3082,6 +3082,7 @@ instance TraversableStream MyStream where
           (x:_) -> startPos x
       (pre, post) = splitAt (o - pstateOffset) (unMyStream pstateInput)
       (preStr, postStr) = splitAt tokensConsumed (myStreamInput pstateInput)
+      preLine = reverse . takeWhile (/= '\n') . reverse $ preStr
       tokensConsumed =
         case NE.nonEmpty pre of
           Nothing -> 0

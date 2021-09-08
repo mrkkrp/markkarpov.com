@@ -43,3 +43,4 @@ executable mk-com
         unordered-containers -any,
         vector -any,
         yaml -any
+    ghc-options: -Wall -Werror

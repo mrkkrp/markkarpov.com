@@ -105,6 +105,8 @@ cssR,
   resumePdfR,
   aboutR,
   ossR,
+  writingR,
+  writingPieceR,
   galleriesR,
   galleryR,
   learnHaskellR,
@@ -123,6 +125,8 @@ resumeHtmlR = Ins "resume/resume.md" (\x -> dropDirectory1 x -<.> "html")
 resumePdfR = Ins "resume/resume.pdf" dropDirectory1
 aboutR = Ins "about.md" (-<.> "html")
 ossR = Gen "oss.html"
+writingR = Gen "writing.html"
+writingPieceR = Ins "writing/*.md" (-<.> "html")
 galleriesR = Gen "galleries.html"
 galleryR = GenPat "gallery/*.html"
 learnHaskellR = Gen "learn-haskell.html"
@@ -191,6 +195,41 @@ instance ToJSON LocalInfo where
         "file" .= ("/" ++ localFile)
       ]
 
+-- | Information about a piece of writing.
+data WritingPiece = WritingPiece
+  { wpieceTitle :: !Text,
+    wpieceType :: !Text,
+    wpieceDesc :: !(Maybe Text),
+    wpieceFile :: !FilePath,
+    wpieceDateStarted :: !Day,
+    wpieceDateFinished :: !(Maybe Day)
+  }
+  deriving (Eq, Show)
+
+instance FromJSON WritingPiece where
+  parseJSON = withObject "metadata of a piece of writing" $ \o -> do
+    wpieceTitle <- o .: "title"
+    wpieceType <- o .: "type"
+    wpieceDesc <- o .:? "desc"
+    let wpieceFile = ""
+    wpieceDateStarted <-
+      (o .: "date") >>= (.: "started") >>= parseDay
+    wpieceDateFinished <-
+      (o .: "date") >>= (.:? "finished")
+        >>= maybe (pure Nothing) (fmap Just . parseDay)
+    return WritingPiece {..}
+
+instance ToJSON WritingPiece where
+  toJSON WritingPiece {..} =
+    object
+      [ "title" .= wpieceTitle,
+        "type" .= wpieceType,
+        "desc" .= wpieceDesc,
+        "file" .= ("/" ++ wpieceFile),
+        "started" .= renderDay wpieceDateStarted,
+        "finished" .= fmap renderDay wpieceDateFinished
+      ]
+
 ----------------------------------------------------------------------------
 -- Menu items
 
@@ -199,6 +238,7 @@ data MenuItem
   = Posts
   | LearnHaskell
   | OSS
+  | Writing
   | Galleries
   | Resume
   | About
@@ -210,6 +250,7 @@ menuItemTitle = \case
   Posts -> "Posts"
   LearnHaskell -> "Learn Haskell"
   OSS -> "OSS"
+  Writing -> "Writing"
   Galleries -> "Galleries"
   Resume -> "Resume"
   About -> "About me"
@@ -340,6 +381,21 @@ main = shakeArgs shakeOptions $ do
         fail $ "cannot gather local info about: " ++ outFile
       gatherLocalInfo (GenPat pat) _ =
         fail $ "cannot gather local info about: " ++ pat
+      gatherWritingPieces ::
+        Ord a =>
+        Route ->
+        (WritingPiece -> a) ->
+        Action [WritingPiece]
+      gatherWritingPieces (Ins pat mapOut) f = do
+        ps' <- getMatchingFiles pat
+        fmap (sortOn f) . forM ps' $ \post -> do
+          need [post]
+          v <- getPost post >>= interpretValue . fst
+          return v {wpieceFile = mapOut post}
+      gatherWritingPieces (Gen outFile) _ =
+        fail $ "cannot gather info about: " ++ outFile
+      gatherWritingPieces (GenPat pat) _ =
+        fail $ "cannot gather info about: " ++ pat
       justFromTemplate ::
         Either Text MenuItem ->
         PName ->
@@ -364,6 +420,8 @@ main = shakeArgs shakeOptions $ do
     let ets = parseExternalPosts "external_posts" env
     return $
       sortOn (Down . postInfoPublished) (ips ++ ets)
+  allWritingPieces <- fmap ($ ()) . newCache $ \() ->
+    gatherWritingPieces writingPieceR wpieceDateStarted
 
   -- Page implementations
 
@@ -482,6 +540,19 @@ main = shakeArgs shakeOptions $ do
         mkTitle Posts
       ]
       output
+  buildRoute writingR $ \_ output -> do
+    env <- commonEnv
+    ts <- templates
+    ps <- allWritingPieces
+    renderAndWrite
+      ts
+      ["writing", "default"]
+      Nothing
+      [ menuItem Writing env,
+        provideAs "item" ps,
+        mkTitle Writing
+      ]
+      output
   buildRoute tagsR $ \_ output -> do
     let tag = pathToTag output
     env <- commonEnv
@@ -518,6 +589,17 @@ main = shakeArgs shakeOptions $ do
       ["post", "default"]
       (Just content)
       [menuItem LearnHaskell env, v, mkLocation output]
+      output
+  buildRoute writingPieceR $ \input output -> do
+    env <- commonEnv
+    ts <- templates
+    need [input]
+    (v, content) <- getPost input
+    renderAndWrite
+      ts
+      ["wpiece", "default"]
+      (Just content)
+      [menuItem Writing env, v]
       output
 
 ----------------------------------------------------------------------------

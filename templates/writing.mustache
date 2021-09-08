@@ -1,0 +1,14 @@
+<h1>Literary writing</h1>
+
+<p>
+  My literary works roughly in chronological order.
+</p>
+
+<table class="table table-striped">
+  {{# item }}
+  <tr>
+    <td><a href="{{ file }}">{{ title }}</a></td>
+    <td>{{ type }}</td>
+  </tr>
+  {{/ item }}
+</table>

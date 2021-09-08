@@ -18,6 +18,7 @@ let
     "^static.*$"
     "^templates.*$"
     "^tutorial.*$"
+    "^writing.*$"
   ];
   haskellPackages = pkgs.haskell.packages.${compiler}.override
     { overrides = (self: super: {

@@ -3,7 +3,7 @@ title: GitHub actions for Haskell CI
 desc: The post explains how I use GitHub actions to setup Haskell CI.
 date:
   published: July 15, 2020
-  updated: July 24, 2020
+  updated: September 8, 2021
 tag: devops
 ---
 
@@ -108,13 +108,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        cabal: ["3.2"]
-        ghc: ["8.6.5", "8.8.3", "8.10.1"]
+        cabal: ["3.4"]
+        ghc: ["8.8.4", "8.10.5", "9.0.1"]
     env:
       CONFIG: "--enable-tests --enable-benchmarks"
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-haskell@v1.1.2
+      - uses: actions/checkout@v2.3.4
+      - uses: haskell/actions/setup@v1.2
         with:
           ghc-version: ${{ matrix.ghc }}
           cabal-version: ${{ matrix.cabal }}
@@ -196,8 +196,8 @@ This gives us the following job definition:
 
 ```yaml
 steps:
-  - uses: actions/checkout@v2
-  - uses: actions/setup-haskell@v1.1.2
+  - uses: actions/checkout@v2.3.4
+  - uses: haskell/actions/setup@v1.2
     with:
       ghc-version: ${{ matrix.ghc }}
       cabal-version: ${{ matrix.cabal }}
@@ -247,13 +247,13 @@ build-windows:
   runs-on: windows-latest
   strategy:
     matrix:
-      cabal: ["3.2"]
-      ghc: ["8.6.5", "8.8.3", "8.10.1"]
+      cabal: ["3.4"]
+      ghc: ["8.8.4", "8.10.5", "9.0.1"]
   env:
     CONFIG: "--enable-tests --enable-benchmarks"
   steps:
     - uses: actions/checkout@v2
-    - uses: actions/setup-haskell@v1.1.2
+    - uses: haskell/actions/setup@v1.2
       id: setup-haskell-cabal # <--- give it a name
       with:
         ghc-version: ${{ matrix.ghc }}
@@ -294,13 +294,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        cabal: ["3.2"]
-        ghc: ["8.6.5", "8.8.3", "8.10.1"]
+        cabal: ["3.4"]
+        ghc: ["8.8.4", "8.10.5", "9.0.1"]
     env:
       CONFIG: "--enable-tests --enable-benchmarks"
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-haskell@v1.1.2
+      - uses: haskell/actions/setup@v1.2
         id: setup-haskell-cabal
         with:
           ghc-version: ${{ matrix.ghc }}
@@ -321,6 +321,11 @@ jobs:
       - run: cabal v2-sdist
 ```
 
+## See also
+
+* If you wish to have automatic source code formatting check, take a look at
+  the [Ormolu action][ormolu-action].
+
 [travis-ci]: https://travis-ci.org/
 [circle-ci]: https://circleci.com/
 [github-actions]: https://github.com/features/actions
@@ -329,3 +334,4 @@ jobs:
 [events]: https://docs.github.com/en/actions/reference/events-that-trigger-workflows
 [official-haskell-example]: https://github.com/actions/cache/blob/main/examples.md#haskell---cabal
 [appveyor]: https://www.appveyor.com/
+[ormolu-action]: https://github.com/marketplace/actions/ormolu-action

@@ -1,6 +1,6 @@
 ---
 title: How will it be?
-type: Literary short story
+type: Short story
 date:
   started: June 29, 2020
   finished: February 22, 2021

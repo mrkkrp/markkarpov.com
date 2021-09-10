@@ -1,6 +1,6 @@
 ---
 title: Irment Vandreboob
-type: Literary short story
+type: Short story
 date:
   started: August 1, 2020
   finished: February 22, 2021

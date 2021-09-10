@@ -1,6 +1,6 @@
 ---
 title: Fibleths of Bobel
-type: Literary short story
+type: Short story
 date:
   started: March 20, 2020
   finished: October 26, 2020

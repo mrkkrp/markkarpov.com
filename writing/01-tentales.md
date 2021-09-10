@@ -1,6 +1,6 @@
 ---
 title: Tentales
-type: Collection of literary flash fiction pieces
+type: Collection of flash fiction pieces
 desc: The first stories I wrote. The main chunk of work happened during the first COVID-19 lockdown in spring 2020. I would get bored rather quickly with a story, so the idea was to keep them short.
 date:
   started: February 4, 2020

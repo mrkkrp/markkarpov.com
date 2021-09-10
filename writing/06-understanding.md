@@ -1,6 +1,6 @@
 ---
 title: Understanding
-type: Literary short story
+type: Short story
 date:
   started: January 2, 2021
   finished: August 8, 2021

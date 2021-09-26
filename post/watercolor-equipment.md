@@ -424,7 +424,7 @@ them onto these carton boards. Paper will then be sandwiched between the
 carton and the glass. I discovered this idea when I was watching [this
 video][andrew-pitt-setup] by Andrew Pitt.
 
-I decided to take advantage of the fact that there's going to be rather
+I decided to take advantage of the fact that there's going to be a rather
 significant border (Andew Pitt calls it “deckle edge”) around paintings with
 this setup to change the aspect ratio to make it more appropriate for
 paniting landscapes.

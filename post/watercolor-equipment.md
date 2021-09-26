@@ -180,7 +180,7 @@ First, here is some terminology:
 * Spring—how well the belly of the brush controls itself on the paper. Not
   every quality brush has snap, but they all should have spring.
 
-Unless you are doing botanical watercolors, if you want painterly, fresh
+Unless you are doing botanical watercolors, if you want a painterly, fresh
 look, you want to use a fairly big brush, probably the biggest brush you can
 control. There is no universal scale for brush sizes. Within a single lineup
 by the same manufacturer a bigger number will correspond to a larger brush.
@@ -204,20 +204,20 @@ When it comes to the bristles, I prefer to have more snap for better
 control. Therefore, if I were to opt for natural bristles, I'd need to buy
 sable brushes, which are rather expensive. For that reason I prefer
 synthetic brushes. They are less expensive and they do not encourage killing
-of animals, such as poor kolinsky sable. Of course, there is another side to
-this natural vs synthetic debate: production of synthetic brushes requires a
-lot of energy and petrochemicals and results in toxic byproducts and waste.
-Synthetic brushes themselves do not decompose and have a shorter lifespan
-which results in even more waste.
+of animals, such as the poor kolinsky sable. Of course, there is another
+side to this natural vs synthetic debate: production of synthetic brushes
+requires a lot of energy and petrochemicals and results in toxic byproducts
+and waste. Synthetic brushes themselves do not decompose and have a shorter
+lifespan which results in even more waste.
 
-Mops on the picture above (from top to bottom):
+Mops in the picture above (from top to bottom):
 
 * [Rosemary & Co. Red Dot Collection mop size 6][red-dot-quill-mop]. This is
   my favorite watercolor brush. Unlike most synthetic brushes that are
   branded as synthetic squirrel, this one is synthetic sable. Therefore it
   has more snap and gives me more control. This is the biggest mop of this
   series. I can also recommend size 5. However, I have also tried smaller
-  sizes and they all sprit their point, making them almost unusable—probably
+  sizes and they all split their point, making them almost unusable—probably
   it is a side-effect of having more snap? Make sure you are getting at
   least size 5.
 * [Borciani Bonazzi Unico Infinito size 8][unico-infinito-mop]. This is my
@@ -226,7 +226,7 @@ Mops on the picture above (from top to bottom):
   as “not a simple plastic tube.” This is synthetic squirrel, hence it is
   much softer than the Red Dot Collection mop.
 * [Princeton Neptune size 8][neptune-mop]. I expected more from this brush.
-  It is synthetic squirrel and a very soft at that. The brush has very
+  It is synthetic squirrel and a very soft one at that. The brush has very
   little snap and its spring is not great. If you load it with paint and
   then try to paint with its whole belly only the middle part will leave
   marks on the paper. I plan on giving this brush away as I don't really use
@@ -245,7 +245,7 @@ Occasionally I want to paint smaller details where I don't want to “overdo”
 it by accidentally holding my big brush too close to the paper. Then I use
 one of these.
 
-Smaller brushes on the picture above (from top to bottom):
+Smaller brushes in the picture above (from top to bottom):
 
 * [Rosemary & Co. Red Dot Collection rigger size 4][red-dot-rigger].
 * [Rosemary & Co. Red Dot Collection pointed round size 3][red-dot-round].
@@ -295,9 +295,9 @@ With regard to brands, I have used tube paint from 2 brands for a while
 
 * [Sennelier][sennelier-paint]. This was the first tube paint I used. It is
   great paint, but I found that it is not intense enough. Honey-based paint
-  is also, in my opinion, worse than gum arabic-based such as Daniel Smith
-  and Winsor and Newton. It tends to re-wet worse and after a while it dries
-  weirdly and cracks. I don't know what happens there, maybe the honey
+  is also, in my opinion, worse than gum arabic-based one such as Daniel
+  Smith and Winsor and Newton. It tends to re-wet worse and after a while it
+  dries weirdly and cracks. I don't know what happens there, maybe the honey
   gradually gets washed out or something.
 * [Daniel Smith][daniel-smith-paint]. Intense and superb. Re-wets
   beautifully, stays moist for a long time. With some spraying you can
@@ -328,7 +328,7 @@ palettes that purport to look like Holbein.
 I am, however, not satisfied with this palette because it doesn't have
 enough paint wells (only 13) and only 3 usable mixing wells, 2 of which are
 insufficiently separated from each other. When I paint standing and use
-rather diluted washes, e.g. for paining a sky, the paint flows all around
+rather diluted washes, e.g. for painting a sky, the paint flows all around
 and it's a big mess.
 
 I chose this palette because others with more paint wells had some of the
@@ -388,7 +388,7 @@ eraser][faber-castell-art-eraser].
 I paint standing. I feel like when I paint sitting I'm more stiff and less
 free. Another consideration is whether you want to keep paper flat or at an
 angle. In the beginning, I started flat by attaching paper to my desk with
-washi tape, but once I tried to paint at 30-45° angle there was no going
+washi tape, but once I tried to paint at a 30-45° angle there was no going
 back. The paint doesn't tend to form puddles in random places and flows down
 which is something you can leverage when e.g. painting sky. Typically, there
 are little drops of paint forming but they are obvious and easy to deal
@@ -403,7 +403,7 @@ not hard to do.
 
 In my case, because I love doing [photography][photography], I already had a
 very good tripod. So, the easiest solution for me was to buy a compatible
-quick release and glue it to a piece of think carton or MDF with epoxy glue:
+quick release and glue it to a piece of thick carton or MDF with epoxy glue:
 
 ![Quick release glued with epoxy glue](/static/img/watercolor-equipment/drawing-board-quick-release.jpg)
 
@@ -427,11 +427,11 @@ video][andrew-pitt-setup] by Andrew Pitt.
 I decided to take advantage of the fact that there's going to be a rather
 significant border (Andew Pitt calls it “deckle edge”) around paintings with
 this setup to change the aspect ratio to make it more appropriate for
-paniting landscapes.
+painting landscapes.
 
 * My larger drawing board is going to be for working on full imperial sheets
   with the window for actual painting 15"×24".
-* A smaller one is goin to be for working on half-imperial sheets with the
+* A smaller one is going to be for working on half-imperial sheets with the
   window for actual painting 11"×17".
 
 Regarding stretching paper, I do not find it necessary neither with washi

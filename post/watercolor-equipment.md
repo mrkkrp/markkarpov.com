@@ -348,8 +348,8 @@ Here are some companies that make brass palettes:
 * [Brass Palette India][brass-palette-india] (warning: this is a Facebook
   page, as Brass palette India has no proper website)
 
-In my opinion The Little Brass Box Company makes the best palettes. I'm
-currently in the waiting list to get a Binning Monro style palette in summer
+In my opinion, The Little Brass Box Company makes the best palettes. I'm
+currently on the waiting list to get a Binning Monro style palette in summer
 2022:
 
 ![Binning Monro style palette](/static/img/watercolor-equipment/binning-monro-palette.jpg)

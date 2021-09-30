@@ -308,7 +308,7 @@ With regard to brands, I have used tube paint from 2 brands for a while
   brands.
 
 I'm not going to talk about how to put together a palette here because this
-deserves a post of its own.
+[deserves a post of its own][watercolor-palette-post].
 
 ## Palette
 
@@ -479,6 +479,7 @@ scratching and for separating sheets of paper from a pad.
 [red-dot-round]: https://www.rosemaryandco.com/watercolour-brushes/red-dot-collection/red-dot-pointed-rounds '_blank'
 [sennelier-paint]: http://www.sennelier-colors.com/en/Aquarelle_8.html '_blank'
 [daniel-smith-paint]: https://danielsmith.com/product/daniel-smith-extra-fine-watercolors/ '_blank'
+[watercolor-palette-post]: /post/watercolor-palette.html
 [holbein-1130-40]: https://www.magasinsennelier.art/fr/palette-en-metal/35067-palette-aluminium-holbein-1130-40-pour-aquarelle-f-24-5-x-10-5-cm-pliante.html '_blank'
 [magasin-sennelier]: https://www.magasinsennelier.art/fr/ '_blank'
 [little-brass-box-company]: http://www.littlebrassbox.com/product.html '_blank'

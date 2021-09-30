@@ -633,6 +633,19 @@ provideSocialUrls v = Ext.inlineTrans $ \case
 getURI :: Traversal' Text URI
 getURI f txt = maybe txt URI.render <$> traverse f (URI.mkURI txt :: Maybe URI)
 
+colorSample :: MMark.Extension
+colorSample = Ext.inlineRender $ \old inline ->
+  case inline of
+    l@(Ext.Link _ uri _) ->
+      if URI.uriScheme uri == Just [scheme|c|]
+        then case uri ^. uriPath of
+          [] -> old l
+          (colorHex : _) ->
+            let colorStyle = "color:#" <> URI.unRText colorHex <> ";"
+             in L.span_ [(L.class_ "fa fa-square"), (L.style_ colorStyle)] ""
+        else old l
+    other -> old other
+
 ----------------------------------------------------------------------------
 -- Helpers
 
@@ -749,7 +762,8 @@ getPostHelper env path = do
                 Ext.toc "toc" toc,
                 addTableClasses,
                 addImageClasses,
-                provideSocialUrls env
+                provideSocialUrls env,
+                colorSample
               ]
               doc
           v = fromMaybe (object []) (MMark.projectYaml doc)

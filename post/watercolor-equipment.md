@@ -3,6 +3,7 @@ title: Notes on watercolor equipment
 desc: A description of watercolor equipment I use.
 date:
   published: September 26, 2021
+  updated: October 6, 2021
 tag: watercolor
 ---
 
@@ -386,14 +387,13 @@ eraser][faber-castell-art-eraser].
 ![My drawing board](/static/img/watercolor-equipment/drawing-board.jpg)
 
 I paint standing. I feel like when I paint sitting I'm more stiff and less
-free. Another consideration is whether you want to keep paper flat or at an
-angle. In the beginning, I started flat by attaching paper to my desk with
-washi tape, but once I tried to paint at a 30-45° angle there was no going
-back. The paint doesn't tend to form puddles in random places and flows down
-which is something you can leverage when e.g. painting sky. Typically, there
-are little drops of paint forming but they are obvious and easy to deal
-with, whereas on the rest of the surface paint gets applied in an optimal
-way.
+free. Another consideration is the angle of the drawing board. In the
+beginning, I started flat by attaching paper to my desk with washi tape, but
+once I tried to paint at a 30-45° angle there was no going back. The paint
+doesn't tend to form puddles in random places and flows down which is
+something you can leverage when e.g. painting sky. Typically, there are
+little drops of paint forming but they are obvious and easy to deal with,
+whereas on the rest of the surface paint gets applied in an optimal way.
 
 Because of all that, I need a drawing board that can be fixed at different
 angles and different heights. Unfortunately, there is no good solution on
@@ -403,7 +403,8 @@ not hard to do.
 
 In my case, because I love doing [photography][photography], I already had a
 very good tripod. So, the easiest solution for me was to buy a compatible
-quick release and glue it to a piece of thick carton or MDF with epoxy glue:
+quick release and glue it onto a piece of thick carton or MDF with epoxy
+glue:
 
 ![Quick release glued with epoxy glue](/static/img/watercolor-equipment/drawing-board-quick-release.jpg)
 
@@ -414,29 +415,33 @@ It then can be attached to my tripod:
 I still fix paper on this board with washi tape unless I work with a block
 of paper glued on 4 sides.
 
-Now, however, I want to stop using washi tape completely and at the same
-time start painting larger paintings. For that I'm building 2 new drawing
-boards. The base is similar in that it is thick carton or MDF with a quick
-release glued onto it. However, I chose to make the new boards with sizes
-matching full imperial and half-imperial sheets. I also bought pieces of
-organic glass in which I'm going to cut windows; then I'm going to attach
-them onto these carton boards. Paper will then be sandwiched between the
-carton and the glass. I discovered this idea when I was watching [this
-video][andrew-pitt-setup] by Andrew Pitt.
+Another type of drawing board I made is also based on thick carton or MDF
+with a quick release glued onto it. On top of that foundation I attached a
+piece of organic glass of matching size with scotch tape acting as a hinge.
+I cut a window in the glass, so that the paper is sandwiched between the
+carton and the glass during painting. I discovered this idea when I was
+watching [this video][andrew-pitt-setup] by Andrew Pitt.
+
+![Drawing board for half-imperial sheets](/static/img/watercolor-equipment/drawing-board-half-imperial.jpg)
 
 I decided to take advantage of the fact that there's going to be a rather
-significant border (Andew Pitt calls it “deckle edge”) around paintings with
-this setup to change the aspect ratio to make it more appropriate for
-painting landscapes.
+significant “deckle edge” around paintings with this setup to change the
+aspect ratio in order to make it more appropriate for painting landscapes. I
+also chose to make drawing boards of this type bigger, with sizes matching
+full imperial and half-imperial sheets, because it is otherwise hard to work
+on paintings of this size.
 
-* My larger drawing board is going to be for working on full imperial sheets
-  with the window for actual painting 15"×24".
-* A smaller one is going to be for working on half-imperial sheets with the
-  window for actual painting 11"×17".
+* My larger drawing board takes full imperial sheets with the window for
+  actual painting 15"×24".
+* The smaller one takes half-imperial sheets with the window for actual
+  painting 11"×17".
 
-Regarding stretching paper, I do not find it necessary neither with washi
-tape nor with pads glued on 4 sides. Andrew Pitt says that it is not
-necessary with his setup either.
+Here is an example of a painting on a half-imperial sheet of paper featuring
+the “deckle edge”:
+
+![An example of the deckle edge on a half-imperial sheet](/static/img/watercolor-equipment/half-imperial-deckle-edge.jpg)
+
+Regarding stretching paper, I do not find it necessary.
 
 ## Misc
 

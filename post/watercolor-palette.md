@@ -51,7 +51,7 @@ This color chart shows on the left hand side the 12 colors of my palette in
 their pure form. We can also see how a given color mixes with others. For
 example, the color at the left bottom is **neutral tint** and the bottom row
 shows its combinations with the remaining 11 colors. Furthermore, the
-topmost color on the lift hand side is **hansa yellow medium** and the
+topmost color on the left hand side is **hansa yellow medium** and the
 second column from the left shows how it mixes with the remaining 11 colors.
 The leftmost 4th color from the top is **pyrrol scarlet**, in its row we can
 see how it combines with 3 different colors, the rest being in the 5th
@@ -243,14 +243,14 @@ have a light mixture with higher opaqueness.
 
 ![Giverny flowers](/static/img/watercolor-palette/giverny-flowers.jpg)
 
-I have since stopped using white on regular basis, but I think it is a valid
-addition to a palette.
+I have since stopped using white on a regular basis, but I think it is a
+valid addition to a palette.
 
 ### The switch to Daniel Smith
 
 After a few months of using Sennelier I succumbed to the idea of switching
 to Daniel Smith completely. As much as I wanted to support a French company,
-I found that Sennelier watercolors was just not my kind of paints. It was
+I found that Sennelier watercolors were simply not my kind of paints. It was
 also a good occasion to reconsider my choices as I gained more experience
 and more understanding of what I wanted:
 
@@ -261,7 +261,7 @@ and more understanding of what I wanted:
 * With my old Sennelier palette I always had to add something (most often
   **burnt sienna**) to my greens to make them less acid and obvious. I
   wanted to be able to mix nice usable greens from just 2 components. To
-  manage that I decided that I needed yet much warmer yellow, this is how I
+  manage that I decided that I needed an even warmer yellow, this is how I
   ended up including **hansa yellow deep**.
 * I added **quinicridone gold** as my 4th yellow still trying to follow the
   4 by 4 by 4 principle.
@@ -271,6 +271,9 @@ and more understanding of what I wanted:
 * **Indian red** is also a new addition. The principle was that I wanted 4
   reds in my palette, and **indian red** had the shade that no other red in
   my palette had.
+* I removed **raw umber** because I found that I didn't use it often and a
+  similar shade can be achieved by “cooling” down **burnt umber** with a
+  blue.
 
 All other colors stayed the same. I just found their analogues in the range
 provided by Daniel Smith. I have to say, Daniel Smith is more intense and
@@ -283,10 +286,10 @@ However, I realized that I used both **hansa yellow deep** and
 **quinacridone gold** for the same function—mixing nice olive greens and
 dirty yellows. Once I started favoring **quinacridone gold** I would abandon
 **hansa yellow deep** completely and vice versa. To me, this was a sign that
-I had to choose between the two. Function of every color must be clear and
-well-defined. There should be no hesitation during mixing. I chose to keep
-**hansa yellow deep** because it is brighter and a single-pigment paint. It
-seems to be more versatile than **quinacridone gold**.
+I had to choose between the two. The function of every color must be clear
+and well-defined. There should be no hesitation during mixing. I chose to
+keep **hansa yellow deep** because it is brighter and a single-pigment
+paint. It seems to be more versatile than **quinacridone gold**.
 
 ![Quinacridone gold removed](/static/img/watercolor-palette/quinacridone-gold-removed.jpg)
 

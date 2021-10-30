@@ -3,7 +3,7 @@ title: Megaparsec tutorial
 desc: This is a Megaparsec tutorial which originally was written as a chapter for the Intermediate Haskell book.
 date:
   published: February 23, 2019
-  updated: September 21, 2020
+  updated: October 30, 2021
 ---
 
 *This is the Megaparsec tutorial which originally was written as a chapter
@@ -18,7 +18,7 @@ work.*
 ```
 
 The toy parser combinators developed in chapter “An Example: Writing Your
-Own Parser Combinators” are not suitable for real-world use, so let us
+Own Parser Combinators” are not suitable for real-world use, so let's
 continue by taking a look at the libraries in the Haskell ecosystem that
 solve the same problem, and note various trade-offs they make:
 
@@ -87,7 +87,7 @@ good idea for two reasons:
 
 * It will be easier to add top level signatures like `Parser Int` where
   `Parser` is your parsing monad. Without the signatures, things like `e`
-  will often be ambiguous—it is the flip side of polymorphic API of the
+  will often be ambiguous—it is the flip side of the polymorphic API of the
   library.
 
 * Working with concrete types with all type variables fixed helps GHC
@@ -98,7 +98,7 @@ good idea for two reasons:
   into so-called *interface files* will allow GHC produce very efficient
   non-polymorphic code.
 
-Let us define a type synonym (typically called `Parser`) like this:
+Let's define a type synonym (typically called `Parser`) like this:
 
 ```haskell
 type Parser = Parsec Void Text
@@ -184,8 +184,8 @@ These modules contain two similar sets of helper parsers such as:
 | `newline` | `(MonadParsec e s m, Token s ~ Char) => m (Token s)` | `(MonadParsec e s m, Token s ~ Word8) => m (Token s)` |
 | `eol` | `(MonadParsec e s m, Token s ~ Char) => m (Tokens s)` | `(MonadParsec e s m, Token s ~ Word8) => m (Tokens s)` |
 
-Let us introduce a couple of primitives on which the modules are built, so
-we understand the tools we are going to use.
+Let's introduce a couple of primitives on which the modules are built, so we
+understand the tools we are going to use.
 
 The first primitive is called `token`, and correspondingly it allows us to
 parse a `Token s`:
@@ -209,7 +209,7 @@ all expected `ErrorItem`s to be displayed to the user in case of failure. We
 will explore the `ErrorItem` type in details when we will be discussing
 parse errors.
 
-To better understand how `token` works, let us see some definitions from the
+To better understand how `token` works, let's see some definitions from the
 `Text.Megaparsec` module which contains, among other things, some
 combinators that work with all types of input stream. `satisfy` is a fairly
 common combinator, we give it a predicate that returns `True` for tokens we
@@ -229,11 +229,11 @@ a function that returns `Maybe (Token s)` that `token` expects. With
 `satisfy` we do not know exact sequence of tokens that we expect to match,
 thus we pass `Set.empty` as the second argument.
 
-`satisfy` should look understandable, let us see how it works. To play with
-a parser we need a helper function that would run it. For testing in GHCi
+`satisfy` should look understandable, let's see how it works. To play with a
+parser we need a helper function that would run it. For testing in GHCi
 `megaparsec` provides `parseTest`.
 
-First, let us start GHCi and import some modules:
+First, let's start GHCi and import some modules:
 
 ```
 λ> import Text.Megaparsec
@@ -366,7 +366,7 @@ synonyms called `string` in `Text.Megaparsec.Byte` and
 case-insensitively. For case-insensitive matching the `case-insensitive`
 package is used, thus the `FoldCase` constraint.
 
-Let us try use the new combinators too:
+Let's try to use the new combinators:
 
 ```
 λ> parseTest (string "foo" :: Parser Text) "foo"
@@ -481,10 +481,10 @@ after `many (char 'a')`!
 
 Most of the time we want to actually force parser to consume entire input,
 and report parse errors instead of being shy and stopping silently. This is
-done by demanding that we reach end of input. Happily, although end of input
-is nothing but a concept, there is a primitive called `eof :: MonadParsec e
-s m => m ()` that does not ever consume anything and only succeeds at the
-end of input. Let us add it to our parser and try again:
+done by demanding that we reach the end of input. Happily, although the end
+of input is nothing but a concept, there is a primitive called `eof ::
+MonadParsec e s m => m ()` that does not ever consume anything and only
+succeeds at the end of input. Let's add it to our parser and try again:
 
 ```
 λ> parseTest (many (char 'a') <* eof :: Parser [Char]) "aabbb"
@@ -513,7 +513,7 @@ may or may not appear in a valid URI. `[]` may be even nested to express a
 possibility inside another possibility. We will handle all of this
 [1](footnote:1).
 
-Let us start with `scheme`. We will accept only schemes that are known to us,
+Let's start with `scheme`. We will accept only schemes that are known to us,
 such as: `data`, `file`, `ftp`, `http`, `https`, `irc`, and `mailto`.
 
 To match a fixed sequence of characters we use `string`. To express a
@@ -547,7 +547,7 @@ pScheme = string "data"
   <|> string "mailto"
 ```
 
-Let us try it:
+Let's try it:
 
 ```
 λ> parseTest pScheme ""
@@ -593,8 +593,8 @@ putting `(<|>)` between its elements, so the two definitions of `pScheme`
 are actually the same, although the one which uses `choice` may look a bit
 nicer.*
 
-After scheme, there should be a colon `:`. Recall that to require something
-to go after something else, we use monadic bind or `do`-notation:
+After the scheme, there should be a colon `:`. Recall that to require
+something to go after something else, we use monadic bind or `do`-notation:
 
 ```haskell
 data Uri = Uri
@@ -625,9 +625,10 @@ Uri {uriScheme = "irc"}
 ```
 
 We are not done with the scheme parsing though. A good Haskell programmer
-tries to define types in such a way so incorrect data cannot be represented.
-Not every `Text` value is a valid scheme. Let us define a data type to
-represent schemes and make our `pScheme` parser return value of that type:
+tries to define types in such a way so that incorrect data cannot be
+represented. Not every `Text` value is a valid scheme. Let's define a data
+type to represent schemes and make our `pScheme` parser return value of that
+type:
 
 ```haskell
 data Scheme
@@ -659,7 +660,7 @@ data Uri = Uri
 functorial context replacing whatever is there at the moment. `a <$ f` is
 the same as `const a <$> f`, but can be more efficient for some functors.*
 
-Let us continue playing with our parser:
+Let's continue playing with our parser:
 
 ```
 λ> parseTest pUri "https:"
@@ -700,8 +701,9 @@ expecting "data", "file", "ftp", "http", "https", "irc", or "mailto"
 
 ## Controlling backtracking with `try`
 
-The next part to handle is `[//[user:password@]host[:port]]`—authority. Here
-we have nested optional parts, let us update the `Uri` type to reflect this:
+The next part to handle is `[//[user:password@]host[:port]]`—the authority.
+Here we have nested optional parts, let us update the `Uri` type to reflect
+this:
 
 ```haskell
 data Uri = Uri
@@ -728,7 +730,7 @@ alternatives = foo <|> bar
     bar = (,) <$> char 'a' <*> char 'c'
 ```
 
-Looks reasonable, let us try it:
+Looks reasonable, let's try it:
 
 ```
 λ> parseTest alternatives "ab"
@@ -751,7 +753,7 @@ consumed some input!
 
 This is done for performance reasons and because it would make no sense to
 run `bar` feeding it leftovers of `foo` anyway. `bar` wants to be run from
-the same point in input stream as `foo`. `megaparsec` does not go back
+the same point in the input stream as `foo`. `megaparsec` does not go back
 automatically, unlike for example `attoparsec` or the toy combinators from
 the previous chapter, so we must use a primitive called `try` to express our
 wish to backtrack explicitly. `try p` makes it so that if `p` fails
@@ -815,9 +817,9 @@ pUri = do
 
 *I took the liberty of accepting any alpha-numeric sequences of characters
 as username and password, and made similarly arbitrary simplifications in
-the format of host.*
+the format of the host.*
 
-Important points here:
+Some important points here:
 
 * In (1) and (2) we need to wrap the argument of `optional` with `try`
   because it is a composite parser, not a primitive.
@@ -835,8 +837,8 @@ Important points here:
   `RecordWildCards` language extension.
 
 * `void :: Functor f => f a -> f ()` is used to explicitly discard the
-  result to parsing, without we would get warnings about unused values from
-  GHC.
+  result to parsing, without it we would get warnings about unused values
+  from GHC.
 
 Play with `pUri` in GHCi and see for yourself that it works:
 
@@ -902,7 +904,7 @@ dbg :: (VisualStream s, ShowToken (Token s), ShowErrorComponent e, Show a)
 The `VisualStream` type class is defined for input streams that can be
 printed out on the screen in readable form. We will not dwell on it here.
 
-Let us use it in `pUri`:
+Let's use it in `pUri`:
 
 ```haskell
 pUri :: Parser Uri
@@ -923,7 +925,7 @@ pUri = do
   return Uri {..}
 ```
 
-Then let us try running `pUri` on that unfortunate input again:
+Then let's try running `pUri` on that unfortunate input again:
 
 ```
 λ> parseTest (pUri <* eof) "https://mark:@example.com"
@@ -1030,7 +1032,7 @@ expecting integer
 Although it is still a bit misleading, but well, that is a tricky example I
 have picked. Lots of `optional`s.
 
-## Labelling and hiding things
+## Labeling and hiding things
 
 Sometimes the list of expected items may get rather long. Remember what we
 get when we try to use a non-recognized scheme?
@@ -1046,8 +1048,8 @@ expecting "data", "file", "ftp", "http", "https", "irc", or "mailto"
 ```
 
 `megaparsec` provides a way to override expected items with something
-custom, typically called a *label*. This is done with help of the `label`
-primitive (which has a synonym in the form of the `(<?>)` operator):
+custom, typically called a *label*. This is done with the help of the
+`label` primitive (which has a synonym in the form of the `(<?>)` operator):
 
 ```haskell
 pUri :: Parser Uri
@@ -1187,15 +1189,15 @@ following sections](#parse-errors).
 ## The `MonadParsec` type class
 
 All tools in `megaparsec` work with any instance of the `MonadParsec` type
-class. The type class abstracts *primitive combinators*—elementary building
-blocks of all `megaparsec` parsers, combinators that cannot be expressed via
-other combinators.
+class. The type class abstracts *primitive combinators*—the elementary
+building blocks of all `megaparsec` parsers, combinators that cannot be
+expressed via other combinators.
 
 Having primitive combinators in a type class allows the principal concrete
 monad transformer of `megaparsec` `ParsecT` to be wrapped in the familiar
-transformers of MTL family achieving different interactions between layers
-of a monadic stack. To better understand the motivation, recall that the
-order of layers in a monadic stack matters. If we combine `ReaderT` and
+transformers of the MTL family achieving different interactions between
+layers of a monadic stack. To better understand the motivation, recall that
+the order of layers in a monadic stack matters. If we combine `ReaderT` and
 `State` like this:
 
 ```haskell
@@ -1238,7 +1240,7 @@ and it is easy to delegate the actual work to the inner monad (the
 `Alternative` instance of `m` comes in handy here) without needing to
 combine monadic state associated with `ReaderT` itself (it has none).
 
-Now let us take a look at `State`. Since `State s a` is just a type synonym
+Now let's take a look at `State`. Since `State s a` is just a type synonym
 for `StateT s Identity a`, we should look at the `Alternative` instance for
 `StateT s m` itself:
 
@@ -1402,24 +1404,24 @@ instance MonadParsec e s m => MonadParsec e s (StateT st m) where …
 ```
 
 `megaparsec` defines instances of `MonadParsec` for all MTL monad
-transformers so the user is free to insert the transformers inside of
+transformers so that the user is free to insert the transformers inside of
 `ParsecT` or wrap `ParsecT` in those transformers achieving different kinds
 of interactions between the layers of monadic stack.
 
 ## Lexing
 
-*Lexing* is the process of transforming input stream into a stream of
-tokens: integers, keywords, symbols, etc. which are easier to parse than raw
-input directly, or are expected as input to parsers created with parser
+*Lexing* is the process of transforming the input stream into a stream of
+tokens: integers, keywords, symbols, etc. which are easier to parse than the
+raw input directly, or are expected as input to parsers created with parser
 generators. Lexing can be performed in a separate pass with an external tool
 such as `alex`, but `megaparsec` also provides functions that should
 simplify writing a lexer in a seamless fashion, as part of your parser.
 
 There are two lexer modules `Text.Megaparsec.Char.Lexer` for character
 streams and `Text.Megaparsec.Byte.Lexer` for byte streams. We will be using
-`Text.Megaparsec.Char.Lexer` because we work with strict `Text` as input
-stream, but most functions are mirrored in `Text.Megaparsec.Byte.Lexer` as
-well if you wish to work with `ByteString`s.
+`Text.Megaparsec.Char.Lexer` because we work with a strict `Text` as the
+input stream, but most functions are mirrored in
+`Text.Megaparsec.Byte.Lexer` as well if you wish to work with `ByteString`s.
 
 ### White space
 
@@ -1491,9 +1493,9 @@ Operationally, `L.space` tries all three parsers in turn as many times as it
 can till all of them cannot be applied anymore meaning that we have consumed
 all white space there is. Knowing this, it should make sense that if your
 grammar does not include block or line comments, you can just pass `empty`
-as the second/third argument of `L.space`. `empty`, being the identity of
-`(<|>)`, will just cause `L.space` to try parser for next white space
-component—exactly what is desirable.
+as the second and/or third argument of `L.space`. `empty`, being the
+identity of `(<|>)`, will just cause `L.space` to try the parser for the
+next white space component—exactly what is desirable.
 
 Having the space consumer `sc`, we can then define various white
 space-related helpers:
@@ -1527,11 +1529,10 @@ charLiteral :: (MonadParsec e s m, Token s ~ Char) => m Char
 
 The job of `charLiteral` is to parse a single character that may be escaped
 according to the syntax for character literals described in the Haskell
-report. Note it does not parse quotes around the literal though for two
+report. Note that it does not parse quotes around the literal though for two
 reasons:
 
 * so the user can control how character literals are quoted,
-
 * so `charLiteral` can be used to parse string literals as well.
 
 Here are some example parsers built on top of `charLiteral`:
@@ -1550,7 +1551,7 @@ stringLiteral = char '\"' *> manyTill L.charLiteral (char '\"')
   p = open *> p <* close`.
 
 * `stringLiteral` uses `L.charLiteral` to parse individual characters inside
-  string literal enclosed in double quotes.
+  a string literal enclosed in double quotes.
 
 The second function is also interesting because of its use of the `manyTill`
 combinator:
@@ -1656,7 +1657,8 @@ space in there, just pass `return ()` instead.
 ## `notFollowedBy` and `lookAhead`
 
 There are two more primitives (in addition to `try`) that can perform look
-ahead in input stream without actually advancing parsing position in it.
+ahead in the input stream without actually advancing the parsing position in
+it.
 
 The first one is called `notFollowedBy`:
 
@@ -1665,7 +1667,7 @@ notFollowedBy :: MonadParsec e s m => m a -> m ()
 ```
 
 It succeeds only when its argument parser fails and never consumes any input
-or modifies parser state.
+or modifies the parser state.
 
 As an example when you may want to use `notFollowedBy`, consider parsing of
 keywords:
@@ -1694,8 +1696,8 @@ If the argument `p` of `lookAhead` succeeds, the whole construct `lookAhead
 p` also succeeds but the input stream (and the entire parser state) stays
 untouched, i.e. nothing is consumed.
 
-One example of where this may be useful is performing a check on already
-parsed input and then either failing or continuing successfully. The idiom
+One example of where this may be useful is performing a check on an already
+parsed value and then either failing or continuing successfully. The idiom
 can be expressed in code like this:
 
 ```haskell
@@ -1735,7 +1737,7 @@ This way we just set offset in the input stream to what if was before
 running `p` and then fail. There is a mismatch now in what remains
 unconsumed vs offset position, but it does not matter in this case because
 we end parsing immediately by calling `fail`. It may matter in other cases.
-We will see how to do better in situations like this later in the chapter.
+We will see how to do better in situations like this later in this chapter.
 
 ## Parsing expressions
 
@@ -1758,7 +1760,8 @@ that, the [`parser-combinators`][parser-combinators] package comes with the
 documented, so in this section we will not repeat the documentation, instead
 we are going to write a simple but fully functional expression parser.
 
-Let us start by defining a data type representing expression as [AST][ast]:
+Let's start by defining a data type representing an expression as
+[AST][ast]:
 
 ```haskell
 data Expr
@@ -1782,8 +1785,8 @@ makeExprParser :: MonadParsec e s m
   -> m a               -- ^ Resulting expression parser
 ```
 
-Let us start with the term parser. It is helpful to think about term as a
-box that that is to be considered as a indivisible whole by the expression
+Let's start with the term parser. It is helpful to think about term as a box
+that that is to be considered as an indivisible whole by the expression
 parsing algorithm when it works with things like associativity and
 precedence. In our case there are three things that fall into this category:
 variables, integers, and entire expressions in parentheses. Using the
@@ -1862,8 +1865,8 @@ postfix name f = Postfix (f <$ symbol name)
 
 Note how we place `Parser (Expr -> Expr -> Expr)` inside `InfixL` in
 `binary` and similarly `Parser (Expr -> Expr)` in `prefix` and `postfix`.
-That is, we run `symbol name` and return function to apply to terms in order
-to get the final result of the type `Expr`.
+That is, we run `symbol name` and return a function to apply to the terms in
+order to get the final result of the type `Expr`.
 
 We can now try our parser, it is ready!
 
@@ -1899,7 +1902,7 @@ indentation-sensitive parser.
 
 ### `nonIndented` and `indentBlock`
 
-Let us start with the simplest thing—`nonIndented`:
+Let's start with the simplest thing—`nonIndented`:
 
 ```haskell
 nonIndented :: (TraversableStream s, MonadParsec e s m)
@@ -1908,7 +1911,7 @@ nonIndented :: (TraversableStream s, MonadParsec e s m)
   -> m a
 ```
 
-It allows to make sure that its inner parser consumes input that is *not*
+It allows us to make sure that its inner parser consumes input that is *not*
 indented. It is a part of a model behind high-level parsing of
 indentation-sensitive input. We state that there are top-level items that
 are not indented and that all indented tokens are directly or indirectly
@@ -1917,7 +1920,7 @@ additional state to express this. Since indentation is always relative, our
 idea is to explicitly tie parsers for reference tokens and indented tokens,
 thus defining indentation-sensitive grammar via pure combination of parsers.
 
-So, how do we define a parser for indented block? Let us take a look at the
+So, how do we define a parser for indented block? Let's take a look at the
 signature of `indentBlock`:
 
 ```haskell
@@ -1952,12 +1955,13 @@ data IndentOpt m a b
 
 We can change our mind and parse no indented tokens, we can parse *many*
 (that is, possibly zero) indented tokens or require *at least one* such
-token. We can either allow `indentBlock` detect indentation level of the
-first indented token and use that, or manually specify indentation level.
+token. We can either allow `indentBlock` to detect the indentation level of
+the first indented token and use that, or manually specify the indentation
+level.
 
 ### Parsing a simple indented list
 
-Let us parse a simple indented list of some items. We begin with the import
+Let's parse a simple indented list of some items. We begin with the import
 section:
 
 ```haskell
@@ -2016,7 +2020,8 @@ pItem :: Parser String
 pItem = lexeme (some (alphaNumChar <|> char '-')) <?> "list item"
 ```
 
-Let us load the code into GHCi and try it with help of `parseTest` built-in:
+Let's load the code into GHCi and try it with the help of `parseTest`
+built-in:
 
 ```
 λ> parseTest (pItemList <* eof) ""
@@ -2051,7 +2056,7 @@ on the other hand the built-in combinator `space` has hidden the phrase
 “expecting more space” from error messages, so this error message is
 perfectly reasonable.
 
-Let us continue:
+Let's continue:
 
 ```
 λ> parseTest (pItemList <* eof) "something\n  one\n    two\n  three"
@@ -2072,9 +2077,9 @@ incorrect indentation (got 2, should be equal to 3)
 ("something",["one","two","three"])
 ```
 
-Let us replace `IndentMany` with `IndentSome` and `Nothing` with `Just
-(mkPos 5)` (indentation levels are counted from 1, so it will require 4
-spaces before indented items):
+Let's replace `IndentMany` with `IndentSome` and `Nothing` with `Just (mkPos
+5)` (indentation levels are counted from 1, so it will require 4 spaces
+before indented items):
 
 ```haskell
 pItemList :: Parser (String, [String])
@@ -2106,13 +2111,13 @@ incorrect indentation (got 3, should be equal to 5)
 ("something",["one"])
 ```
 
-First message may be a bit surprising, but `megaparsec` knows that there
-must be at least one item in the list, so it checks indentation level and it
-is 1, which is incorrect, so it reports it.
+The first message may be a bit surprising, but `megaparsec` knows that there
+must be at least one item in the list, so it checks the indentation level
+and it is 1, which is incorrect, so it reports it.
 
 ### Nested indented list
 
-Let us allow list items to have sub-items. For this we will need a new
+Let's allow list items to have sub-items. For this we will need a new
 parser, `pComplexItem`:
 
 ```haskell
@@ -2162,10 +2167,10 @@ without requiring additional state.
 ### Adding line folds
 
 A *line fold* consists of several elements that can be put on one line or on
-several lines as long as indentation level of subsequent items is greater
-than indentation level of the first item.
+several lines as long as the indentation level of the subsequent items is
+greater than the indentation level of the first item.
 
-Let us make use of another helper called `lineFold`:
+Let's make use of another helper called `lineFold`:
 
 ```haskell
 pComplexItem :: Parser (String, [String])
@@ -2189,14 +2194,14 @@ Why use `try sc'` and `scn` on the line (1)? The situation is the following:
 
 * Components of a line fold can only be more indented than its start.
 * `sc'` consumes whitespace with newlines in such a way that after consuming
-  whitespace the column is greater than initial column.
-* To stop, `sc'` should encounter the opposite situation, that is, column
-  after consumption should be less than or equal to the initial column. At
-  that point it fails without consuming input (thanks to `try`) and `scn` is
-  used to pick up whitespace before that new thing that will start at that
-  column.
+  whitespace the column number is greater than initial column.
+* To stop, `sc'` should encounter the opposite situation, that is, the
+  column number after consumption should be less than or equal to the
+  initial column. At that point it fails without consuming input (thanks to
+  `try`) and `scn` is used to pick up whitespace before that new thing that
+  will start at that column.
 * Previously used `sc'` already probed whitespace with space consumer which
-  consumes newlines. So it only logical to also consume newlines when
+  consumes newlines. So, it is only logical to also consume newlines when
   picking up trailing whitespace. This is why `scn` is used on the line (1)
   and not `sc`.
 
@@ -2207,7 +2212,7 @@ concatenated with single space between them.*
 
 ## Writing efficient parsers
 
-Let us discuss what to attempt in order to improve performance of a
+Let's discuss what to attempt in order to improve performance of a
 `megaparsec` parser. It should be noted right away that one should always
 check if there is any improvement through profiling and benchmarking. That
 is the only way to understand if we are doing the right thing when tuning
@@ -2215,17 +2220,17 @@ performance.
 
 Common pieces of advice:
 
-* If your parser uses a monad stack instead of plain `Parsec` monad (recall
-  that it is the `ParsecT` monad transformer over `Identity`, which is quite
-  lightweight), make sure you use at least version 0.5 of `transformers`
-  library, and at least version 7.0 of `megaparsec`. Both libraries have
-  critical performance improvements in these versions, so you can just get
-  better performance for free.
+* If your parser uses a monad stack instead of the plain `Parsec` monad
+  (recall that it is the `ParsecT` monad transformer over `Identity`, which
+  is quite lightweight), make sure you use at least version 0.5 of
+  `transformers` library, and at least version 7.0 of `megaparsec`. Both
+  libraries have critical performance improvements in these versions, so you
+  can just get better performance for free.
 
 * `Parsec` monad will be always faster then `ParsecT`-based monad
   transformers. Avoid using `StateT`, `WriterT`, and other monad
-  transformers unless absolutely necessary. The more you add to the stack,
-  the slower it will be.
+  transformers unless absolutely necessary. The more you add to the monadic
+  stack, the slower your parser will be.
 
 * Backtracking is an expensive operation. Avoid building long chains of
   alternatives where every alternative can go deep into input before
@@ -2253,7 +2258,7 @@ Common pieces of advice:
 While most of the points above do not require additional comment, I think it
 would be beneficial to get into the habit of using the newer fast
 primitives: `takeWhileP`, `takeWhile1P`, and `takeP`. The first two are
-especially common as they allow us to replace some `many` and `some`-based
+especially common as they allow us to replace `many` and `some`-based
 constructs making them faster and changing the type of returned data to
 chunk of input stream, i.e. the `Tokens s` type we have discussed
 previously.
@@ -2362,11 +2367,12 @@ and numbers, “multiplied by zero”.
 
 In older version of the library, `ParseError`s were returned directly by
 functions like `parse`, but version 7 delays calculation of line and column
-for each error, as well as fetching of relevant line on input for displaying
-in case of an error. This is done to be make parsing faster, because all
-this information is usually useful only when a parser fails. Another problem
-of older versions of the library is that displaying several parse errors at
-once required re-traversal of input each time to fetch the right line.
+for each error, as well as fetching of the relevant line on input for
+displaying in case of an error. This is done to be make parsing faster,
+because all this information is usually useful only when a parser fails.
+Another problem of older versions of the library is that displaying several
+parse errors at once required re-traversal of input each time to fetch the
+right line.
 
 The problem is solved with the `ParseErrorBundle` data type:
 
@@ -2382,15 +2388,12 @@ data ParseErrorBundle s e = ParseErrorBundle
   }
 ```
 
-All parser-running functions return `ParseErrorBundle` with correctly set
-`bundlePosState` and a single `ParseError` inside. The collection of
-`ParseError`s inside can be extended by user before displaying
-`ParseErrorBundle` to user. It is the responsibility of the user to keep
-`ParseError`s sorted by their offsets.
+All parser-running functions return `ParseErrorBundle` with a correctly set
+`bundlePosState` and a collection `ParseError`s inside.
 
 ### How to signal a parse error
 
-Let us discuss different ways to signal a parse error. The simplest function
+Let's discuss different ways to signal a parse error. The simplest function
 for that is `fail`:
 
 ```
@@ -2458,9 +2461,9 @@ incorrectIndent ord ref actual = fancyFailure . Set.singleton $
   ErrorIndentation ord ref actual
 ```
 
-As an example of adding a custom parse error component to your parser, let
-us go through defining a special parse error that says that given `Text`
-value is not a keyword.
+As an example of adding a custom parse error component to your parser, let's
+go through defining a special parse error that says that given `Text` value
+is not a keyword.
 
 First, we need to define the data type with constructors representing
 scenarios we want to support:
@@ -2531,7 +2534,7 @@ errorBundlePretty
 
 In 99% of cases you will only need this one function.
 
-### Catching parse errors in running parser
+### Catching parse errors in a running parser
 
 Another useful feature of `megaparsec` is that it is possible to “catch” a
 parse error, alter it in some way, and then re-throw, [just like with
@@ -2642,7 +2645,7 @@ in foo, in bar
 Thus, the feature can be used to attach location labels to parse errors, or
 indeed define *regions* in which parse errors are processed in some way. The
 idiom is quite useful, so there is even a non-primitive helper called
-`region` built in terms of the `observing` primitive:
+`region` defined in terms of the `observing` primitive:
 
 ```haskell
 -- | Specify how to process 'ParseError's that happen inside of this
@@ -2719,13 +2722,13 @@ withPredicate2 f msg p = do
 ```
 
 We noted that `setOffset o` will make the error to be located correctly, but
-it will also invalidate parser state as a side effect—the offset will not
-reflect reality anymore. This may be a real problem in more complex parsers.
-For example, imagine that you enclose `withPredicate2` with `observing` so
-that there will be some code running after `fail`.
+it will also invalidate the parser state as a side effect—the offset will
+not reflect reality anymore. This may be a real problem in more complex
+parsers. For example, imagine that you enclose `withPredicate2` with
+`observing` so that there will be some code running after `fail`.
 
 With `parseError` and `region` we finally have proper solution to the
-problem—either use `parseError` to reset parse error location, or use
+problem—either use `region` to reset the parse error location, or use
 `parseError` in the first place:
 
 ```haskell
@@ -2834,7 +2837,7 @@ by using the [`hspec-megaparsec`][hspec-megaparsec] package. The package
 adds utility expectations such as `shouldParse`, `parseSatisfies`, etc.
 which work with the `hspec` testing framework.
 
-Let us start with an example:
+Let's start with an example:
 
 ```haskell
 {-# LANGUAGE OverloadedStrings #-}
@@ -2863,11 +2866,11 @@ main = hspec $
       parse myParser "" "aaaa" `parseSatisfies` ((== 4) . length)
 ```
 
-`shouldParse` accepts `Either (ParseErrorBundle s e) a`—result of parsing
-and a thing of the type `a` to compare with. It is probably the most common
-helper. `parseSatisfies` is quite similar, but instead of comparing for
-equality with expected result, it allows to check the result by applying an
-arbitrary predicate.
+`shouldParse` accepts `Either (ParseErrorBundle s e) a`—the result of
+parsing and a thing of the type `a` to compare with. It is probably the most
+common helper. `parseSatisfies` is quite similar, but instead of comparing
+for equality with the expected result, it allows to check the result by
+applying an arbitrary predicate.
 
 Other simple expectations are `shouldSucceedOn` and `shouldFailOn` (although
 they are rarely used):
@@ -2904,16 +2907,17 @@ us instead use the `err` helper:
       parse myParser "" "bbb" `shouldFailWith` err 0 (utok 'b' <> etok 'a')
 ```
 
-* The first argument of `err` is offset (number of tokens that were consumed
-  before we got the error) of parse error. This time it is simply 0.
+* The first argument of `err` is offset of the parse error (the number of
+  tokens that had been consumed before we got the error). In this example it
+  is simply 0.
 
 * `utok` stands for “unexpected token”, similarly `etok` means “expected
   token”.
 
-*EXERCISE: To construct fancy parse errors there is a similar helper called
-`errFancy`, familiarize yourself with it.*
+*EXERCISE: Familiarize yourself with `errFancy`, which is used to construct
+fancy parse errors.*
 
-Finally, it is possible to test which part of input remains unconsumed after
+Finally, it is possible to test what part of input remains unconsumed after
 parsing using `failsLeaving` and `succeedsLeaving`:
 
 ```haskell
@@ -2924,8 +2928,8 @@ parsing using `failsLeaving` and `succeedsLeaving`:
 ```
 
 These should by used with `runParser'` or `runParserT'` which accept custom
-initial state of parser and return its final state (this is what allows to
-check leftover of input stream after parsing):
+initial state of parser and return its final state (this is what allows us
+to check the leftover of the input stream after parsing):
 
 ```haskell
 runParser'
@@ -2939,8 +2943,9 @@ runParserT' :: Monad m
   -> m (State s, Either (ParseError (Token s) e) a)
 ```
 
-The `initialState` function takes input stream and returns initial state
-with that input stream and other record fields filled with default values.
+The `initialState` function takes the input stream and returns the initial
+state with that input stream and other record fields filled with their
+default values.
 
 Other sources of inspiration for using `hspec-megaparsec` are:
 
@@ -2985,8 +2990,8 @@ data MyToken
   deriving (Eq, Ord, Show)
 ```
 
-To report parse errors though we need a way to know where token starting
-position, ending position, and length, so let us add `WithPos`:
+To report parse errors though we need a way to know the token's starting
+position, ending position, and length, so let's add `WithPos`:
 
 ```haskell
 data WithPos a = WithPos
@@ -3167,7 +3172,7 @@ exampleStream = MyStream
     at' l c = SourcePos "" (mkPos l) (mkPos c)
 ```
 
-Let us try it:
+Let's try it:
 
 ```
 λ> parseTest (pSum <* eof) exampleStream

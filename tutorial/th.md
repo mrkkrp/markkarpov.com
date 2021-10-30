@@ -3,7 +3,7 @@ title: Template Haskell tutorial
 desc: The tutorial explains how to use Template Haskell for metaprogramming in Haskell.
 date:
   published: December 24, 2017
-  updated: June 1, 2019
+  updated: October 31, 2021
 ---
 
 ```toc
@@ -23,7 +23,7 @@ the Haddocks.
 
 The tutorial cannot possibly cover every use of TH, and so it is structured
 in such a way so we only get to see the most common, conventional, and
-benign uses of the GHC feature.
+benign uses of this GHC feature.
 
 ## Motivation
 
@@ -126,8 +126,8 @@ constructors end with an “E”, `Type` constructors end with a “T”, and `P
 constructors end with a “P”. This makes it easy to distinguish e.g. an
 expression variable `VarE` from a pattern variable `VarP`.
 
-Using the data types, slowly, through pain and suffering, we can indeed
-construct an expression:
+Using the data types, slowly but surely, we can indeed construct an
+expression:
 
 ```haskell
 myFunc :: Q Exp
@@ -140,11 +140,10 @@ myFunc = do
     -- literal 1
 ```
 
-*(No, I did not construct this manually, but for now let's pretend I'm that
-crazy.)* The `TemplateHaskell` language extension enables the special syntax
-`$(exp)` where `exp` is an arbitrary expression producing `Q [Dec]`, `Q
-Exp`, `Q Type`, or `Q Pat`. This allows to interpolate the generated code
-into normal Haskell source code.
+The `TemplateHaskell` language extension enables the special syntax `$(exp)`
+where `exp` is an arbitrary expression producing `Q [Dec]`, `Q Exp`, `Q
+Type`, or `Q Pat`. This allows us to interpolate the generated code into
+normal Haskell source code.
 
 For example, I can now use `myFunc` like this:
 
@@ -206,7 +205,7 @@ Using TH currently has some limitations:
     Declaration groups can refer to definitions within previous groups, but
     not later ones.
 
-Let see an example of this. Suppose we want to use the `lens` library to
+Let's see an example of this. Suppose we want to use the `lens` library to
 generate some lenses. We could have code like this:
 
 ```haskell
@@ -247,7 +246,7 @@ The first declaration group, consisting of just `MyRecord` now cannot see
 `getRecordFoo`, and in case you need it, you'll be forced to move all the
 code that uses `getRecordFoo` into the second declaration group, after
 `makeLenses ''MyRecord`. In most cases this is not a big deal (after all, in
-many languages you must define function *before* you use it), but
+many languages you must define a function *before* you use it), but
 nevertheless we're used to the fact that Haskell does not care about
 ordering of our definitions, so this limitation is a pity.
 
@@ -329,15 +328,15 @@ InfixE
                 (Just (LitE (IntegerL 1))))))
 ```
 
-It works as intended to our complete satisfaction.
+It seems to work.
 
 ## Typed expressions
 
 Quotation for typed expressions is a bit special: it is the only way to
-create values of the type `TExp a`, i.e. it's introduction form for `TExp`.
-This way the compiler can ensure that the phantom type always corresponds to
-what is inside. For example, let's try and re-write `myFunc` using quotation
-for typed expression splices:
+create values of the type `TExp a`, i.e. it's the introduction form for
+`TExp`. This way the compiler can ensure that the phantom type always
+corresponds to what is inside. For example, let's try and re-write `myFunc`
+using quotation for typed expression splices:
 
 ```haskell
 myFuncTyped :: Q (TExp a)
@@ -427,8 +426,7 @@ runQ :: Quasi m => Q a -> m a
 capabilities for meta-programming we have mentioned in the beginning when we
 introduced `Q`. You can click that link and take a look for yourself.
 
-In fact, `Q a` is just [an existential wrapper][existentials] around `Quasi
-m => m a` under the hood:
+In fact, `Q a` is just a wrapper around `Quasi m => m a` under the hood:
 
 ```haskell
 newtype Q a = Q { unQ :: forall m. Quasi m => m a }
@@ -543,7 +541,7 @@ an expression referring to that `x`:
 ```
 
 Even though the quotes lookup everything from the current scope, it does not
-mean that new names cannot be generated this way, they can be:
+mean that new names cannot be generated this way:
 
 ```haskell
 λ> runQ [| \x -> x + 1 |]
@@ -586,7 +584,7 @@ InfixE (Just (UnboundVarE z)) (VarE GHC.Num.+) (Just (LitE (IntegerL 1)))
 101
 ```
 
-But this approach seems quite fragile to my taste. (What if we later define
+But this approach seems quite fragile for my taste. (What if we later define
 `z` somewhere in the same module?)
 
 Capturable names are sometimes useful. For example, the [`hamlet`][hamlet]
@@ -604,12 +602,12 @@ information about named things.
 There are quite a few “reifying” functions that allow to do that:
 
 * [`reify :: Name -> Q Info`][reify] is the most commonly used one. It
-  allows to look up general information [`Info`][info] about a thing.
+  allows us to look up general information [`Info`][info] about a thing.
 
 * [`extsEnabled :: Q [Extension]`][exts-enabled] returns the list of all
   enabled language extensions at the splicing site.
 
-* [`isExtEnabled :: Extension -> Q Bool`][is-ext-enabled] allows to check
+* [`isExtEnabled :: Extension -> Q Bool`][is-ext-enabled] allows us to check
   whether a particular language extension is enabled.
 
 * [`reifyInstances :: Name -> [Type] -> Q [InstanceDec]`][reify-instances]
@@ -650,7 +648,7 @@ Let's now use the reifying functions for something more practical.
 
 ## Example 1: instance generation
 
-The example is going to be a little contrived. The aim is to show how all
+This example is going to be a little contrived. The aim is to show how all
 the tools we have seen so far work together, but without throwing a “wall of
 code” at the reader.
 
@@ -682,10 +680,10 @@ instance (Enum a, Bounded a) => Countable a where
 
 This is not going to work though if we want to be able to define instances
 of `Countable` for more complex product and sum types. The reason is that
-the instance above already defines `Countable` for any `a` possible, it's
-just we then have this additional constraint `(Enum a, Bounded a)` added. In
-other words, when Haskell searches for an instance, it only looks at the
-right-hand side ignoring the constraints, and so `a` matches everything.
+the instance above already defines `Countable` for any `a` possible, but
+with this additional constraint `(Enum a, Bounded a)` added. In other words,
+when Haskell searches for an instance, it only looks at the right-hand side
+ignoring the constraints, and so `a` matches everything.
 
 We could do better by writing a TH helper that handles two cases:
 
@@ -821,7 +819,7 @@ what to do on its own.
 ## Viewing the generated code
 
 Sometimes it is helpful to be able to see the code we're generating at
-splice sites. GHC [allows to do that][viewing-th-code] with the
+splice sites. GHC [allows us to do that][viewing-th-code] with the
 `-ddump-splices` flag. Stack seems to eat that output though, so I had to
 add also `-ddump-to-file` and search for a file with the suffix `-splices`
 in the `.stack-work/dist` directory.
@@ -868,17 +866,14 @@ src/Main.hs:25:1-21: Splicing declarations
                   + 0))
 ```
 
-*(All the mess will be optimized away and we'll end with just plain numbers,
-don't worry.)*
-
 This is a useful debugging tool.
 
-## Lifting Haskell values to TH expressions
+## Lifting Haskell values into TH expressions
 
 So far we have been constructing expressions manually or by using quotation.
 What about getting an expression that “re-constructs” a value we already
-have? This could be used to deliver values generated in the `Q` monad to the
-outside world.
+have? This could be useful to deliver values generated in the `Q` monad to
+the outside world.
 
 The solution comes naturally in the form of the [`Lift`][lift] type class:
 
@@ -903,8 +898,8 @@ instance Lift Char where
 
 The `template-haskell` package defines `Lift` instances for all common data
 types. GHC also knows how to define `Lift` for new types. It is enough to
-enable the `DeriveLift` language extension and we're all done (example from
-the Haddocks):
+enable the `DeriveLift` language extension and we're done (example from the
+Haddocks):
 
 ```haskell
 {-# LANGUAGE DeriveLift #-}
@@ -946,8 +941,8 @@ This produces the following compilation error:
 • In the stand-alone deriving instance for ‘Lift Text’
 ```
 
-The `text` and `bytestring` libraries do not expose the constructors, so
-`DeriveLift` refuses to do its magic.
+The `text` and `bytestring` libraries do not expose the data constructors,
+so `DeriveLift` refuses to do its magic.
 
 Not everything is lost though. It so happens that the `Data` class provides
 enough introspection capabilities for `lift`ing, so TH has the following
@@ -958,7 +953,7 @@ liftData :: Data a => a -> Q Exp
 ```
 
 If something is an instance of the `Data` type class, we can just lift it
-with the `liftData` function. This is great, no orphan instances are
+with the `liftData` function. This is great because no orphan instances are
 necessary, let's try it out.
 
 In one module we define a function that takes `Text` and generates an
@@ -969,7 +964,7 @@ foo :: Text -> Q Exp
 foo txt = [| $(liftData txt) <> "!" |]
 ```
 
-This even compiles. In another module we try to use it:
+In another module we try to use it:
 
 ```haskell
 main :: IO ()
@@ -985,7 +980,7 @@ And this is when it blows up:
 ```
 
 *This is scary.* I'll save your time and we won't go into the internals of
-`liftData` here. It suffices to say that `liftData` uses
+`liftData` here. Suffice it to say that `liftData` uses
 [`toConstr`][to-constr] internally which returns `pack` for `Text`. The rest
 of the machinery apparently expects this `pack` function to be in the same
 module the data type is defined, `Data.Text.Internal`, but `pack` is defined
@@ -1020,17 +1015,17 @@ Let's see what `dataToExpQ` does:
 dataToExpQ :: Data a => (forall b. Data b => b -> Maybe (Q Exp)) -> a -> Q Exp
 ```
 
-`dataToExpQ` works just like `liftData` but it allows to overwrite lifting
-for the values for which `forall b. Data b => b -> Maybe (Q Exp)` returns
-`Just`. Don't be afraid of the rank-2-type here. The `forall` quantification
-of `b` inside that function in parentheses means that the function literally
-works *for all* `b`, but the choice of `b` is made not at the call site of
-`dataToExpQ`, but at the call site of this `forall b. Data b => b -> Maybe
-(Q Exp)` function. Similarly, the choice of `a` is made at the call site of
-`dataToExpQ` which also has an implicit `forall a.` at the beginning of its
-type signature. See the symmetry? (If you're a beginner, you may not
-understand rank-N-types immediately, in that case don't despair. Still, I
-tried my best to explain.)
+`dataToExpQ` works just like `liftData` but it allows us to overwrite
+lifting for the values for which `forall b. Data b => b -> Maybe (Q Exp)`
+returns `Just`. Don't be afraid of the rank-2-type here. The `forall`
+quantification of `b` inside that function in parentheses means that the
+function literally works *for all* `b`, but the choice of `b` is made not at
+the call site of `dataToExpQ`, but at the call site of this `forall b. Data
+b => b -> Maybe (Q Exp)` function. Similarly, the choice of `a` is made at
+the call site of `dataToExpQ` which also has an implicit `forall a.` at the
+beginning of its type signature. See the symmetry? (If you're a beginner,
+you may not understand rank-N-types immediately, in that case don't
+despair.)
 
 `cast` performs type-safe casting between two types:
 
@@ -1039,8 +1034,8 @@ cast :: (Typeable a, Typeable b) => a -> Maybe b
 ```
 
 Here, if `a` has the same type representation (which the `Typeable` type
-class allows to query via the `typeRep` function) as `b`, we get a `b` value
-inside `Just`.
+class allows us to query via the `typeRep` function) as `b`, we get a `b`
+value inside `Just`.
 
 We can use `cast` here because `Typeable` is a superclass of `Data`:
 
@@ -1051,20 +1046,18 @@ class Typeable a => Data a where
 
 If something from the above is not clear, it's OK. Just grab this trick and
 use it next time you need to lift data that contains `Text` or similar
-types, you should be OK.
-
-One more thing: you need at least GHC 8 to use `dataToExpQ`.
+types. One more thing: you need at least GHC 8 to use `dataToExpQ`.
 
 ## Example 2: creating refined values at compile time
 
-Now we are prepared to write a TH helper that allows to construct values of
-refined types at compile time turning invalid inputs into compilation
+Now we are prepared to write a TH helper that allows us to construct values
+of refined types at compile time turning invalid inputs into compilation
 errors.
 
 Our practical example will be taken (although in a simplified form) from an
-existing library I wrote, it's called [`modern-uri`][modern-uri]. In the
-library we have a function that takes `Text` representing a URI as input and
-outputs `Maybe URI`:
+existing library I wrote, called [`modern-uri`][modern-uri]. In the library
+we have a function that takes `Text` representing a URI as input and outputs
+`Maybe URI`:
 
 ```haskell
 data URI = URI
@@ -1098,9 +1091,9 @@ mkURI txt =
     Just uri -> dataToExpQ (fmap liftText . cast) uri -- the same trick
 ```
 
-We could finish the section on this, but there is a nicer way, syntax-wise,
-to make use of such a validating helper. The feature we're going to explore
-is called quasi-quotes. It turns out that TH allows us to define our own
+We could finish the section here, but there is a nicer way, syntax-wise, to
+make use of such a validating helper. The feature we're going to explore is
+called *quasi-quotes*. It turns out that TH allows us to define our own
 custom quasi-quoters that are like `d`, `e`, `t`, and `p` we saw earlier.
 
 Defining a quasi-quoter is easy. It is enough to import the
@@ -1163,7 +1156,7 @@ compilation will fail. One more type of error is caught at complie time!
 
 Using `IO` in TH generally makes the compilation process dependent on
 external conditions that may contribute to unexpected compilation failures.
-Thus it makes sense to think twice before running `IO` from TH.
+Thus, it makes sense to think twice before running `IO` from TH.
 
 That said, the function that lifts `IO` into `Q` is called simply
 [`runIO`][run-io]:
@@ -1173,10 +1166,10 @@ runIO :: IO a -> Q a
 ```
 
 Needless to say, one can do a lot with such a tool, for good or for evil.
-One example of a good use is the [`gitrev`][gitrev] package which allows to
-insert information about active branch and last commit of code that is being
-compiled. It works by literally running the `git` executable at complie time
-and then lifting the fetched data.
+One example of a good use is the [`gitrev`][gitrev] package which allows us
+to insert information about active branch and last commit of code that is
+being compiled. It works by literally running the `git` executable at
+complie time and then lifting the fetched data.
 
 A far more common use case for `IO` in `Q` is reading from files. In that
 case compilation usually starts to depend on contents of the file being
@@ -1190,7 +1183,7 @@ addDependentFile :: FilePath -> Q ()
 ```
 
 (Why it lives in `Language.Haskell.TH.Syntax` and not in
-`Language.Haskell.TH` is beyond me, what has it to do with syntax?)
+`Language.Haskell.TH` is beyond me. What does it have to do with syntax?)
 
 ## Example 3: the `file-embed` package
 
@@ -1236,16 +1229,16 @@ main = TIO.putStrLn $(embedFile "src/Main.hs")
 ```
 
 The program outputs its own source code. No `src/Main.hs` file is expected
-to exist when we run the binary, the source code is dumped into the
-executable itself. Note how the `IsString a => a` value was instantiated to
-`Text` automatically because `Text` is an instance of `IsString`.
+to exist when we run the binary, the source code is stored in the executable
+itself. Note how the `IsString a => a` value was instantiated to `Text`
+automatically because `Text` is an instance of `IsString`.
 
 ## Conclusion
 
 This is by no means a complete TH tutorial, some more rarely used tools and
-functions were not covered. Still, the tutorial should get you on the speed
-and give a taste of what meta-programming in Haskell looks like. For further
-information refer directly to the Haddocks:
+functions have not been covered. Still, the tutorial should get you up to
+speed and give a taste of what meta-programming in Haskell looks like. For
+further information refer directly to the Haddocks:
 
 <https://hackage.haskell.org/package/template-haskell>
 
@@ -1291,5 +1284,4 @@ Good luck!
 [typed-th]: https://www.cs.drexel.edu/~mainland/2013/05/31/type-safe-runtime-code-generation-with-typed-template-haskell/
 [viewing-th-code]: https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/glasgow_exts.html#viewing-template-haskell-generated-code
 [orphan-instance]: https://wiki.haskell.org/Orphan_instance
-[existentials]: /post/existential-quantification.html
 [generics]: /tutorial/generics.html

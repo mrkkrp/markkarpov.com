@@ -3,6 +3,7 @@ title: GHC optimization and fusion
 desc: The tutorial is my attempt to explain all important GHC optimization ideas in one place. I included some benchmarked examples that should help to demonstrate the techniques in practice.
 date:
   published: November 22, 2019
+  updated: October 31, 2021
 ---
 
 *This is a new, revised version of [the old tutorial I
@@ -47,7 +48,7 @@ function body itself.
 The idea of inlining is simple: insert the function body directly where we
 would otherwise have a function call. The functions that are inlined tend to
 be short, so duplication of code is minimal. At the same time we may get a
-considerable performance boost. Inlining is perhaps the simplest and yet
+considerable performance boost. Inlining is perhaps the simplest and yet a
 very efficient way to improve performance in certain cases. Furthermore, we
 will see shortly that inlining in GHC is not just about eliminating calls
 themselves, it's also a way to let other optimizations be applied.
@@ -63,8 +64,7 @@ cost) is calculated, but it should make sense that the lighter the function,
 the keener the compiler is to inline it.
 
 It is worth noticing that GHC is careful about avoiding excessive code bloat
-and it does not inline blindly. Generally, a function is inlined when it
-makes at least some sense to inline it. When deciding whether to inline, GHC
+and it does not inline blindly. When deciding whether to inline, GHC
 considers the following:
 
 * **Does it make sense to inline at a particular call site?** Consider this
@@ -142,8 +142,8 @@ This is an important point that we'll revisit later. It is not optimized to
 allow other machinery to do its work after inlining. For that machinery it
 is important that the function's body is intact because it operates on a
 rather syntactic level and optimizations, if applied, would leave almost no
-chance for the machinery to do its trick. For now remember that the bodies
-of functions that GHC sees as inlineable won't be optimized, they will be
+chance for the machinery to do its work. For now remember that the bodies of
+functions that GHC sees as inlineable won't be optimized, they will be
 inserted “as is”.
 
 One of the simplest optimization techniques GHC can use with inlining is
@@ -202,8 +202,8 @@ The main effect of the `INLINEABLE` pragma is that GHC will keep in mind
 that this function may be inlined, even if it would not consider it for
 inlining otherwise. We don't get any guarantees about whether the function
 will be inlined or not in any particular case, but now unfolding of the
-function will be dumped to an interface file, which means that it's possible
-to inline it in another module.
+function will be dumped to an interface file, which means that it will be
+possible to inline it in another module.
 
 With a function marked `INLINEABLE`, we can use the special built-in
 function called `inline`, which will tell GHC to try very hard to inline its
@@ -336,8 +336,8 @@ std dev              38.08 μs   (28.36 μs .. 58.38 μs)
 
 As expected, inlining gives only marginal improvement in this case.
 
-It turns out that not only inlining requires access to original function
-body to work, some other optimizations do as well. The `INLINEABLE` pragma
+It turns out that not only inlining requires access to the function body to
+work; some other optimizations do as well. The `INLINEABLE` pragma
 effectively removes module boundaries that could otherwise prevent other
 optimizations from being applied. We will see how this works with
 specializing in the next section. Because of that, it is not unusual to see
@@ -394,7 +394,7 @@ foo :: Num a => a -> a
 foo = …
 ```
 
-It means that the function should work differently for different `a`. This
+It means that the function should work differently for different `a`s. This
 is accomplished by passing around a dictionary that is indexed by the
 methods of a given type class. The example above turns into:
 
@@ -408,7 +408,7 @@ functions that implement the methods of the `Num` type class. When a method
 of that type class needs to be called, the dictionary is indexed by the name
 of that method and the extracted function is used. Not only does `foo`
 accept the dictionary as an additional argument, it also passes it to
-polymorphic functions inside `foo`, and those functions may pass it to
+polymorphic functions inside `foo`, and those functions may pass it down to
 functions in their bodies:
 
 ```haskell
@@ -422,10 +422,10 @@ foo d = … bar d …
 
 Passing and indexing is not free—it makes your program slower. At the same
 time it is not possible to run a polymorphic function without fixing its
-types. Then it should be possible for GHC to figure out which implementation
-should be used in every place and speed up things considerably. When we turn
-a polymorphic function into one specialized for concrete type(s), we do
-specializing.
+types. If so, it should be possible for GHC to figure out which
+implementation should be used in every place and speed up things
+considerably. When we turn a polymorphic function into one specialized for
+concrete type(s), we do specializing.
 
 Syntactically, a `SPECIALIZE` pragma can be put anywhere its type signature
 can be put:
@@ -649,27 +649,27 @@ certain combinations of functions. Here is an example of `RULES` in use:
   of the pattern variable is polymorphic, it *must* have a type signature.
   For example:
 
-    ```haskell
-    {-# RULES
-    "fold/build"  forall k z (g :: forall b. (a -> b -> b) -> b -> b).
-                  foldr k z (build g) = g k z
-      #-}
-    ```
+  ```haskell
+  {-# RULES
+  "fold/build"  forall k z (g :: forall b. (a -> b -> b) -> b -> b).
+                foldr k z (build g) = g k z
+    #-}
+  ```
 
-    Since `g` has a polymorphic type, it must have a type signature.
+  Since `g` has a polymorphic type, it must have a type signature.
 
 * The left hand side of a rule must consist of a top-level variable applied
   to arbitrary expressions. For example, this is not OK:
 
-    ```haskell
-    {-# RULES
-    "wrong1"   forall e1 e2.  case True of { True -> e1; False -> e2 } = e1
-    "wrong2"   forall f.      f True = True
-      #-}
-    ```
+  ```haskell
+  {-# RULES
+  "wrong1"   forall e1 e2.  case True of { True -> e1; False -> e2 } = e1
+  "wrong2"   forall f.      f True = True
+    #-}
+  ```
 
-    In `"wrong1"`, the LHS is not an application; in `"wrong2"`, the LHS has
-    a pattern variable in the head.
+  In `"wrong1"`, the LHS is not an application; in `"wrong2"`, the LHS has
+  a pattern variable in the head.
 
 * A rule does not need to be in the same module as the variables it
   mentions, though of course they need to be in scope.
@@ -677,7 +677,7 @@ certain combinations of functions. Here is an example of `RULES` in use:
 * All rules are implicitly exported from the module, and are therefore in
   force in any module that imports the module that defined the rule,
   directly or indirectly. (That is, if `A` imports `B`, which imports `C`,
-  then `C`'s rules are in force when compiling `A`.) The situation is very
+  then `C`'s rules are in force when compiling `A`.) The situation is
   similar to that with instance declarations.
 
 * Inside a rule `forall` is treated as a keyword, regardless of any other
@@ -688,12 +688,12 @@ certain combinations of functions. Here is an example of `RULES` in use:
   errors, and are typechecked. Typechecking means that the LHS and RHS of a
   rule are typechecked, and must have the same type.
 
-The GHC user guide explains what rewrite rules do (I edited it a bit):
+The GHC user guide explains what rewrite rules do:
 
 > GHC uses a very simple, syntactic, matching algorithm for matching a rule
   LHS with an expression. It seeks a substitution which makes the LHS and
   expression syntactically equal modulo alpha-conversion (that is, a rule
-  matches only if types match too). The pattern (rule), but not the
+  matches only if types match, too). The pattern (rule), but not the
   expression, is eta-expanded if necessary. (Eta-expanding the expression
   can lead to laziness bugs.) But no beta-conversion is performed (that's
   called higher-order matching).
@@ -701,7 +701,7 @@ The GHC user guide explains what rewrite rules do (I edited it a bit):
 This requirement of verbatim matching modulo alpha conversion in combination
 with the fact that a lot is going on during the optimization process in GHC
 makes working with rules a bit tricky. That is, sometimes rules do not fire.
-Some cases of this are covered in the next section *Gotchas*.
+Some cases of this are covered in the next section.
 
 On the other hand, when several rules match at once, GHC will choose one
 arbitrarily to apply. You might be wondering “why not to choose e.g. the
@@ -717,9 +717,9 @@ writing rewrite rules frustrating. This section highlights some problems you
 might encounter.
 
 * **GHC does not attempt to verify whether RHS has the same meaning as
-  LHS**. It's responsibility of the programmer to ensure that the rules do
-  not change the meaning of the expressions! An example of a rule that may
-  seem obviously correct could be something like this:
+  LHS**. It is the responsibility of the programmer to ensure that the rules
+  do not change the meaning of the expressions. An example of a rule that
+  may seem obviously correct could be something like this:
 
   ```haskell
   {-# RULES
@@ -778,8 +778,8 @@ might encounter.
 
 * **Writing rules matching on methods of type classes is futile** because
   methods will be specialized by GHC before rewrite rules have a chance to
-  be applied. Such rules won't fire because the types specialized functions
-  won't match the types specified in the rewrite rules.
+  be applied. Such rules won't fire because the types of specialized
+  functions won't match the types specified in the rewrite rules.
 
 While inlining can get in the way of rewrite rules, it can also help glue
 together different pieces of code. There is a special modifier to `INLINE`
@@ -790,7 +790,7 @@ application has arguments that can be duplicated at no cost: variables,
 literals, and type applications, hence the name. You can find more about
 this in the paper [*Secrets of the GHC inliner*][secrets-of-ghc-inliner].
 
-#### Phase control
+#### The phase control
 
 As you can see, a lot is happening during optimization passes and things
 have the potential to interfere with each other in undesirable ways. There
@@ -798,13 +798,13 @@ must be a way to say: this should happen first, that should happen after.
 Well, there is a way.
 
 GHC has the concept of *simplifier phases*. The phases are numbered. The
-first phase that runs currently has number 4, then go number 3, 2, 1, and
-finally the last phase has number 0.
+first phase that runs currently has the number 4, then go number 3, 2, 1,
+and finally the last phase has the number 0.
 
-Unfortunately, phase separation does not give fine-grained control, just
-enough for us to construct something that works. In an ideal world, we would
-like to be able to specify which optimization procedure depends on which,
-but instead we have only two options:
+Unfortunately, the phase separation does not give fine-grained control, but
+just enough for us to construct something that works. In an ideal world, we
+would like to be able to specify which optimization procedure depends on
+which, but instead we have only two options:
 
 1. Specify starting from which phase given rewrite rule or inline/specialize
    pragma should be enabled.
@@ -878,9 +878,9 @@ it's enough to look at `map`-specific rules found in `Prelude`:
 
 Note two important points here:
 
-1. Without phase control both rules `"map"` and `"mapList"` would be active
-   at the same time and GHC would go into an infinite loop. Phase control is
-   the only way to make this set of rules work.
+1. Without the phase control both rules `"map"` and `"mapList"` would be
+   active at the same time and GHC would end up in an infinite loop. The
+   phase control is the only way to make this set of rules work.
 
 2. We first use the `"map"` rule, and then we use `"mapList"` which
    essentially rewrites the function back into its `map` form. This strategy
@@ -890,8 +890,8 @@ Note two important points here:
 
    It may be not obvious how the result of `"map"` is going to match the
    `"mapList"` rules, but if you keep in mind the definition of `build g = g
-   (:) []` and the fact that it will most certainly be inlined by phase 1,
-   then `"mapList"` should make perfect sense.
+   (:) []` and the fact that it will most certainly be inlined by the phase
+   1, then `"mapList"` should make perfect sense.
 
 This brings us to the next major topic of this tutorial…
 
@@ -974,9 +974,9 @@ of functional programming?
 What we would like to achieve is the following:
 
 1. Write beautiful, composable programs.
-2. Avoid allocating intermediate results where possible.
+2. Avoid allocating intermediate results whenever possible.
 
-The point 2 can be and has been addressed differently:
+The point 2 can be and has been addressed in different ways:
 
 * We can build a vocabulary of primitive operations in such a way that they
   do not produce results immediately. When the primitives are combined, they
@@ -986,9 +986,9 @@ The point 2 can be and has been addressed differently:
   example.
 
 * We want to have our cake and eat it too. We can expose an interface where
-  every primitive produces result immediately, but we also add rewrite rules
-  that will make GHC rewrite our expressions in such a way that in the end
-  the compiler gets one tight loop without intermediate allocations.
+  every primitive produces a result immediately, but we also add rewrite
+  rules that will make GHC rewrite our expressions in such a way that in the
+  end the compiler gets one tight loop without intermediate allocations.
 
 Let's see the first approach in action.
 
@@ -1039,7 +1039,7 @@ Here, we have what `repa` calls *delayed arrays*:
   create any intermediate results with it.
 
 * `foldra` allows us to traverse an entire array and get a value computed
-  from all its elements. It plays the role of consumer in our case.
+  from all its elements. It plays the role of the consumer in our case.
 
 * `fuseda 1000000` is the same as `manuallyFused [0..1000000]`, but runs
   much faster.
@@ -1052,7 +1052,7 @@ anything with the real array.
 #### Fusing lists
 
 Now let's try to do something like this for linked lists. We should start
-with the idea of not touching the real list, but modifying a function that
+with the idea of not touching the real list, but modifying the function that
 does… what? What should such a function do with a list? If the most basic
 function of an array is to be indexed by the position of its elements, then
 what is the most basic function of a list? How is a linked list consumed?
@@ -1274,10 +1274,10 @@ rules. In the next section we will explore so-called fusion systems.
 
 ### `build`/`foldr` fusion system
 
-Another approach to avoid intermediate results can be summarized as the
-following: we can use functions that operate on normal lists, arrays,
-vectors, etc. and let GHC rewrite combinations of these functions so that we
-still get one tight loop in the end.
+Another approach to avoiding intermediate results can be summarized as
+follows: we can use functions that operate on normal lists, arrays, vectors,
+etc. and let GHC rewrite combinations of these functions so that we still
+get one tight loop in the end.
 
 Here is where rewrite rules come into play. There is one problem with this
 approach though—too many functions to account for. The standard dictionary
@@ -1410,7 +1410,7 @@ Case                  Bytes  GCs  Check
 fused2          161,259,568  310  OK
 ```
 
-It is better than the version without fusion, but still far from the faster
+It is better than the version without fusion, but still far from the fastest
 implementations we have seen. What's the problem?
 
 Inlining is essential for fusion. Notice that `foldr2` is self-recursive, so
@@ -1443,10 +1443,10 @@ Case                  Bytes  GCs  Check
 fused2           96,646,160  153  OK
 ```
 
-Nothing to be ashamed of. In fact, this is the same result we would get if
-we used `map` and `foldr` directly from the `base` package.
+In fact, this is the same result we would get if we used `map` and `foldr`
+directly from the `base` package.
 
-Indeed most functions can be re-written via `foldr` and `build`. Most, but
+Indeed, most functions can be re-written via `foldr` and `build`. Most, but
 not all. In particular `foldl` and `zip` cannot be fused efficiently when
 written via `build` and `foldr`. Unfortunately, we don't have the space to
 cover all the details here. [Duncan Coutts' thesis][stream-fusion] is a
@@ -1588,8 +1588,8 @@ like [`vector`][vector] and [`text`][text].
 
 The fusion system without skip works, but it's not powerful enough for all
 functions we may want to use, such as `filter`. Let's try to write `filter3`
-to find out why. There is probably only one way to write `filter3` given
-limitation of the framework we have developed:
+to find out why. There is probably only one way to write `filter3` given the
+limitations of the framework we have developed:
 
 ```haskell
 filter3 :: (a -> Bool) -> [a] -> [a]

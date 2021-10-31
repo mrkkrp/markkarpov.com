@@ -3,17 +3,18 @@ title: Exceptions tutorial
 desc: This is a tutorial about exceptions in Haskell which originally was written as a chapter for the Intermediate Haskell book.
 date:
   published: March 3, 2019
+  updated: October 31, 2021
 ---
 
 *This text originally was written as a chapter for the [Intermediate
 Haskell][ih] book. Due to lack of progress with the book in the last year,
 other authors agreed to let me publish the text as a standalone tutorial so
-people can benefit at least from this part of our work.*
+that people can benefit at least from this part of our work.*
 
 ```toc
 ```
 
-## Motivation for exceptions
+## The motivation for exceptions
 
 It is not uncommon to hear the opinion that exceptions are ugly and hard to
 work with. Especially in a language like Haskell, with its strong and
@@ -22,24 +23,21 @@ in a pure way (i.e. in simplest case as a sum type containing both values
 that belong to normal results and values that represent adverse outcomes),
 why should we “contaminate” such a language with the concept of exceptions?
 
-It is a question we must answer first lest the reader be left in a position
-of doubt as to when it is natural to use exceptions and when a more pure way
-of organizing an API is better. The topic itself is a bit controversial in
-the community:
+The topic itself is a bit controversial in the community:
 
 * Some believe that once you start dealing with exceptions, you should go
   all the way with them and not to pretend that your code is “safe” from
   exceptions by adding additional `MaybeT` or `ExceptT` layers.
 
 * Others are concerned with purity and try to “disinfect” their APIs from
-  exceptions completely (see for example the description of the
-  [`hasql`][hasql] package, where the exception-free API is apparently
-  perceived by the author as a merit).
+  exceptions completely (see, for example, the description of the
+  [`hasql`][hasql] package, which claims that “the API comes free from all
+  kinds of exceptions”).
 
 * The third opinion is that exceptions, as the name suggests, are for
   exceptional situations, while explicit encoding of adverse outcomes in the
-  type of returned value is for the situations that are to be quite common,
-  and so an obligatory, explicit handling is desirable.
+  type of returned value is for the situations that are expected to be quite
+  common, and so an explicit handling is desirable.
 
 To see the motivation for introducing exceptions in Haskell, let us consider
 a simple arithmetic expression:
@@ -49,11 +47,11 @@ percent :: Double -> Double -> Double
 percent x y = (x / y) * 100
 ```
 
-This does look conventional, but the `(/)` operator is not total! As we all
-know well, one does not just divide by zero without certain consequences. So
-the whole `percent` function has a “morally wrong” type, or at least such a
-type that does not reflect an important part of `percent`'s semantics. We
-must note that it is still convenient to have `percent` in this form.
+This does look conventional, but the `(/)` operator is not total! As we know
+well, one does not just divide by zero. So the whole `percent` function has
+a “morally wrong” type, or at least a type that does not reflect an
+important part of `percent`'s semantics. We must note that it is still
+convenient to have `percent` in this form.
 
 If we went with the approach of purists, we could end up writing programs
 like this:
@@ -66,11 +64,11 @@ percent x y = (* 100) <$> (x /? y)
     a /? b = Just (a / b)
 ```
 
-While it does not look that bad in this little example, we could quickly
-find ourselves writing all our code in `Maybe` or `Either` monads and
+While it does not look that bad in this little example, we would quickly
+find ourselves writing all our code in `Maybe` or `Either` monads and the
 corresponding transformers. `Either SomeError` monad in particular would
-have to account (in `SomeError`) for enormous number of things that can go
-wrong. In a real-world program, there are a lot of failure scenarios that
+have to account (in `SomeError`) for an enormous number of things that can
+go wrong. In a real-world program, there are a lot of failure scenarios that
 are indeed rather “exceptional” and normally do not happen. `SomeError` also
 would need to be extendable somehow because combining code from different
 libraries A and B would mean building a sum type capable of representing
@@ -79,12 +77,12 @@ that way.
 
 What to do? Language design is often about balancing different arguments and
 considerations. In our case, we balance ease of use with correctness. By
-“correctness” here we mean explicit inclusion of adverse conditions in types
-and thus forcing handling of those conditions.
+“correctness” here we mean explicit inclusion of adverse conditions in the
+types.
 
 Precise semantics of exception throwing and handling will be given in the
-next sections, but it suffices to say for now that intuitively, exceptions
-(in many programming languages) have the following properties:
+next sections, but for now let's try to define the common properties that
+exceptions have in many programming languages:
 
 * **They shortcut execution and propagate.** This is handy, because once
   something exceptional has happened, our confidence in success of the
@@ -98,27 +96,26 @@ next sections, but it suffices to say for now that intuitively, exceptions
   something like the `ExceptT` monad transformer.
 
 Thus, whether to return a result wrapped in `Maybe`, `Either`, or to throw
-an exception may be decided on how common the failure in question is and how
-much attention we want to draw to it. If the failure is common, it makes
-sense to force the consumer of the API to handle it in all cases for her own
-good (by wrapping in `Maybe`, `Either`, `ExceptT`, etc.). Otherwise, the
+an exception should be decided on how common the failure in question is and
+how much attention we want to draw to it. If the failure is common, it makes
+sense to force the consumer of the API to handle it in all cases for their
+own good (by wrapping in `Maybe`, `Either`, `ExceptT`, etc.). Otherwise, the
 exceptional case should be covered by throwing an exception, which works a
-lot like an implicit short-circuiting monad anyway, except it is neither
-visible nor the programmer is forced to think about it until he/she needs
-to.
+lot like an implicit short-circuiting monad, except it is neither visible
+nor the programmer is forced to think about it until they need to.
 
-Other reasons to prefer throwing exceptions include:
+Other reasons to prefer throwing exceptions are:
 
-* preserving laziness (as we do not need to check constantly whether we have
-  run into a failure and should short-circuit the execution or not);
+* preserving laziness, as we do not need to constantly check whether we have
+  run into a failure and should short-circuit the execution;
 
-* more efficient code (the fact that code throws exceptions does not make it
-  run slower).
+* more efficient code (the fact that the code that throws exceptions does
+  not make it to run slower).
 
 Finally, sometimes it is necessary or convenient to make some function
 partial and signal an error that would indicate that the programmer made a
 mistake. We try hard to avoid these cases in Haskell, but sometimes one has
-to bite the bullet. In that case exceptions allow us to signal the error
+to bite the bullet. In that case, exceptions allow us to signal the error
 using functions like `error` and `assert`.
 
 ## Throwing exceptions
@@ -143,11 +140,11 @@ evaluates its arguments is not defined.
 
 Programs in Haskell often do not have predictable evaluation order, so the
 only way to reason about them is to consider values we want to compute.
-Indeed, what is an exception as not an additional sort of value that can
-inhabit any type?
+Indeed, what is an exception as not an additional kind of value that
+inhabits all types?
 
-Let us take a look at the signature of `throw` function and compare it with
-bottom, shown here in the form of the `undefined` function:
+Let's take a look at the signature of the `throw` function and compare it
+with bottom, shown here in the form of the `undefined` function:
 
 ```haskell
 throw     :: Exception e => e -> a
@@ -155,21 +152,21 @@ undefined :: a
 ```
 
 We can see that `throw` can lift an instance of the `Exception` type class
-(more about the type class later) into any value at all, just like
+(more about the type class later) into any value, just like
 `undefined`—bottom value—is a value found in any lifted type. It is
 generally well-known that all lifted Haskell values are inhabited by bottom,
 but in the presence of exceptions, it is also true that exceptions inhabit
-any type in a sense.
+any type.
 
 ## Catching exceptions
 
 If exceptions in Haskell could not be caught, we could consider them bottom
 values and the non-determinism `throw` introduces would be not that bad, but
 once we equip the language with a way to catch exceptions, they can
-influence behavior of our programs, and if exceptions are non-deterministic,
-our programs become non-deterministic as well. Not fun!
+influence the behavior of our programs, and if exceptions are
+non-deterministic, our programs become non-deterministic as well. Not fun!
 
-Let us take an example from the paper [*A semantics for imprecise
+Let's take an example from the paper [*A semantics for imprecise
 exceptions*][a-semantics-for-imprecise-exceptions]:
 
 ```haskell
@@ -178,7 +175,7 @@ in getException x == getException x
 ```
 
 Here, `getException :: a -> Either Exception a` is a hypothetical function
-that allows us to catch exceptions in pure code. What that expression will
+that allows us to catch exceptions in pure code. What this expression will
 return, `True` or `False`? It would seem natural to state that the result
 should be `True`, but it could be `False` just as well because of the
 non-determinism (i.e. the two occurrences of `x` could be replaced by `x`'s
@@ -192,9 +189,8 @@ exceptions no matter what.
 
 In reality, there is no good way to make throwing/catching of exceptions in
 a non-strict language deterministic, so the next best thing we can do is to
-admit that `getException` is not an angel, and so we have to put it into
-`IO`, where all sorts of sins are known to be witnessed and, in time,
-forgiven.
+admit that `getException` cannot be deterministic in pure code, and so, we
+have to put it in `IO`.
 
 With `getException :: a -> IO (Either Exception a)`, we can write:
 
@@ -208,12 +204,12 @@ main = do
 ```
 
 This still can print `True` or `False`, but now it is nothing to worry
-about, because we are in the `IO` monad, which (as we know) depends on the
-state of `RealWorld` (including phase of the moon).
+about, because we are in the `IO` monad, which depends on the state of
+`RealWorld`.
 
-The `Control.Exception` module features many functions useful for dealing
-with exceptions. One such function is `throw` (which we already know) yet
-there is no `getException`. But there is `catch`:
+The `Control.Exception` module features many functions that are useful for
+dealing with exceptions. One such function is `throw` (which we already
+know) yet there is no `getException`. But there is `catch`:
 
 ```haskell
 catch :: Exception e
@@ -231,13 +227,13 @@ will see in the next section.
 
 While it is somewhat hard to predict when `throw` will raise an exception in
 pure code, there is no problem with raising an exception from the `IO` monad
-(or any `IO`-enabled monad stack) at certain point of *execution*.
+(or any `IO`-enabled monadic stack) at a certain point of execution.
 
-The `IO` monad imposes ordering to execution by being a state monad that
+The `IO` monad imposes an ordering on execution by being a state monad that
 passes around a magical value that is never looked at, but creates logical
 dependencies between separate `IO` actions that are bound together with the
-bind operator `(>>=)`. In this setting it is possible to have `throwIO ::
-Exception e => e -> IO a`, which will throw exactly when it is executed:
+bind operator `(>>=)`. This way it is possible to have `throwIO :: Exception
+e => e -> IO a`, which will throw exactly when it is executed:
 
 ```haskell
 main :: IO ()
@@ -269,12 +265,12 @@ trigger exception in the case of `throwIO`, because the expression is not
 
 `throwIO`, being much more predictable (execution order is more predictable
 than evaluation order in Haskell), is generally preferred in the community
-and it is a good idea to throw all your exceptions using `throwIO` instead of
-`throw` if at all possible.
+and it is a good idea to throw all your exceptions using `throwIO` instead
+of `throw`.
 
-## Implementation of throwing and catching
+## The implementation of throwing and catching
 
-A desirable property of exceptions is that computing of a value with an
+A desirable property of exceptions is that computing a value with an
 exceptional component does not make program slower or otherwise
 less-efficient. Unlike explicit bookkeeping with `Maybe`, `Either`, or
 similar, if an exception is not raised, it is the same as if there is no
@@ -296,7 +292,7 @@ Here is how synchronous exceptions are implemented:
   because we can be sure that it will throw every time we try to evaluate
   the thunk.
 
-The section is worth ending with the following quote from [*A semantics for
+This section is worth ending with the following quote from [*A semantics for
 imprecise exceptions*][a-semantics-for-imprecise-exceptions]:
 
 > Notice that an exceptional value behaves as a first class value, but it is
@@ -308,16 +304,16 @@ imprecise exceptions*][a-semantics-for-imprecise-exceptions]:
   an infinite list, but it is certainly never explicitly represented as
   such.
 
-## Defining hierarchy of exceptions
+## Defining the hierarchy of exceptions
 
-Let us consider how Haskell keeps its exceptions extendable. It is natural
-to think about exceptions as objects in a hierarchy:
+Let's consider how Haskell keeps its exceptions extendable. It is natural to
+think about exceptions as objects in a hierarchy:
 
 ![Exception hierarchy][exception-hierarchy]
 
-It is well-known that in object-oriented world the set of operations is
+It is well-known that in the object-oriented world the set of operations is
 fixed, while the set of objects is extendable. In functional programming the
-situation is reversed: typically data types are fixed, and the set of
+situation is reversed: typically the data types are fixed, and the set of
 functions on these objects is extendable. This works pretty well most of the
 time, and is especially natural in certain domains, like compilers, but now
 that we would like to build a hierarchy for exceptions, the functional
@@ -325,14 +321,14 @@ solution is going to look somewhat… *stylized*.
 
 To have an extensible group of data types that share a certain property,
 Haskell has type classes. We have already seen that `throw` has the
-signature with the mysterious `Exception` constraint:
+signature that features the mysterious `Exception` constraint:
 
 ```haskell
 throw :: Exception e => e -> a
 ```
 
-Anything that is an instance of `Exception` can be thrown. Let us take a
-look at the type class:
+Anything that is an instance of `Exception` can be thrown. Let's take a look
+at the type class:
 
 ```haskell
 class (Typeable e, Show e) => Exception e where
@@ -365,10 +361,9 @@ throw e = raise# (toException e)
 ```
 
 This `raise# :: b -> o` primitive can in principle throw anything at all,
-but that usage would lead to a chaos because there would be no way to select
-a branch of the entire exception hierarchy, or select all possible
-exceptions. With every exception converted to `SomeException` before
-throwing, we know that every exception is always wrapped in `SomeException`.
+but using it directly would lead to a chaos because there would be no way to
+select a branch of the exception hierarchy, or to select all possible
+exceptions.
 
 `SomeException`, being the root of our hierarchy, defined as:
 
@@ -388,7 +383,7 @@ implementation does everything we need: it unwraps `SomeException`, then
 tries to `cast` the inner value to the desired type `e`. If we have got
 something inside `Just`, the exception is of the correct type and we can do
 something with it, otherwise we just re-throw it. This is what happens
-inside of `catch` and similar functions that catch exceptions:
+inside of `catch` and similar functions:
 
 ```haskell
 catch :: Exception e
@@ -410,11 +405,11 @@ get an ambiguous type error.*
 `cast` can be used only with instances of `Typeable`, which is why it is a
 superclass of the `Exception` type class. The `Typeable` type class,
 derivable by the compiler with the `DeriveTypeable` language extension
-(which is not necessary with newer versions of GHC though), allows us to get
-type of a value at runtime. We will not go into details of that here, but it
-suffices to say that knowing type of a value we can check if it is the same
-as the type we want to convert to, so we can go from abstract `e` to a
-concrete type.
+(which is not necessary with the newer versions of GHC), allows us to get
+type of a value at runtime. We will not go into the details here, but
+suffice it to say that knowing the type of a value we can check if it is the
+same as the type we want to convert to, so we can go from the abstract `e`
+to a concrete type.
 
 The `fromException` method works with `SomeException` just fine, it never
 fails (so when we catch `SomeException`, we catch every exception possible):
@@ -431,7 +426,7 @@ quite simple to add another existential wrapper between `SomeException` and
 concrete instance of `Exception` with the aim of selecting a subset of all
 exceptions that are wrapped with that wrapper.
 
-Let us pick the `SomeAsyncException` from `base` as an example of such a
+Let's pick the `SomeAsyncException` from `base` as an example of such a
 wrapper. It is defined in the same fashion as `SomeException`:
 
 ```haskell
@@ -492,8 +487,8 @@ to:
   throw exceptions to another thread to terminate the latter (used to
   implement timeouts and other multi-thread control idioms).
 
-I mentioned the phrase “fully-asynchronous exceptions”, but what exactly
-does it mean?
+I used the phrase “fully-asynchronous exceptions”, but what exactly does it
+mean?
 
 There are different ways to implement asynchronous exceptions. One way
 (preferred in the imperative world), is to employ semi-asynchronous
@@ -504,13 +499,13 @@ evaluation of pure code, but polling of a global flag would certainly be a
 side-effect.
 
 In the volatile, mutable world of imperative programming, it is just too
-dangerous to allow interruption at arbitrary moment in time. In contrast to
-that, there is absolutely no danger in terminating evaluation of pure code,
-because it does not perform any mutations or side-effects. That means that
-all pure code works fine with fully-asynchronous exceptions without change.
-We should note that this model also has higher modularity because the target
-thread does not need to do anything in order to be able to receive
-asynchronous exceptions.
+dangerous to allow interruption at an arbitrary moment in time. In contrast
+to that, there is absolutely no danger in terminating evaluation of pure
+code, because it does not perform any mutations or side-effects. That means
+that all pure code works fine with fully-asynchronous exceptions without
+change. We should note that this model also has higher modularity because
+the target thread does not need to do anything in order to be able to
+receive asynchronous exceptions.
 
 Speaking of semantics of values being evaluated in the presence of
 asynchronous exceptions, we can say that since the exceptions can strike at
@@ -522,7 +517,7 @@ evaluated when such an exception happens.
 
 Oftentimes it is necessary to ensure a certain level of atomicity so that
 asynchronous exceptions do not strike in the middle of a composite operation
-leading to partially updated, inconsistent state of program.
+leading to a partially updated, inconsistent state of program.
 
 To illustrate this, consider a toy example—the `updateVar` function, which
 applies a function to the contents of a mutable variable:
@@ -543,7 +538,7 @@ A quick reminder, `MVar`s work like this:
   otherwise it blocks waiting for the value to be placed there.
 
 * `putMVar` places a value in the specified mutable location. If it is
-  already full, it blocks waiting for the location to become empty.
+  already full, it blocks and waits for the location to become empty.
 
 In the current form, `updateVar` is not an atomic operation, because
 asynchronous exception can strike between (1) and (3), during evaluation of
@@ -562,7 +557,7 @@ rather delayed). That function in turn receives another callback that allows
 us to unmask asynchronous exceptions.
 
 On a lower level, there are wrappers like `block :: IO a -> IO a` and
-`unblock :: IO a -> IO a` that modify the *masking state* of thread while
+`unblock :: IO a -> IO a` that modify the *masking state* of a thread while
 the inner code in executed. When `block` and `unblock` are nested, only the
 innermost layer matters:
 
@@ -574,7 +569,7 @@ unblock (unblock io) -- io unblocked
 unblock (block io)   -- io blocked
 ```
 
-Masking state of the current thread can be looked up with the
+The masking state of the current thread can be looked up with the
 `getMaskingState :: IO MaskingState` function. The `MaskingState` type is
 the enumeration of all possible masking states:
 
@@ -599,31 +594,31 @@ mask io = do
     MaskedUninterruptible -> io blockUninterruptible
 ```
 
-The definition gives us a hint about behavior of nested `mask`s. We can see
-that the inner “unblocking” callback does not necessarily unmask
+The definition gives us a hint about the behavior of nested `mask`s. We can
+see that the inner “unblocking” callback does not necessarily unmask
 asynchronous exceptions, but rather returns masking state to what it was
-outside of current `mask`. Ignore `blockUninterruptible` for now, we will
-get to it soon.
+outside of the current `mask`. Ignore `blockUninterruptible` for now, we
+will get to it soon.
 
-Let us continue with the examples:
+Let's continue with the examples:
 
 ```haskell
 mask (\_ -> mask (\_ -> io))               -- io blocked
 mask (\_ -> mask (\restore -> restore io)) -- io blocked
 ```
 
-Here the first `mask` layer blocks asynchronous exceptions and the second
+Here, the first `mask` layer blocks asynchronous exceptions and the second
 `mask` layer can not unblock with `restore` because that callback only
-returns masking state to what it was outside of the respective `mask` call.
-The behavior is exactly what we usually want: when we enclose a region of
-code with `mask`, we want to be sure async exceptions are masked, no matter
-what happens inside.
+resets the masking state to what it was outside of the respective `mask`
+call. The behavior is exactly what we usually want: when we enclose a region
+of code with `mask`, we want to be sure async exceptions are masked, no
+matter what happens inside.
 
 The guarantee extends even further: `mask` affects all code that is
 lexically enclosed by it, even if we fork with `forkIO` and `forkOS` (the
 new thread inherits the parental masking state). This is important because
 otherwise there would be no way to prevent exceptions happening between (1)
-and (2) in the following example, and so they could leak:
+and (2) in the following example:
 
 ```haskell
 x <- takeMVar m
@@ -642,7 +637,7 @@ mask_ :: IO a -> IO a
 mask_ io = mask $ \_ -> io
 ```
 
-Let us use `mask` in our example to make it more correct in the presence of
+Let's use `mask` in our example to make it more correct in the presence of
 asynchronous exceptions:
 
 ```haskell
@@ -653,7 +648,7 @@ updateVar m f = mask $ \unmask -> do
   putMVar m x'             -- (3)
 ```
 
-This is a bit better in the sense that asynchronous exceptions can not
+This is a bit better in the sense that asynchronous exceptions can no longer
 strike between (1) and (2), (2) and (3), but they still can happen on the
 line (2), while `f x` is being evaluated.
 
@@ -661,7 +656,7 @@ There are two possible ways to fix it:
 
 * Run `f x` without unmasking, wrapping the whole thing with `mask_`. This
   solution has a flaw however: if `f x` takes a very long time to compute or
-  worse yet, hangs, there is no way to abort the thread—we are stuck.
+  worse yet, hangs, there is no way to abort the thread.
 
 * Add `catch` to handle exceptions thrown from `f x` and so re-fill `m` with
   the old value should we be forced to abort the computation.
@@ -684,7 +679,7 @@ state old value will be preserved.
 Now here comes a subtle detail about masking. It is explained in papers and
 in the Simon Marlow's book [*Parallel and Concurrent Programming in
 Haskell*][parallel-and-concurrent], but we will try to re-iterate it here as
-concisely and clearly as possible (because it is easy to get confused):
+concisely and clearly as possible:
 
 * Blocking (for example while waiting for a value to be put into `m`, as in
   `takeMVar m`) with asynchronous exceptions disabled is a bad thing. This
@@ -699,7 +694,7 @@ concisely and clearly as possible (because it is easy to get confused):
   actually block*, for example when `takeMVar m` is waiting for `m` to be
   filled with a value (otherwise `mask` would be meaningless).
 
-Let us consider various scenarios of what might happen:
+Let's consider various scenarios of what might happen:
 
 * When `takeMVar m` is blocking, we can throw an asynchronous exception to
   the thread we are working in and it will be treated in fact as a
@@ -716,7 +711,7 @@ Let us consider various scenarios of what might happen:
   last `takeMVar` invocation, so `putMVar`s cannot be interrupted in that
   case, as it does not need to wait for `m` to become empty.
 
-As we can see, the tricky part in behavior of so-called “interruptible”
+As we can see, the tricky part in the behavior of so-called “interruptible”
 operations is that they only become interruptible when they actually block.
 *All operations that may block indefinitely are designated as
 interruptible.*
@@ -836,17 +831,17 @@ inner computation returns or throws.*
 
 ### The `throwTo` function
 
-`throwTo` allows us to raise an arbitrary exception in a thread with known
+`throwTo` allows us to raise an arbitrary exception in a thread with a known
 `ThreadId`:
 
 ```haskell
 throwTo :: Exception e => ThreadId -> e -> IO ()
 ```
 
-The docs for `throwTo` are *exceptionally* good, so let us just quote them
+The docs for `throwTo` are exceptionally good, so let us just quote them
 here with some clarifications:
 
-* Exception delivery synchronizes between the source and target thread:
+* Exception delivery synchronizes between the source and the target thread:
   `throwTo` does not return until the exception has been raised in the
   target thread. The calling thread can thus be certain that the target
   thread has received the exception. Exception delivery is also atomic with
@@ -869,7 +864,7 @@ here with some clarifications:
   cause the call to return.
 
 * There is no guarantee that the exception will be delivered promptly,
-  although the runtime will endeavour to ensure that arbitrary delays do not
+  although the runtime will endeavor to ensure that arbitrary delays do not
   occur. In GHC, an exception can only be raised when a thread reaches a
   *safe point*, where a safe point is where memory allocation occurs. Some
   loops do not perform any memory allocation inside the loop and therefore
@@ -878,13 +873,13 @@ here with some clarifications:
 * Whatever work the target thread was doing when the exception was raised is
   not lost: the computation is suspended until required by another thread.
   This is best understood if we imagine an expensive pure computation that
-  is interrupted by an asynchronous exceptio—what we have evaluated so far
+  is interrupted by an asynchronous exception—what we have evaluated so far
   is not lost.
 
-* If the target of `throwTo` is the calling thread, then the behaviour is
-  the same as `throwIO`, except that the exception is thrown as an
-  asynchronous exception. This means that if there is an enclosing pure
-  computation, which would be the case if the current IO operation is inside
+* If the target of `throwTo` is the calling thread, then the behavior is the
+  same as `throwIO`, except that the exception is thrown as an asynchronous
+  exception. This means that if there is an enclosing pure computation,
+  which would be the case if the current IO operation is inside
   `unsafePerformIO` or `unsafeInterleaveIO`, that computation is not
   permanently replaced by the exception, but is suspended as if it had
   received an asynchronous exception.
@@ -902,7 +897,7 @@ target thread is in `mask` or doing a foreign call.
 
 Information on implementation of asynchronous exceptions can be found in the
 paper [*Asynchronous exceptions in Haskell*][async-exceptions-in-haskell].
-Here we just briefly enumerate the main points for the curious readers:
+Here we just briefly enumerate the main points for curious readers:
 
 1. Every thread has a data block associated with it to store thread-specific
    data. The data includes the masking state we have discussed and a queue
@@ -913,8 +908,7 @@ Here we just briefly enumerate the main points for the curious readers:
    are delivered.
 
 3. When thread's masking state goes from “masked” to “unmasked”, the queue
-   is checked right away instead of waiting for the next check as described
-   in (2).
+   is checked right away instead of waiting for the next check.
 
 4. When `getException` or `catch` marks the evaluation stack, it also saves
    current masking state so it can be restored after handling an exception.
@@ -922,20 +916,20 @@ Here we just briefly enumerate the main points for the curious readers:
 5. Two more marks (or “frames” in the terminology of the above-mentioned
    paper) are necessary: one for `block` and another one for `unblock`. When
    execution passes either of these, masking state changes accordingly.
-   There are also some rules for the purpose of keeping the evaluation stack
-   from growing unnecessarily, but we will not include them here.
+   There are also some rules for keeping the evaluation stack from growing
+   unnecessarily, but we will not include them here.
 
 6. `throwTo` simply places an exception in the queue of target thread then
    blocks till the exception is delivered.
 
-## Lifting exception-related functionality
+## Lifting the exception-related functionality
 
 The functions from the `Control.Exception` module (which we advise to
-examine on your own too, it is well documented) cover all the needs we might
-have dealing with exceptions. However, they only work in the `IO` monad.
-That is a sane choice for the module from the `base` package as lifting of
-these functions into arbitrary monad stacks is not always straightforward,
-and `base` cannot depend on [`transformers`][transformers].
+examine on your own too, it is well documented) cover all needs we might
+have while dealing with exceptions. However, they only work in the `IO`
+monad. That is a sane choice for a module in the `base` package as lifting
+of these functions into arbitrary monad stacks is not always
+straightforward, and `base` cannot depend on [`transformers`][transformers].
 
 In this section, we are going to look at the [`exceptions`][exceptions]
 package first. Then we will consider a somewhat more flexible but
@@ -948,7 +942,7 @@ The `exceptions` package provides three principal type classes:
 
 * `MonadThrow` for monads that support an analogue of `throwIO`.
 
-* `MonadCatch` for monads that provide lifted `catch`.
+* `MonadCatch` for monads that provide a lifted `catch`.
 
 * `MonadMask` for monads that provide lifted `mask` and
   `uninterruptibleMask` functions.
@@ -1043,12 +1037,12 @@ liftCatch m h =
 ```
 
 The result is in `StateT`, so we start by putting its constructor in place,
-and so we have the state `s`. Both arguments of “vanilla” `catch` must be in
-plain `IO`, so we have to run `m` and `h` in order to unwrap them and get to
-the `IO` monad.
+and so we have the state `s`. Both arguments of the “vanilla” `catch` must
+be in plain `IO`, so we have to run `m` and `h` in order to unwrap them and
+get to the `IO` monad.
 
 This shows that it is quite feasible to lift `catch` into most monadic
-stacks. Let us see about `MonadMask`.
+stacks. Let's see about `MonadMask`.
 
 ```haskell
 class MonadCatch m => MonadMask m where
@@ -1077,29 +1071,29 @@ The ability to receive/catch exceptions is a logical prerequisite for
 masking of asynchronous exceptions, hence the `MonadCatch` (and by
 implication `MonadThrow`) is a superclass of `MonadMask`.
 
-Let us take a look at the case of `StateT s m` again. `mask` receives the `a
+Let's take a look at the case of `StateT s m` again. `mask` receives the `a
 :: (forall a. m a -> m a) -> m b` argument which expects to get this `forall
-a. m a -> m a`—unmasking callback working in the `StateT s m` monad. Let us
+a. m a -> m a`—unmasking callback working in the `StateT s m` monad. Let's
 see how we provide that. First of all, the result of `mask` must be in
 `StateT s m`, so we put the `StateT` constructor in place and so we get the
 state `s`. Inside the lambda that binds `s` we use `mask` of underlying
 monad `m`, which we require to be an instance of `MonadMask`. That `mask` in
-turn receives unmasking callback `u` (remember that the `\u -> …` lambda is
-in masked state, so its argument `u` happens to be the unmasking callback)
-which works in the inner monad `m`, not `StateT s m`. To feed this unmasking
-callback into `a` we lift it from `m (a, s) -> m (a, s)` to `StateT s m a ->
-StateT s m a` with `q` which is rather trivial. Finally, `a` applied to `q
-u` is of the type `StateT s m`, but the inner `mask` expects something in
-`m`, so we run it. The entire `mask $ \u -> runStateT (a $ q u) s` thing
-thus ends up being of the right type `m (a, s)` to be put into `StateT $ \s
--> …`. Again, this is an example of type-driven programming.
+turn receives the unmasking callback `u` (remember that the `\u -> …` lambda
+is in masked state, so its argument `u` happens to be the unmasking
+callback) which works in the inner monad `m`, not `StateT s m`. To feed this
+unmasking callback into `a` we lift it from `m (a, s) -> m (a, s)` to
+`StateT s m a -> StateT s m a` with `q`. Finally, `a` applied to `q u` is of
+the type `StateT s m`, but the inner `mask` expects something in `m`, so we
+run it. The entire `mask $ \u -> runStateT (a $ q u) s` thing thus ends up
+being of the right type `m (a, s)` to be put into `StateT $ \s -> …`. Again,
+this is an example of type-driven programming.
 
 `uninterruptibleMask` works exactly the same.
 
 Having these there basic concepts (throwing, catching, and masking async
 exceptions) abstracted in that way, the `exceptions` package seems to be
-well-equipped to define lifted versions of most everything. For example,
-here is how `bracket` is defined:
+well-equipped to define lifted versions of everything. For example, here is
+how `bracket` is defined:
 
 ```haskell
 bracket :: MonadMask m => m a -> (a -> m b) -> (a -> m c) -> m c
@@ -1122,8 +1116,8 @@ passed around, and depending on your use-case, you may want one or another:
 * `acquire` can/cannot affect state that is passed to `use`.
 * Etc.
 
-As an exercise, figure out how `bracket` will pass around state in the case
-of `StateT s m` monad transformer. Definitions of `MonadCatch` and
+As an exercise, figure out how `bracket` will pass around the state in the
+case of `StateT s m` monad transformer. Definitions of `MonadCatch` and
 `MonadMask` instances for `StateT s m` and `bracket` are shown above. Hint:
 concentrate on the difference between the lines (1) and (2). You will also
 need the definition of lifted `onException` from `exceptions`:
@@ -1136,7 +1130,7 @@ onException action handler = action `catchAll` \e -> handler >> throwM e
     catchAll = catch -- specialization of catch that catches all exceptions
 ```
 
-Next, let us consider `ExceptT e m` as our monad. This monad transformer is
+Next, let's consider `ExceptT e m` as our monad. This monad transformer is
 short-circuiting:
 
 ```haskell
@@ -1220,12 +1214,11 @@ catch :: Exception e
 ```
 
 Even though we can use `liftIO` for lifting after applying arguments to
-`catch`, it also expects `IO a` as argument, and here `liftIO` cannot help,
-in fact, we need something opposite.
-
-We need a way to unlift to `IO a`. The good news is that there is a way to
-unlift without losing information so we can re-construct virtually any
-monadic stack built from the familiar transformers.
+`catch`, it also expects `IO a` as an argument, and here `liftIO` cannot
+help, in fact, we need the opposite. We need a way to unlift to `IO a`. The
+good news is that there is a way to unlift without losing information so we
+can re-construct virtually any monadic stack built from the familiar
+transformers.
 
 To understand why it is so, look at the definitions of some monad
 transformers:
@@ -1241,7 +1234,7 @@ containing what we will call *state*—information that can be used to
 recreate the transformer. `ReaderT` is stateless—its state is just the
 monadic value `a` (in `ReaderT r m a`), while `StateT` carries state `s`,
 and so its state is `(a, s)`, similar to `WriterT`. (The lambdas are not of
-any concern to us here, as we can wrap anything with a lambda, it is not
+any concern for us here, as we can wrap anything with a lambda, it is not
 part of the state.)
 
 Since we cannot escape `IO`, there is no `IOT` monad transformer, and so if
@@ -1263,12 +1256,10 @@ the example shown, if we are currently in `MyStack`, we have `r` and `s` to
 apply and get `IO ((a, s), w)`, which we can pass to a function such as
 `catch`.
 
-Result of `catch`, being of the type `IO ((a, s), w)` can be wrapped back
-into lambdas and `newtype`s to the effect that we restore `MyStack` monad
-back. This is the idea behind `monad-control`.
-
-Now that the idea should be clear, let us see what form it takes in the
-actual library.
+The result of `catch`, being of the type `IO ((a, s), w)` can be wrapped
+back into lambdas and `newtype`s to the effect that we restore `MyStack`
+monad back. This is the idea behind `monad-control`. Now that the idea
+should be clear, let's see what form it takes in the actual library.
 
 Meet the `MonadBaseControl b m` type class which allows us to lift functions
 that work in monad `b` (like `catch`, `b ~ IO`) into a more complex monadic
@@ -1286,13 +1277,13 @@ type RunInBase m b = forall a. m a -> b (StM m a)          -- (5)
 1. `MonadBase` is a superclass of `MonadBaseControl`. `MonadBase b m` is
    best understood as a generalization of `MonadIO` where we can lift
    arbitrary base monad `b` (not just `IO`) into `m`. `MonadBase` is a
-   fairly trivial tool and will not be of any interest in this chapter. Note
+   fairly trivial tool and will not be of interest in this chapter. Note
    that `MonadBaseControl` is a multi-parameter type class which has the
    functional dependency `m -> b`. The functional dependency helps the
-   compiler resolve type ambiguity. It says: if you know what `m`
+   compiler to resolve type ambiguity. It says: if you know what `m`
    instantiated to, then you can learn `b` by searching existing instances
    for an instance with matching `m`. It is guaranteed by the compiler that
-   `b` is uniquely identified by choice of `m`.
+   `b` is uniquely identified by the choice of `m`.
 
 2. `StM m a` is an associated type of the type class `MonadBaseControl`.
    This feature is enabled by the `-XTypeFamilies` language extension. This
@@ -1311,7 +1302,7 @@ type RunInBase m b = forall a. m a -> b (StM m a)          -- (5)
 5. Type-synonym for the unlifiting callback, as explained in (3).
 
 It is beneficial to learn how various instances of `MonadBaseControl` are
-defined. Let us start from `MonadBaseControl IO IO`:
+defined. Let's start from `MonadBaseControl IO IO`:
 
 ```haskell
 instance MonadBaseControl IO IO where
@@ -1321,7 +1312,7 @@ instance MonadBaseControl IO IO where
 ```
 
 This should make sense, to unlift `IO a` we do not need to do anything.
-Similarly it is not difficult to restore this monad's state because it has
+Similarly, it is not difficult to restore this monad's state because it has
 none.
 
 `ReaderT` is a bit more interesting:
@@ -1360,7 +1351,7 @@ with `lift`. Note that `lift` lifts through only one monadic layer.
 layers with a single `liftBase` call, similarly `liftBaseWith` lifts through
 all layers till we reach the base monad.
 
-Knowing this, let us quickly go through the definitions of
+Knowing this, let's quickly go through the definitions of
 `defaultLiftBaseWith` and `defaultRestoreM`:
 
 ```haskell
@@ -1381,16 +1372,16 @@ defaultRestoreM = restoreT . restoreM
 
 `defaultLiftBaseWith` unlifts through one monadic layer with `liftWith`,
 then we again call `liftBaseWith` recursively which either happens to use a
-“terminal” instance like `MonadBaseControl IO IO` or another instance which
-unlifts through next monadic layer in exactly the same manner.
+terminal instance like `MonadBaseControl IO IO` or another instance which
+unlifts through the next monadic layer in exactly the same manner.
 
-`defaultRestoreM` restores state in base monad with `restoreM` than lifts
-base monad through one layer with `restoreT`.
+`defaultRestoreM` restores the state in the base monad with `restoreM`, then
+lifts the base monad through one layer with `restoreT`.
 
 `defaultLiftBaseWith` and `defaultRestoreM` are used to implement not only
-`ReaderT` instance, but also `StateT` and most other instances because
-actual transformer-specific logic is defined in `MonadTransControl`
-instances:
+the `ReaderT` instance, but also the `StateT` and most other instances
+because the actual transformer-specific logic is defined in the
+`MonadTransControl` instances:
 
 ```haskell
 instance MonadTransControl (ReaderT r) where
@@ -1413,7 +1404,7 @@ function passed to `liftBaseWith`:
 RunInBase m b -> b (StM m a)
 ```
 
-And then use `restoreM` to immediately restore monadic state. This is
+And then use `restoreM` to immediately restore the monadic state. This is
 captured by the `control` helper:
 
 ```haskell
@@ -1423,8 +1414,8 @@ control :: MonadBaseControl b m
 control f = liftBaseWith f >>= restoreM
 ```
 
-Finally, let us show how we can use `bracket` from `Control.Exception` with
-a complex monadic stack:
+Finally, let's show how we can use `bracket` from `Control.Exception` with a
+complex monadic stack:
 
 ```haskell
 liftedBracket
@@ -1439,9 +1430,9 @@ liftedBracket acquire release use = control $ \runInBase ->
     (runInBase . use)
 ```
 
-Note that `acquire` and `release` cannot modify state `s`, it is restored
-from the state returned from `runInBase . use`. With a bit more effort we
-could “fix” that:
+Note that `acquire` and `release` cannot modify the state `s`, it is
+restored from the state returned from `runInBase . use`. With a bit more
+effort we could “fix” that:
 
 ```haskell
 liftedBracket'
@@ -1457,10 +1448,10 @@ liftedBracket' acquire release use = control $ \runInBase ->
 ```
 
 State modifications made in `acquire` now influence both `restore` and
-`use`. State from `use` is restored, state from `restore` is discarded
-(because there is no way to pick that `b` value from the top level
+`use`. The state from `use` is restored, the state from `restore` is
+discarded (because there is no way to pick that `b` value from the top level
 signature). This shows that not only `monad-control` allows us to do this
-sort of lifting, it also allows us to control precisely what happens to
+sort of lifting, it also allows us to control precisely what happens to the
 monadic state.
 
 ### Lifting with `unliftio`
@@ -1495,14 +1486,14 @@ newtype UnliftIO m = UnliftIO { unliftIO :: forall a. m a -> IO a }
 ```
 
 `withRunInIO` is essentially the same thing as `liftBaseWith` from
-`monad-control`, only specialized to `IO` as base monad (the most common use
-case, if not the only). The `UnliftIO` newtype is necessary to be able to
-return function that has universally quantified arguments (introduced with
-`forall`s) in its signature (this is “impredicative polymorphism” the
-documentation mentions). We only need this in `askUnliftIO`. The method is
-rather unique to `unliftio`, it provides running function `forall a. m a ->
-IO a` that one can pass around freely and apply several times, to different
-`a` types.
+`monad-control`, only specialized to `IO` as the base monad (the most common
+use case, if not the only). The `UnliftIO` newtype is necessary to be able
+to return a function that has universally quantified arguments (introduced
+with `forall`s) in its signature (this is the “impredicative polymorphism”
+the documentation mentions). We only need this in `askUnliftIO`. The method
+is rather unique to `unliftio`, it provides the running function `forall a.
+m a -> IO a` that one can pass around freely and apply several times, to
+different `a` types.
 
 The second difference between the library and `monad-control` is that it
 only defines instances of `MonadUnliftIO` for stateless monadic stacks which
@@ -1513,7 +1504,7 @@ state from different branches of computation does not arise.
 
 The last (but not least) issue we have to consider is the inability to tell
 whether an exception we have caught was synchronous or asynchronous. When we
-enclose code with a function like `catch`, it catches everything that
+enclose our code with a function like `catch`, it catches everything that
 matches the exception type:
 
 ```haskell
@@ -1547,8 +1538,7 @@ It is often not an issue because normally we prefer to be very specific
 about type of exception we want to catch. For example, if we want to catch
 `HttpException` (assume that it is an exception that an HTTP client library
 throws when something goes wrong), it is very unlikely that someone will
-throw it to our thread asynchronously. And even if he/she does, I would
-argue that it is not a problem with *our* code.
+throw it to our thread asynchronously.
 
 Things start to get worse when we want to catch all exceptions, that is, we
 specify `SomeException` as the type of exception to catch. As we have
@@ -1606,13 +1596,14 @@ be thrown asynchronously—nothing prevents that. If, however, we trust that
 every exception to be thrown asynchronously has a correctly defined
 `Exception` instance that wraps it with `SomeAsyncException`, we are safe.
 
-Alternative solution is the following: we run the action to catch exceptions
-from in a separate thread forked with e.g. `withAsync` (we will refer to it
-as *worker thread*) and setup exception handler that catches all exceptions
-in that thread. When a synchronous exception is thrown there we catch it,
-pack result in `Either SomeException a` and return to the main thread, where
-we can do whatever we like with it. If an asynchronous exception strikes in
-the main thread, it propagates to the worker thread and so shuts it down.
+An alternative solution is the following: we run the action to catch
+exceptions from in a separate thread forked with e.g. `withAsync` (we will
+refer to it as *worker thread*) and setup an exception handler that catches
+all exceptions in that thread. When a synchronous exception is thrown there
+we catch it, pack result in `Either SomeException a` and return to the main
+thread, where we can do whatever we like with it. If an asynchronous
+exception strikes in the main thread, it propagates to the worker thread and
+shuts it down.
 
 ### `safe-exceptions`
 
@@ -1622,7 +1613,7 @@ asynchronous vs synchronous exceptions in a systematic way. The library
 defines functions like `catch` which only catch synchronous exceptions by
 testing the type of exception using the `SomeAsyncException` wrapper.
 
-Next, it follows the following logic (taken from [readme of the
+Next, it uses the following logic (taken from [the readme of the
 package][safe-exceptions-readme]):
 
 * If the user is trying to install a cleanup function (such as with
@@ -1630,13 +1621,14 @@ package][safe-exceptions-readme]):
   asynchronous: call the cleanup function and then re-throw the exception.
 
 * If the user is trying to catch an exception and recover from it, only
-  catch sync exceptions and immediately rethrow async exceptions.
+  catch synchronous exceptions and immediately re-throw asynchronous
+  exceptions.
 
 It should be noted that `unliftio` also provides exception-handling
 functions with the same behavior as the ones in `safe-exceptions`. The
-functions are lifted with `MonadUnliftIO` instead of being defined in terms
-of classes from `exceptions`. We recommend just using the
-`UnliftIO.Exception` module from `unliftio`.
+difference is that the functions are lifted with `MonadUnliftIO` instead of
+being defined in terms of classes from `exceptions`. We recommend just using
+the `UnliftIO.Exception` module from `unliftio`.
 
 [ih]: https://intermediatehaskell.com/
 [hasql]: https://hackage.haskell.org/package/hasql

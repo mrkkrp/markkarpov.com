@@ -9,8 +9,8 @@ date:
 *This is the Megaparsec tutorial which originally was written as a chapter
 for the [Intermediate Haskell][ih] book. Due to lack of progress with the
 book in the last year, other authors agreed to let me publish the text as a
-standalone tutorial so people can benefit at least from this part of our
-work.*
+standalone tutorial so that people can benefit at least from this part of
+our work.*
 
 [Japanese translation][japanese], [Chinese translation][chinese].
 

@@ -642,7 +642,7 @@ colorSample = Ext.inlineRender $ \old inline ->
           [] -> old l
           (colorHex : _) ->
             let colorStyle = "color:#" <> URI.unRText colorHex <> ";"
-             in L.span_ [(L.class_ "fa fa-square"), (L.style_ colorStyle)] ""
+             in L.span_ [L.class_ "fa fa-square", L.style_ colorStyle] ""
         else old l
     other -> old other
 
@@ -687,7 +687,7 @@ menuItem item = over (key "main_menu" . _Array) . V.map $ \case
   v -> v
 
 getTags :: [PostInfo] -> Set Text
-getTags ps = foldl' f E.empty ps
+getTags = foldl' f E.empty
   where
     f s = \case
       InternalPost LocalInfo {..} -> E.union s localTags

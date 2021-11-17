@@ -1,5 +1,5 @@
 let
-  texlive = (import ../nixpkgs).texlive;
+  texlive = (import ../pkgs.nix).texlive;
 in texlive.combine {
   inherit (texlive)
     cm-super

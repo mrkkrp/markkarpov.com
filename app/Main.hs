@@ -178,7 +178,7 @@ instance FromJSON LocalInfo where
         >>= maybe (pure Nothing) (fmap Just . parseDay)
     localDesc <- o .: "desc"
     let localFile = ""
-    localTags <- E.fromList . T.words . T.toLower <$> (o .:? "tag" .!= "")
+    localTags <- parseTags <$> (o .:? "tag" .!= "")
     return LocalInfo {..}
 
 instance ToJSON LocalInfo where
@@ -574,7 +574,11 @@ main = shakeArgs shakeOptions $ do
       ts
       ["post", "default"]
       (Just content)
-      [menuItem Posts env, v, mkLocation output]
+      [ provideAs "tag" (tagsFromPostContext v),
+        menuItem Posts env,
+        v,
+        mkLocation output
+      ]
       output
   buildRoute tutorialR $ \input output -> do
     env <- commonEnv
@@ -826,3 +830,12 @@ postInfoPublished :: PostInfo -> Day
 postInfoPublished = \case
   InternalPost localInfo -> localPublished localInfo
   ExternalPost published _ _ -> published
+
+parseTags :: Text -> Set Text
+parseTags = E.fromList . T.words . T.toLower
+
+tagsFromPostContext :: Value -> Set Text
+tagsFromPostContext o =
+  case o ^? key "tag" . _String of
+    Nothing -> E.empty
+    Just x -> parseTags x

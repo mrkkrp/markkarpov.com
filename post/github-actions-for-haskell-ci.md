@@ -4,7 +4,7 @@ desc: The post explains how I use GitHub actions to setup Haskell CI.
 date:
   published: July 15, 2020
   updated: September 8, 2021
-tag: devops
+tag: haskell devops
 ---
 
 ```toc

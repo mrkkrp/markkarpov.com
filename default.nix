@@ -1,5 +1,5 @@
-{ pkgs ? (import ./nix/nixpkgs),
-  compiler ? "ghc8103"
+{ pkgs ? (import ./nix/pkgs.nix),
+  compiler ? "ghc8107"
 }:
 
 let
@@ -24,6 +24,19 @@ let
     { overrides = (self: super: {
         "markkarpov-com" = super.callCabal2nix "markkarpov-com"
           (pkgs.lib.sourceByRegex ./. appSourceRegex) {};
+        "mmark" = pkgs.haskell.lib.overrideCabal super.mmark_0_0_7_4 (drv: {
+          broken = false;
+        });
+        "mmark-ext" = pkgs.haskell.lib.overrideCabal super.mmark-ext (drv: {
+          version = "0.2.1.4";
+          sha256 = "sha256-8NOXbuDoD/vcN04iEirWM2n4+foS20WsaC+ZOyfozws=";
+          revision = null;
+          editedCabalFile = null;
+        });
+        "lucid" = pkgs.haskell.lib.overrideCabal super.lucid (drv: {
+          version = "2.11.0";
+          sha256 = "sha256-VJcVvUynswNOaJ321z5FmotO+/8MdLj5YfwO2/cILtQ=";
+        });
       });
     };
   html5validator = import ./nix/html5validator;
@@ -85,7 +98,7 @@ let
     '';
   };
 in {
-   inherit resume;
+   inherit compiler resume;
    netlify-cli = pkgs.netlify-cli;
    jq = pkgs.jq;
    app = haskellPackages.markkarpov-com;

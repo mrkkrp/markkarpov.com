@@ -5,7 +5,7 @@
 To build the site:
 
 ```shell
-$ nix-build -A site
+$ nix build .#site
 ```
 
 The site will be in `result/`, you'll need to start an HTTP server to browse

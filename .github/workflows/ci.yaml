@@ -11,34 +11,35 @@ jobs:
   ormolu:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2.3.4
+      - uses: actions/checkout@v3
       - uses: mrkkrp/ormolu-action@v2
   build:
     runs-on: ubuntu-latest
     needs: ormolu
-    container: nixos/nix:2.3.6
     steps:
-      - uses: actions/checkout@v2
-      - uses: cachix/cachix-action@v6
+      - uses: actions/checkout@v1
+      - uses: cachix/install-nix-action@v15
+      - uses: cachix/cachix-action@v10
         with:
           name: mrkkrp
           skipPush: true
       - name: Build the environment
         run: |
-          nix-shell default.nix --attr site --pure --run true
-          nix-env -f default.nix -iA netlify-cli
-          nix-env -f default.nix -iA jq
+          nix shell '.#site'
+          nix build '.#jq'
+          nix build '.#netlify-cli'
       - name: Push to Cachix
         run: |
-          nix-store -qR --include-outputs $(nix-instantiate --attr site default.nix) | cachix push mrkkrp
-          nix-store -qR --include-outputs $(nix-instantiate --attr netlify-cli default.nix) | cachix push mrkkrp
+          nix build --json '.#jq' | nix run '.#jq' -- -r '.[].outputs | to_entries[].value' | cachix push mrkkrp
+          nix build --json '.#netlify-cli' |nix run '.#jq' -- -r '.[].outputs | to_entries[].value' | cachix push mrkkrp
+          nix-store -qR --include-outputs $(nix build --json '.#site' | nix run '.#jq' -- -r '.[].drvPath') | cachix push mrkkrp
         env:
           CACHIX_SIGNING_KEY: ${{ secrets.CACHIX_SIGNING_KEY }}
       - name: Build the site
         run: |
           if [ "$GITHUB_REF" = "refs/heads/master" ]
-          then nix-build --attr site
-          else nix-build --attr site-preview
+          then nix build '.#site'
+          else nix build '.#site-preview'
           fi
       - name: Deploy to Netlify
         id: deploy
@@ -47,8 +48,8 @@ jobs:
           # Netlify does not see a symlink as a directory, so we have to
           # copy the contents.
           cp -R result/ publish/
-          netlify deploy $flags --json | tee result.json
-          echo -e "\n::set-output name=deploy_url::$(jq -r .deploy_url result.json)"
+          nix run '.#netlify' -- deploy $flags --json | tee result.json
+          echo -e "\n::set-output name=deploy_url::$(nix run '.#jq' -- -r .deploy_url result.json)"
         env:
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}

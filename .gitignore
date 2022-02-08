@@ -30,3 +30,4 @@ dist/
 stack.yaml
 result
 _build
+.direnv/

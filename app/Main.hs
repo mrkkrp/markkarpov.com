@@ -13,6 +13,8 @@ import Control.Lens hiding ((.=), (<.>))
 import Control.Monad
 import Control.Monad.IO.Class
 import Data.Aeson
+import qualified Data.Aeson.Key as Key
+import qualified Data.Aeson.KeyMap as KeyMap
 import Data.Aeson.Lens
 import qualified Data.HashMap.Strict as HM
 import Data.List (foldl', foldl1', sortOn)
@@ -29,6 +31,7 @@ import qualified Data.Text.IO as T
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.IO as TL
 import Data.Time
+import qualified Data.Time.Format.ISO8601 as ISO8601
 import qualified Data.Vector as V
 import qualified Data.Yaml as Y
 import Development.Shake hiding (Verbosity (..))
@@ -41,7 +44,7 @@ import qualified Text.Megaparsec as M
 import Text.Mustache
 import Text.URI (URI)
 import qualified Text.URI as URI
-import Text.URI.Lens (uriPath)
+import Text.URI.Lens (uriPath, uriScheme)
 import Text.URI.QQ (scheme)
 
 ----------------------------------------------------------------------------
@@ -628,7 +631,11 @@ provideSocialUrls v = Ext.inlineTrans $ \case
             Nothing -> Ext.Plain "!lookup failed!"
             Just t ->
               if Ext.asPlainText inner == "x"
-                then Ext.Link (Ext.Plain (URI.render t) :| []) t mtitle
+                then
+                  Ext.Link
+                    (Ext.Plain (URI.render t) :| [])
+                    ((uriScheme .~ Just [scheme|mailto|]) t)
+                    mtitle
                 else Ext.Link inner t mtitle
         _ -> l
       else l
@@ -685,8 +692,8 @@ menuItem :: MenuItem -> Value -> Value
 menuItem item = over (key "main_menu" . _Array) . V.map $ \case
   Object m ->
     Object $
-      if HM.lookup "title" m == (Just . String . menuItemTitle) item
-        then HM.insert "active" (Bool True) m
+      if KeyMap.lookup "title" m == (Just . String . menuItemTitle) item
+        then KeyMap.insert "active" (Bool True) m
         else m
   v -> v
 
@@ -782,7 +789,7 @@ interpretValue v =
 mkContext :: [Value] -> Value
 mkContext = foldl1' f
   where
-    f (Object m0) (Object m1) = Object (HM.union m0 m1)
+    f (Object m0) (Object m1) = Object (KeyMap.union m0 m1)
     f _ _ = error "context merge failed"
 
 mkTitle :: MenuItem -> Value
@@ -792,7 +799,7 @@ mkLocation :: FilePath -> Value
 mkLocation = provideAs "location" . dropDirectory1
 
 provideAs :: ToJSON v => Text -> v -> Value
-provideAs k v = Object (HM.singleton k (toJSON v))
+provideAs k v = Object (KeyMap.singleton (Key.fromText k) (toJSON v))
 
 parseDay :: MonadFail m => Text -> m Day
 parseDay = parseTimeM True defaultTimeLocale "%B %e, %Y" . T.unpack
@@ -810,9 +817,11 @@ renderDay :: Day -> String
 renderDay = formatTime defaultTimeLocale "%B %e, %Y"
 
 renderIso8601 :: Day -> String
-renderIso8601 = formatTime defaultTimeLocale fmt
-  where
-    fmt = iso8601DateFormat (Just "00:00:00Z")
+renderIso8601 day =
+  ISO8601.formatShow
+    (ISO8601.calendarFormat ISO8601.ExtendedFormat)
+    day
+    <> "T00:00:00Z"
 
 parseExternalPosts :: Text -> Value -> [PostInfo]
 parseExternalPosts k v =

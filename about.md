@@ -1,5 +1,5 @@
-Hey there! I'm a software engineer based in Paris, France. I work at
-[Tweag][tweag].
+Hey there! I'm a software engineer based in [Château-Thierry][chateau],
+France. I work at [Tweag][tweag].
 
 I come from a little town called [Biysk][biysk] in Russia. I learned about
 functional programming on my own circa 2015. Soon, my enthusiasm paid off—I
@@ -23,6 +23,7 @@ Here are my contacts and social accounts:
 * <fa:stack-overflow> [StackOverflow](social:stackoverflow)
 * <fa:instagram> [Instagram](social:instagram)
 
+[chateau]: https://en.wikipedia.org/wiki/Ch%C3%A2teau-Thierry
 [tweag]: https://tweag.io
 [biysk]: https://en.wikipedia.org/wiki/Biysk
 [oss]: /oss.html

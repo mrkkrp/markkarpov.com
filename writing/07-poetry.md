@@ -3,7 +3,7 @@ title: Poetry
 type: Collection of poems
 date:
   started: February 1, 2020
-  finished: January 14, 2022
+  finished: April 10, 2022
 ---
 
 ***
@@ -49,3 +49,16 @@ With a long fade in \
 Beginning in January
 
 *January 14, 2022*
+
+***
+
+Remove the chores \
+Remove the needs \
+And there it stares at you \
+The horror \
+The machine that keeps elemental particles stable \
+Two eyes glistering in the background \
+The machine that has sentenced you \
+Blink
+
+*April 10, 2022*

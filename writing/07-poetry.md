@@ -3,7 +3,7 @@ title: Poetry
 type: Collection of poems
 date:
   started: February 1, 2020
-  finished: April 10, 2022
+  finished: April 29, 2022
 ---
 
 ***
@@ -62,3 +62,20 @@ The machine that has sentenced you \
 Blink
 
 *April 10, 2022*
+
+***
+
+Me and them \
+We are bent differently \
+And out of recognition \
+We come together by happenstance \
+Interdependent \
+Impermanent \
+One could say \
+There are goals \
+Trends \
+But to me it is just texture of life \
+Creased whimsically \
+Around my hearth
+
+*April 29, 2022*

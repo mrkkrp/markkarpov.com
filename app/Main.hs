@@ -109,8 +109,9 @@ cssR,
   ossR,
   writingR,
   writingPieceR,
+  artworksR,
   galleriesR,
-  galleryR,
+  photoGalleryR,
   learnHaskellR,
   postsR,
   postR,
@@ -128,8 +129,9 @@ aboutR = Ins "about.md" (-<.> "html")
 ossR = Gen "oss.html"
 writingR = Gen "writing.html"
 writingPieceR = Ins "writing/*.md" (-<.> "html")
+artworksR = Gen "artworks.html"
 galleriesR = Gen "galleries.html"
-galleryR = GenPat "gallery/*.html"
+photoGalleryR = GenPat "gallery/*.html"
 learnHaskellR = Gen "learn-haskell.html"
 postsR = Gen "posts.html"
 tagsR = GenPat "tag/*.html"
@@ -240,7 +242,8 @@ data MenuItem
   | LearnHaskell
   | OSS
   | Writing
-  | Galleries
+  | Artworks
+  | Photos
   | Resume
   | About
   deriving (Eq, Ord, Show, Enum, Bounded)
@@ -252,12 +255,33 @@ menuItemTitle = \case
   LearnHaskell -> "Learn Haskell"
   OSS -> "OSS"
   Writing -> "Writing"
-  Galleries -> "Galleries"
+  Artworks -> "Artworks"
+  Photos -> "Photos"
   Resume -> "Resume"
   About -> "About me"
 
 ----------------------------------------------------------------------------
 -- Galleries
+
+-- | Art inventory.
+data ArtInventory = ArtInventory
+  { artMediums :: !(Map Text Text),
+    artNotes :: !(Map Text Text)
+  }
+  deriving (Eq, Show)
+
+instance FromJSON ArtInventory where
+  parseJSON = withObject "art inventory" $ \o -> do
+    artMediums <- o .: "mediums"
+    artNotes <- o .: "notes"
+    return ArtInventory {..}
+
+instance ToJSON ArtInventory where
+  toJSON ArtInventory {..} =
+    object
+      [ "mediums" .= artMediums,
+        "notes" .= artNotes
+      ]
 
 -- | Photo inventory.
 data PhotoInventory = PhotoInventory
@@ -279,30 +303,91 @@ instance ToJSON PhotoInventory where
         "lenses" .= photoLenses
       ]
 
--- | Information about a gallery.
-data Gallery = Gallery
-  { galleryTitle :: !Text,
-    gallerySlug :: !FilePath,
-    galleryUpdated :: !Day,
-    galleryPhotos :: ![Photo]
+-- | Collection of artworks.
+data Artworks = ArtworksGallery
+  { artworksPriceMultiplier :: Double,
+    artworksArtworks :: [Artwork]
   }
   deriving (Eq, Show)
 
-instance FromJSON Gallery where
-  parseJSON = withObject "gallery" $ \o -> do
-    galleryTitle <- o .: "title"
-    gallerySlug <- o .: "slug"
-    galleryUpdated <- (o .: "updated") >>= parseDay
-    galleryPhotos <- o .: "photos"
-    return Gallery {..}
+instance FromJSON Artworks where
+  parseJSON = withObject "art gallery" $ \o -> do
+    artworksPriceMultiplier <- o .: "price_multiplier"
+    artworksArtworks <- o .: "artworks"
+    return ArtworksGallery {..}
 
-instance ToJSON Gallery where
-  toJSON Gallery {..} =
+instance ToJSON Artworks where
+  toJSON ArtworksGallery {..} =
     object
-      [ "title" .= galleryTitle,
-        "slug" .= gallerySlug,
-        "updated" .= renderDay galleryUpdated,
-        "photos" .= galleryPhotos
+      [ "price_multiplier" .= artworksPriceMultiplier,
+        "artworks" .= artworksArtworks
+      ]
+
+-- | Representation of an artwork.
+data Artwork = Artwork
+  { artworkFile :: !FilePath,
+    artworkTitle :: !Text,
+    artworkDate :: !Day,
+    artworkMedium :: !Text,
+    artworkHeight :: !Int,
+    artworkWidth :: !Int,
+    artworkNote :: !Text,
+    artworkSold :: !Bool,
+    artworkPrice :: !Int
+  }
+  deriving (Eq, Show)
+
+instance FromJSON Artwork where
+  parseJSON = withObject "artwork" $ \o -> do
+    artworkFile <- o .: "file"
+    artworkTitle <- o .: "title"
+    artworkDate <- (o .: "date") >>= parseDay
+    artworkMedium <- o .: "medium"
+    artworkHeight <- o .: "height"
+    artworkWidth <- o .: "width"
+    artworkNote <- o .: "note"
+    artworkSold <- fromMaybe False <$> (o .:? "sold")
+    let artworkPrice = 0
+    return Artwork {..}
+
+instance ToJSON Artwork where
+  toJSON Artwork {..} =
+    object
+      [ "file" .= artworkFile,
+        "title" .= artworkTitle,
+        "date" .= renderDay artworkDate,
+        "medium" .= artworkMedium,
+        "height" .= artworkHeight,
+        "width" .= artworkWidth,
+        "note" .= artworkNote,
+        "sold" .= artworkSold,
+        "price" .= artworkPrice
+      ]
+
+-- | Information about a photo gallery.
+data PhotoGallery = PhotoGallery
+  { pgalleryTitle :: !Text,
+    pgallerySlug :: !FilePath,
+    pgalleryUpdated :: !Day,
+    pgalleryPhotos :: ![Photo]
+  }
+  deriving (Eq, Show)
+
+instance FromJSON PhotoGallery where
+  parseJSON = withObject "photo gallery" $ \o -> do
+    pgalleryTitle <- o .: "title"
+    pgallerySlug <- o .: "slug"
+    pgalleryUpdated <- (o .: "updated") >>= parseDay
+    pgalleryPhotos <- o .: "photos"
+    return PhotoGallery {..}
+
+instance ToJSON PhotoGallery where
+  toJSON PhotoGallery {..} =
+    object
+      [ "title" .= pgalleryTitle,
+        "slug" .= pgallerySlug,
+        "updated" .= renderDay pgalleryUpdated,
+        "photos" .= pgalleryPhotos
       ]
 
 -- | Description of a photo in a gallery.
@@ -471,26 +556,40 @@ main = shakeArgs shakeOptions $ do
       (Just content)
       [menuItem About env, mkTitle About, v]
       output
+  buildRoute artworksR $ \_ output -> do
+    env <- commonEnv
+    ts <- templates
+    inventory <- getArtInventory env
+    artGallery <- prepareArtGallery inventory <$> getArtworks env
+    renderAndWrite
+      ts
+      ["artworks", "default"]
+      Nothing
+      [ menuItem Artworks env,
+        toJSON artGallery,
+        mkTitle Artworks
+      ]
+      output
   buildRoute galleriesR $ \_ output -> do
     env <- commonEnv
     ts <- templates
-    gs <- getGalleries env
-    need (galleryToPath <$> gs)
+    gs <- getPhotoGalleries env
+    need (photoGalleryToPath <$> gs)
     renderAndWrite
       ts
       ["galleries", "default"]
       Nothing
-      [ menuItem Galleries env,
+      [ menuItem Photos env,
         provideAs "gallery" gs,
-        mkTitle Galleries
+        mkTitle Photos
       ]
       output
-  buildRoute galleryR $ \_ output -> do
+  buildRoute photoGalleryR $ \_ output -> do
     env <- commonEnv
     ts <- templates
     inventory <- getPhotoInventory env
-    gs <- resolvePhotoInventory inventory <$> getGalleries env
-    thisGallery <- case dropWhile ((/= output) . galleryToPath) gs of
+    gs <- resolvePhotoInventory inventory <$> getPhotoGalleries env
+    thisGallery <- case dropWhile ((/= output) . photoGalleryToPath) gs of
       [] ->
         fail $
           "Trying to build " ++ output ++ " but no matching galleries found"
@@ -499,9 +598,8 @@ main = shakeArgs shakeOptions $ do
       ts
       ["gallery", "default"]
       Nothing
-      [ menuItem Galleries env,
-        toJSON thisGallery,
-        provideAs "slug" (gallerySlug thisGallery)
+      [ menuItem Photos env,
+        toJSON thisGallery
       ]
       output
   buildRoute ossR $ \_ output ->
@@ -634,7 +732,7 @@ provideSocialUrls v = Ext.inlineTrans $ \case
                 then
                   Ext.Link
                     (Ext.Plain (URI.render t) :| [])
-                    ((uriScheme .~ Just [scheme|mailto|]) t)
+                    ((uriScheme ?~ [scheme|mailto|]) t)
                     mtitle
                 else Ext.Link inner t mtitle
         _ -> l
@@ -719,24 +817,61 @@ filterByTag tag = filter f
       InternalPost LocalInfo {..} -> tag `elem` localTags
       ExternalPost {} -> False
 
+getArtInventory :: Value -> Action ArtInventory
+getArtInventory o =
+  case o ^? key "art_inventory" of
+    Nothing -> error "Failed to find art inventory"
+    Just v -> interpretValue v
+
 getPhotoInventory :: Value -> Action PhotoInventory
 getPhotoInventory o =
   case o ^? key "photo_inventory" of
     Nothing -> error "Failed to find photo inventory"
     Just v -> interpretValue v
 
-getGalleries :: Value -> Action [Gallery]
-getGalleries o =
-  case o ^? key "gallery" of
+getArtworks :: Value -> Action Artworks
+getArtworks o =
+  case o ^? key "art_gallery" of
+    Nothing -> error "Failed to find the definition of artworks"
+    Just v -> interpretValue v
+
+getPhotoGalleries :: Value -> Action [PhotoGallery]
+getPhotoGalleries o =
+  case o ^? key "photo_gallery" of
     Nothing -> error "Failed to find definitions of galleries"
     Just v -> interpretValue v
 
-galleryToPath :: Gallery -> FilePath
-galleryToPath Gallery {..} = outdir </> "gallery" </> gallerySlug <.> "html"
+photoGalleryToPath :: PhotoGallery -> FilePath
+photoGalleryToPath PhotoGallery {..} =
+  outdir </> "gallery" </> pgallerySlug <.> "html"
 
-resolvePhotoInventory :: PhotoInventory -> [Gallery] -> [Gallery]
+prepareArtGallery :: ArtInventory -> Artworks -> Artworks
+prepareArtGallery ArtInventory {..} g =
+  g {artworksArtworks = sortArtworks (prepareArtwork <$> artworksArtworks g)}
+  where
+    prepareArtwork a =
+      a
+        { artworkMedium = case Map.lookup (artworkMedium a) artMediums of
+            Nothing ->
+              error $
+                "Failed to resolve artwork medium: " ++ T.unpack (artworkMedium a)
+            Just x -> x,
+          artworkNote = case Map.lookup (artworkNote a) artNotes of
+            Nothing ->
+              error $
+                "Failed to resolve artwork note: " ++ T.unpack (artworkNote a)
+            Just x -> x,
+          artworkPrice =
+            ceiling
+              ( fromIntegral (artworkHeight a * artworkWidth a)
+                  * artworksPriceMultiplier g
+              )
+        }
+    sortArtworks = sortOn (Down . artworkFile)
+
+resolvePhotoInventory :: PhotoInventory -> [PhotoGallery] -> [PhotoGallery]
 resolvePhotoInventory PhotoInventory {..} = fmap $ \g ->
-  g {galleryPhotos = resolvePhoto <$> galleryPhotos g}
+  g {pgalleryPhotos = resolvePhoto <$> pgalleryPhotos g}
   where
     resolvePhoto p =
       p

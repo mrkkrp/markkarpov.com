@@ -132,6 +132,7 @@
           haskellPackages.markkarpov-com
           html5validator
           pkgs.glibcLocales
+          pkgs.zlib
         ];
         LANG = "en_US.UTF-8";
         src = pkgs.lib.sourceByRegex ./. siteSourceRegex;

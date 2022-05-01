@@ -8,8 +8,8 @@ tag: painting
 
 “Why paint?” is an important question that, I believe, everyone who intends
 to paint regularly and seriously must answer for themselves. Once the answer
-is given it can provide direction and meaning to the activity; it also helps
-to choose subjects for one's paintings.
+is given it can provide direction and meaning to the craft; it also helps to
+choose subjects for one's paintings.
 
 I believe there are mainly two motivations for painting: the process and the
 result. The dichotomy is not new, and indeed is shared by many other

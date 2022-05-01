@@ -3,7 +3,7 @@ title: Evolution of my watercolor palette
 desc: A description and evolution of my watercolor palette.
 date:
   published: October 14, 2021
-tag: watercolor
+tag: watercolor painting
 ---
 
 ```toc

@@ -22,11 +22,11 @@ executable mk-com
     default-language: Haskell2010
     ghc-options:      -O2 -Wall -threaded
     build-depends:
-        aeson -any,
+        aeson >= 2,
         base -any,
         containers -any,
         lens -any,
-        lens-aeson -any,
+        lens-aeson < 1.2,
         lucid -any,
         megaparsec -any,
         mmark -any,

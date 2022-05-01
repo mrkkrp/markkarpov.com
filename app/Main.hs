@@ -265,23 +265,20 @@ menuItemTitle = \case
 
 -- | Art inventory.
 data ArtInventory = ArtInventory
-  { artMediums :: !(Map Text Text),
+  { artMediums :: !(Map Text (Text, Double)),
     artNotes :: !(Map Text Text)
   }
   deriving (Eq, Show)
 
 instance FromJSON ArtInventory where
   parseJSON = withObject "art inventory" $ \o -> do
-    artMediums <- o .: "mediums"
+    let parseMedium = withObject "art medium" $ \m -> do
+          name <- m .: "name"
+          priceMultiplier <- m .: "price_multiplier"
+          return (name, priceMultiplier)
+    artMediums <- o .: "mediums" >>= mapM parseMedium
     artNotes <- o .: "notes"
     return ArtInventory {..}
-
-instance ToJSON ArtInventory where
-  toJSON ArtInventory {..} =
-    object
-      [ "mediums" .= artMediums,
-        "notes" .= artNotes
-      ]
 
 -- | Photo inventory.
 data PhotoInventory = PhotoInventory
@@ -296,31 +293,21 @@ instance FromJSON PhotoInventory where
     photoLenses <- o .: "lenses"
     return PhotoInventory {..}
 
-instance ToJSON PhotoInventory where
-  toJSON PhotoInventory {..} =
-    object
-      [ "cameras" .= photoCameras,
-        "lenses" .= photoLenses
-      ]
-
 -- | Collection of artworks.
-data Artworks = ArtworksGallery
-  { artworksPriceMultiplier :: Double,
-    artworksArtworks :: [Artwork]
+newtype Artworks = ArtworksGallery
+  { artworksArtworks :: [Artwork]
   }
   deriving (Eq, Show)
 
 instance FromJSON Artworks where
   parseJSON = withObject "art gallery" $ \o -> do
-    artworksPriceMultiplier <- o .: "price_multiplier"
     artworksArtworks <- o .: "artworks"
     return ArtworksGallery {..}
 
 instance ToJSON Artworks where
   toJSON ArtworksGallery {..} =
     object
-      [ "price_multiplier" .= artworksPriceMultiplier,
-        "artworks" .= artworksArtworks
+      [ "artworks" .= artworksArtworks
       ]
 
 -- | Representation of an artwork.
@@ -850,23 +837,24 @@ prepareArtGallery ArtInventory {..} g =
   g {artworksArtworks = sortArtworks (prepareArtwork <$> artworksArtworks g)}
   where
     prepareArtwork a =
-      a
-        { artworkMedium = case Map.lookup (artworkMedium a) artMediums of
-            Nothing ->
-              error $
-                "Failed to resolve artwork medium: " ++ T.unpack (artworkMedium a)
-            Just x -> x,
-          artworkNote = case Map.lookup (artworkNote a) artNotes of
-            Nothing ->
-              error $
-                "Failed to resolve artwork note: " ++ T.unpack (artworkNote a)
-            Just x -> x,
-          artworkPrice =
-            ceiling
-              ( fromIntegral (artworkHeight a * artworkWidth a)
-                  * artworksPriceMultiplier g
-              )
-        }
+      case Map.lookup (artworkMedium a) artMediums of
+        Nothing ->
+          error $
+            "Failed to resolve artwork medium: " ++ T.unpack (artworkMedium a)
+        Just (mediumName, priceMultiplier) ->
+          a
+            { artworkMedium = mediumName,
+              artworkNote = case Map.lookup (artworkNote a) artNotes of
+                Nothing ->
+                  error $
+                    "Failed to resolve artwork note: " ++ T.unpack (artworkNote a)
+                Just x -> x,
+              artworkPrice =
+                ceiling
+                  ( fromIntegral (artworkHeight a * artworkWidth a)
+                      * priceMultiplier
+                  )
+            }
     sortArtworks = sortOn (Down . artworkFile)
 
 resolvePhotoInventory :: PhotoInventory -> [PhotoGallery] -> [PhotoGallery]
@@ -980,6 +968,4 @@ parseTags = E.fromList . T.words . T.toLower
 
 tagsFromPostContext :: Value -> Set Text
 tagsFromPostContext o =
-  case o ^? key "tag" . _String of
-    Nothing -> E.empty
-    Just x -> parseTags x
+  maybe E.empty parseTags (o ^? key "tag" . _String)

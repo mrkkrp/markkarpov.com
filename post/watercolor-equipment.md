@@ -4,7 +4,7 @@ desc: A description of watercolor equipment I use.
 date:
   published: September 26, 2021
   updated: October 6, 2021
-tag: watercolor
+tag: watercolor painting
 ---
 
 ```toc

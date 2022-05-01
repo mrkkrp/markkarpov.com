@@ -3,7 +3,7 @@ title: On the importance of having vision
 desc: In this blog post I talk about a common principle that can guide creation in various domains such as art and software development.
 date:
   published: November 22, 2021
-tag: watercolor other
+tag: watercolor other painting
 ---
 
 ![A painting with a tree](/static/img/painting-with-a-tree.jpg)

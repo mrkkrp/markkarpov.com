@@ -117,47 +117,44 @@ like so:
 memoized_fib_x :: Integer -> Int -> Integer
 memoized_fib_x x = (map fib [0 ..] !!)
   where
-    fib 0 = 0
-    fib 1 = x
-    fib n = x * (memoized_fib_x x (n-2) + memoized_fib_x x (n-1))
+    fib 0 = x
+    fib 1 = x + 1
+    fib n = memoized_fib_x x (n-2) + memoized_fib_x x (n-1)
 ```
 
-`memoized_fib_x` is similar to `memoized_fib`, but every Fibonacci number is
-multiplied by `x`. A minor change, but the list `ds_d1Gz` now has to live
+`memoized_fib_x` is similar to `memoized_fib`, but the Fibonacci sequence
+starts from `x`. A minor change, but the list `ds_d1Gz` now has to live
 inside its parent function:
 
 ```haskell
 Rec {
-memoized_fib_x_rgs :: Integer -> Int -> Integer
+memoized_fib_x_rhc :: Integer -> Int -> Integer
 [GblId, Arity=1, Unf=OtherCon []]
-memoized_fib_x_rgs
-  = \ (x_aAr :: Integer) ->
+memoized_fib_x_rhc
+  = \ (x_awl :: Integer) ->
       let {
-        ds_d1Gz :: [Integer]
+        ds_d1GN :: [Integer]
         [LclId]
-        ds_d1Gz
+        ds_d1GN
           = map
               @Int
               @Integer
-              (\ (ds1_d1GB :: Int) ->
-                 case ds1_d1GB of wild_X1E { GHC.Types.I# ds2_d1GE ->
-                 case ds2_d1GE of {
+              (\ (ds1_d1GP :: Int) ->
+                 case ds1_d1GP of wild_X1E { GHC.Types.I# ds2_d1GS ->
+                 case ds2_d1GS of {
                    __DEFAULT ->
-                     * @Integer
+                     + @Integer
                        GHC.Num.$fNumInteger
-                       x_aAr
-                       (+ @Integer
-                          GHC.Num.$fNumInteger
-                          (memoized_fib_x_rgs
-                             x_aAr (- @Int GHC.Num.$fNumInt wild_X1E (GHC.Types.I# 2#)))
-                          (memoized_fib_x_rgs
-                             x_aAr (- @Int GHC.Num.$fNumInt wild_X1E (GHC.Types.I# 1#))));
-                   0# -> 0;
-                   1# -> x_aAr
+                       (memoized_fib_x_rhc
+                          x_awl (- @Int GHC.Num.$fNumInt wild_X1E (GHC.Types.I# 2#)))
+                       (memoized_fib_x_rhc
+                          x_awl (- @Int GHC.Num.$fNumInt wild_X1E (GHC.Types.I# 1#)));
+                   0# -> x_awl;
+                   1# -> + @Integer GHC.Num.$fNumInteger x_awl 1
                  }
                  })
               (enumFrom @Int GHC.Enum.$fEnumInt (GHC.Types.I# 0#)) } in
-      \ (ds1_d1GA :: Int) -> !! @Integer ds_d1Gz ds1_d1GA
+      \ (ds1_d1GO :: Int) -> !! @Integer ds_d1GN ds1_d1GO
 end Rec }
 ```
 
@@ -214,7 +211,7 @@ post][memo-trie-blog-post] by Conal Elliot.
 
 Now that we understand how `memo` works we can see that its promise of
 memoizing a given function does not always hold. It is guaranteed to work
-only when the trie can be floated up and become an indepedent top-level
+only when the trie can be floated up and become an independent top-level
 definition.
 
 For example, this works:
@@ -263,7 +260,7 @@ as well as this:
 …
 
 One should be conscious of this because there is nothing in the type of
-`memo` that indicates this subtlety.
+`memo` that indicates when and how it works.
 
 [haskell-wiki]: https://wiki.haskell.org/Memoization
 [MemoTrie]: https://hackage.haskell.org/package/MemoTrie

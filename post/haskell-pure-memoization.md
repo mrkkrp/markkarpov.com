@@ -6,8 +6,8 @@ date:
 tag: haskell
 ---
 
-One of the first examples of memoization that I saw comes from the [Haskell
-Wiki][haskell-wiki]:
+One of the first examples of memoization that I have seen comes from the
+[Haskell Wiki][haskell-wiki]:
 
 ```haskell
 slow_fib :: Int -> Integer
@@ -19,17 +19,18 @@ slow_fib n = slow_fib (n-2) + slow_fib (n-1)
 ```haskell
 memoized_fib :: Int -> Integer
 memoized_fib = (map fib [0 ..] !!)
-   where fib 0 = 0
-         fib 1 = 1
-         fib n = memoized_fib (n-2) + memoized_fib (n-1)
+  where
+    fib 0 = 0
+    fib 1 = 1
+    fib n = memoized_fib (n-2) + memoized_fib (n-1)
 ```
 
-It has always felt like magic to me. Somehow just putting the `fib` function
-inside another function and then indexing a list of its applications
-suddenly makes a huge difference with respect to performance. How does this
-work? One should ask that question not just out of curiosity—knowing what
-makes this optimization technique work will also help us to know what can
-break it in our programs.
+It has always felt like magic to me. Somehow just defining the `fib`
+function inside another function and then indexing a list of its
+applications suddenly makes a huge difference with respect to performance.
+How does this work? One should ask that question not just out of
+curiosity—knowing inner workings of this optimization technique will also
+give us intuition about what can break it in our programs.
 
 Let's put both functions in a module and compile it using `-ddump-simpl` to
 dump output of the simplifier:
@@ -90,7 +91,8 @@ original source code. However, look what happened to `memoized_fib`! The
 part that constructs the list has floated outside of `memoized_fib` and
 became an independent top-level definition. One thing about top-level
 definitions we should always remember is that results of their evaluation
-are kept during the entire lifetime of the program.
+are kept during the entire lifetime of the program—they are not
+garbage-collected.
 
 One detail about `memoized_fib_rgs` and `ds_r1Hl` is essential here—they are
 calling each other. If `fib` in `memoized_fib` just called itself
@@ -105,17 +107,19 @@ fib n = memoized_fib (n-2) + memoized_fib (n-1)
         ^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^
 ```
 
-share each other's results instead of re-computing them.
+re-use each other's results instead of re-computing them.
 
 How can we break memoziation in `memoize_fib`? Well, perhaps we could
-prevent GHC from floating the list outside of the function. Like so:
+prevent GHC from floating the list outside of the function. We can do it
+like so:
 
 ```haskell
 memoized_fib_x :: Integer -> Int -> Integer
 memoized_fib_x x = (map fib [0 ..] !!)
-   where fib 0 = 0
-         fib 1 = x
-         fib n = x * (memoized_fib_x x (n-2) + memoized_fib_x x (n-1))
+  where
+    fib 0 = 0
+    fib 1 = x
+    fib n = x * (memoized_fib_x x (n-2) + memoized_fib_x x (n-1))
 ```
 
 `memoized_fib_x` is similar to `memoized_fib`, but every Fibonacci number is
@@ -157,7 +161,7 @@ memoized_fib_x_rgs
 end Rec }
 ```
 
-No memoization happens in this case, `memoized_fib_x` is terribly slow.
+No memoization happens in this case—`memoized_fib_x` is terribly slow.
 Perhaps this example may seem contrived to the reader, but let's now take a
 look at the popular package for pure memoization called
 [`MemoTrie`][MemoTrie]. This library provides a useful function called
@@ -165,38 +169,102 @@ look at the popular package for pure memoization called
 
 ```haskell
 memo :: HasTrie t => (t -> a) -> t -> a
+memo = untrie . trie
 ```
 
-`memo` works exactly like `memoized_fib`.
+`memo` is not very different from `memoized_fib`. The difference is that
+instead of a list it uses a custom data structure that holds results of
+application of the given function `t -> a` to all values in its domain `t`.
 
-But the type of `memo` is somewhat misleading. Nothing prevents us from
-using `memo` inside another definition:
+```haskell
+class HasTrie a where
+  data (:->:) a :: * -> *
 
+  trie :: (a -> b) -> (a :->: b)
+  untrie :: (a :->: b) -> (a  ->  b)
 ```
+
+`trie` constructs this structure, while `untrie` indexes it. Implementations
+for 2-tuple `(,)` and `Either` should clarify the principle:
+
+```haskell
+instance (HasTrie a, HasTrie b) => HasTrie (a,b) where
+  newtype (a,b) :->: x = PairTrie (a :->: (b :->: x))
+
+  -- Transform (a,b) into a structure of answers for each 'a' value; every
+  -- element in this structure is in turn indexed by 'b'.
+
+  trie f = PairTrie (trie (trie . curry f))
+  untrie (PairTrie t) = uncurry (untrie .  untrie t)
+
+instance (HasTrie a, HasTrie b) => HasTrie (Either a b) where
+  data (Either a b) :->: x = EitherTrie (a :->: x) (b :->: x)
+
+  -- 'EitherTrie' holds the result for the case when the argument is 'Left'
+  -- as well as the result for the case when the argument is 'Right'.
+
+  trie f = EitherTrie (trie (f . Left)) (trie (f . Right))
+  untrie (EitherTrie s t) = either (untrie s) (untrie t)
 ```
 
-Familiar?
+Laziness is essential for this to work. Similar to `memoized_fib` where the
+list was infinite, the `(:->:)` structure is also possibly very large or
+infinite. For more details about the library see [this blog
+post][memo-trie-blog-post] by Conal Elliot.
 
-----
+Now that we understand how `memo` works we can see that its promise of
+memoizing a given function does not always hold. It is guaranteed to work
+only when the trie can be floated up and become an indepedent top-level
+definition.
 
-<http://conal.net/blog/posts/elegant-memoization-with-functional-memo-tries>
+For example, this works:
 
-This is why
+```haskell
+fixedFib :: Int -> Integer
+fixedFib = memo fib
+  where
+    fib 0 = 0
+    fib 1 = 1
+    fib n = fixedFib (n-2) + fixedFib (n-1)
 
-<https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/debugging.html#core-representation-and-simplification>
+main :: IO ()
+main = do
+  n <- readLn
+  print (fixedFib n)
+```
 
-Build on the idea of using laziness to store result values for all domain
-values of the function without computing them unless they are forced.
+as well as this:
 
-Start simple, iterate to make it work for arbitrary types. Probably
-inevitable use of type classes. Maybe it is even possible without type
-classes? Hmm.
+```haskell
+fixedFib_x :: Integer -> Int -> Integer
+fixedFib_x x = memo fib
+  where
+    fib 0 = 0
+    fib 1 = x
+    fib n = x * (fixedFib_x x (n-2) + fixedFib_x x (n-1))
 
-Consider cases when this approach stops working.
+main :: IO ()
+main = do
+  let myMultiplier = 2
+  read
+  print ()
+```
 
-Consider memorized local functions. Do they work, why?
+as well as this:
 
-Mention [`MemoTrie`][MemoTrie].
+```haskell
+```
+
+…but not this:
+
+```haskell
+```
+
+…
+
+One should be conscious of this because there is nothing in the type of
+`memo` that indicates this subtlety.
 
 [haskell-wiki]: https://wiki.haskell.org/Memoization
 [MemoTrie]: https://hackage.haskell.org/package/MemoTrie
+[memo-trie-blog-post]: http://conal.net/blog/posts/elegant-memoization-with-functional-memo-tries

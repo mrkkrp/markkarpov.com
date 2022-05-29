@@ -21,7 +21,8 @@ Here are my contacts and social accounts:
 * <fa:reddit> [Reddit](social:reddit)
 * <fa:linkedin> [LinkedIn](social:linkedin)
 * <fa:stack-overflow> [StackOverflow](social:stackoverflow)
-* <fa:instagram> [Instagram](social:instagram)
+* <fa:instagram> [Personal Instagram](social:instagram)
+* <fa:instagram> [Artist's Instagram](social:instagram_artist)
 
 [chateau]: https://en.wikipedia.org/wiki/Ch%C3%A2teau-Thierry
 [tweag]: https://tweag.io

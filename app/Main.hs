@@ -109,7 +109,6 @@ cssR,
   ossR,
   writingR,
   writingPieceR,
-  artworksR,
   galleriesR,
   photoGalleryR,
   learnHaskellR,
@@ -129,7 +128,6 @@ aboutR = Ins "about.md" (-<.> "html")
 ossR = Gen "oss.html"
 writingR = Gen "writing.html"
 writingPieceR = Ins "writing/*.md" (-<.> "html")
-artworksR = Gen "artworks.html"
 galleriesR = Gen "galleries.html"
 photoGalleryR = GenPat "gallery/*.html"
 learnHaskellR = Gen "learn-haskell.html"
@@ -242,7 +240,6 @@ data MenuItem
   | LearnHaskell
   | OSS
   | Writing
-  | Artworks
   | Photos
   | Resume
   | About
@@ -255,30 +252,12 @@ menuItemTitle = \case
   LearnHaskell -> "Learn Haskell"
   OSS -> "OSS"
   Writing -> "Writing"
-  Artworks -> "Artworks"
   Photos -> "Photos"
   Resume -> "Resume"
   About -> "About me"
 
 ----------------------------------------------------------------------------
 -- Galleries
-
--- | Art inventory.
-data ArtInventory = ArtInventory
-  { artMediums :: !(Map Text (Text, Double)),
-    artNotes :: !(Map Text Text)
-  }
-  deriving (Eq, Show)
-
-instance FromJSON ArtInventory where
-  parseJSON = withObject "art inventory" $ \o -> do
-    let parseMedium = withObject "art medium" $ \m -> do
-          name <- m .: "name"
-          priceMultiplier <- m .: "price_multiplier"
-          return (name, priceMultiplier)
-    artMediums <- o .: "mediums" >>= mapM parseMedium
-    artNotes <- o .: "notes"
-    return ArtInventory {..}
 
 -- | Photo inventory.
 data PhotoInventory = PhotoInventory
@@ -292,64 +271,6 @@ instance FromJSON PhotoInventory where
     photoCameras <- o .: "cameras"
     photoLenses <- o .: "lenses"
     return PhotoInventory {..}
-
--- | Collection of artworks.
-newtype Artworks = ArtworksGallery
-  { artworksArtworks :: [Artwork]
-  }
-  deriving (Eq, Show)
-
-instance FromJSON Artworks where
-  parseJSON = withObject "art gallery" $ \o -> do
-    artworksArtworks <- o .: "artworks"
-    return ArtworksGallery {..}
-
-instance ToJSON Artworks where
-  toJSON ArtworksGallery {..} =
-    object
-      [ "artworks" .= artworksArtworks
-      ]
-
--- | Representation of an artwork.
-data Artwork = Artwork
-  { artworkFile :: !FilePath,
-    artworkTitle :: !Text,
-    artworkDate :: !Day,
-    artworkMedium :: !Text,
-    artworkHeight :: !Int,
-    artworkWidth :: !Int,
-    artworkNote :: !Text,
-    artworkSold :: !Bool,
-    artworkPrice :: !Int
-  }
-  deriving (Eq, Show)
-
-instance FromJSON Artwork where
-  parseJSON = withObject "artwork" $ \o -> do
-    artworkFile <- o .: "file"
-    artworkTitle <- o .: "title"
-    artworkDate <- (o .: "date") >>= parseDay
-    artworkMedium <- o .: "medium"
-    artworkHeight <- o .: "height"
-    artworkWidth <- o .: "width"
-    artworkNote <- o .: "note"
-    artworkSold <- fromMaybe False <$> (o .:? "sold")
-    let artworkPrice = 0
-    return Artwork {..}
-
-instance ToJSON Artwork where
-  toJSON Artwork {..} =
-    object
-      [ "file" .= artworkFile,
-        "title" .= artworkTitle,
-        "date" .= renderDay artworkDate,
-        "medium" .= artworkMedium,
-        "height" .= artworkHeight,
-        "width" .= artworkWidth,
-        "note" .= artworkNote,
-        "sold" .= artworkSold,
-        "price" .= artworkPrice
-      ]
 
 -- | Information about a photo gallery.
 data PhotoGallery = PhotoGallery
@@ -542,20 +463,6 @@ main = shakeArgs shakeOptions $ do
       ["about", "default"]
       (Just content)
       [menuItem About env, mkTitle About, v]
-      output
-  buildRoute artworksR $ \_ output -> do
-    env <- commonEnv
-    ts <- templates
-    inventory <- getArtInventory env
-    artGallery <- prepareArtGallery inventory <$> getArtworks env
-    renderAndWrite
-      ts
-      ["artworks", "default"]
-      Nothing
-      [ menuItem Artworks env,
-        toJSON artGallery,
-        mkTitle Artworks
-      ]
       output
   buildRoute galleriesR $ \_ output -> do
     env <- commonEnv
@@ -804,22 +711,10 @@ filterByTag tag = filter f
       InternalPost LocalInfo {..} -> tag `elem` localTags
       ExternalPost {} -> False
 
-getArtInventory :: Value -> Action ArtInventory
-getArtInventory o =
-  case o ^? key "art_inventory" of
-    Nothing -> error "Failed to find art inventory"
-    Just v -> interpretValue v
-
 getPhotoInventory :: Value -> Action PhotoInventory
 getPhotoInventory o =
   case o ^? key "photo_inventory" of
     Nothing -> error "Failed to find photo inventory"
-    Just v -> interpretValue v
-
-getArtworks :: Value -> Action Artworks
-getArtworks o =
-  case o ^? key "art_gallery" of
-    Nothing -> error "Failed to find the definition of artworks"
     Just v -> interpretValue v
 
 getPhotoGalleries :: Value -> Action [PhotoGallery]
@@ -831,31 +726,6 @@ getPhotoGalleries o =
 photoGalleryToPath :: PhotoGallery -> FilePath
 photoGalleryToPath PhotoGallery {..} =
   outdir </> "gallery" </> pgallerySlug <.> "html"
-
-prepareArtGallery :: ArtInventory -> Artworks -> Artworks
-prepareArtGallery ArtInventory {..} g =
-  g {artworksArtworks = sortArtworks (prepareArtwork <$> artworksArtworks g)}
-  where
-    prepareArtwork a =
-      case Map.lookup (artworkMedium a) artMediums of
-        Nothing ->
-          error $
-            "Failed to resolve artwork medium: " ++ T.unpack (artworkMedium a)
-        Just (mediumName, priceMultiplier) ->
-          a
-            { artworkMedium = mediumName,
-              artworkNote = case Map.lookup (artworkNote a) artNotes of
-                Nothing ->
-                  error $
-                    "Failed to resolve artwork note: " ++ T.unpack (artworkNote a)
-                Just x -> x,
-              artworkPrice =
-                ceiling
-                  ( fromIntegral (artworkHeight a * artworkWidth a)
-                      * priceMultiplier
-                  )
-            }
-    sortArtworks = sortOn (Down . artworkFile)
 
 resolvePhotoInventory :: PhotoInventory -> [PhotoGallery] -> [PhotoGallery]
 resolvePhotoInventory PhotoInventory {..} = fmap $ \g ->

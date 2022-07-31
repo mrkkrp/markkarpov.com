@@ -10,8 +10,8 @@ moved to France.
 
 I enjoy traveling and I am an avid reader. My hobbies include
 [writing](/writing.html), music, [photography](/galleries.html), and
-[painting](/artworks.html). I'm working on adding some of my creative output
-to this site, stay tuned!
+painting. I'm working on adding some of my creative output to this site,
+stay tuned!
 
 Here are my contacts and social accounts:
 

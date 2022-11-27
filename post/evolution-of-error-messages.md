@@ -433,7 +433,6 @@ feature.
 
 Right now I'm playing with Megaparsec 6 porting some existing parsers and
 I'm very pleased with results. I think I'll upload the library on Hackage
-very soon (maybe tomorrow, I'll announce
-on [Twitter](https://twitter.com/mrkkrp) when done). When version 6 is out
-I'll push updates to tutorials and upgrade some projects that I maintain,
-such as [`stache`](https://hackage.haskell.org/package/stache).
+very soon (maybe tomorrow, I'll announce on Twitter when done). When version
+6 is out I'll push updates to tutorials and upgrade some projects that I
+maintain, such as [`stache`](https://hackage.haskell.org/package/stache).

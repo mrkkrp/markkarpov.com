@@ -17,7 +17,6 @@ Here are my contacts and social accounts:
 
 * <fa:envelope> [x](social:email)
 * <fa:github> [GitHub](social:github)
-* <fa:twitter> [Twitter](social:twitter)
 * <fa:reddit> [Reddit](social:reddit)
 * <fa:linkedin> [LinkedIn](social:linkedin)
 * <fa:stack-overflow> [StackOverflow](social:stackoverflow)

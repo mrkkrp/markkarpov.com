@@ -14,7 +14,7 @@
         system = "x86_64-linux";
         config.allowUnfree = true;
       };
-      compiler = "ghc923";
+      compiler = "ghc943";
       appSourceRegex = [
         "^app.*$"
         "^markkarpov-com\.cabal$"
@@ -39,21 +39,7 @@
             "markkarpov-com" = super.callCabal2nix "markkarpov-com"
               (pkgs.lib.sourceByRegex ./. appSourceRegex)
               { };
-            "mmark" = pkgs.haskell.lib.overrideCabal super.mmark (drv: {
-              version = "0.0.7.6";
-              sha256 = "sha256-jHilqnoYBsMVv4wKpoMh8E9QjXLkysQS6kATcfx8UP0=";
-              broken = false;
-              revision = null;
-              editedCabalFile = null;
-            });
-            "mmark-ext" = pkgs.haskell.lib.overrideCabal super.mmark-ext (drv: {
-              version = "0.2.1.5";
-              sha256 = "sha256-CL1y6vV7/n6BcwvNhsDJQrILgkeYgDzmANeudb/tw7c=";
-              broken = false;
-              revision = null;
-              editedCabalFile = null;
-            });
-            "ghc-syntax-highlighter" = super.ghc-syntax-highlighter_0_0_8_0;
+            "ghc-syntax-highlighter" = super.ghc-syntax-highlighter_0_0_9_0;
           });
         };
       html5validator = with pkgs.python39Packages; buildPythonPackage rec {

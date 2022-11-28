@@ -177,7 +177,8 @@ instance FromJSON LocalInfo where
     localTitle <- o .: "title"
     localPublished <- (o .: "date") >>= (.: "published") >>= parseDay
     localUpdated <-
-      (o .: "date") >>= (.:? "updated")
+      (o .: "date")
+        >>= (.:? "updated")
         >>= maybe (pure Nothing) (fmap Just . parseDay)
     localDesc <- o .: "desc"
     let localFile = ""
@@ -216,7 +217,8 @@ instance FromJSON WritingPiece where
     wpieceDateStarted <-
       (o .: "date") >>= (.: "started") >>= parseDay
     wpieceDateFinished <-
-      (o .: "date") >>= (.:? "finished")
+      (o .: "date")
+        >>= (.:? "finished")
         >>= maybe (pure Nothing) (fmap Just . parseDay)
     return WritingPiece {..}
 
@@ -619,7 +621,11 @@ provideSocialUrls v = Ext.inlineTrans $ \case
     if URI.uriScheme uri == Just [scheme|social|]
       then case uri ^. uriPath of
         [x] ->
-          case v ^? key "social" . key (URI.unRText x) . _String . getURI of
+          case v
+            ^? key "social"
+              . key (Key.fromText (URI.unRText x))
+              . _String
+              . getURI of
             Nothing -> Ext.Plain "!lookup failed!"
             Just t ->
               if Ext.asPlainText inner == "x"
@@ -819,7 +825,10 @@ renderIso8601 day =
 parseExternalPosts :: Text -> Value -> [PostInfo]
 parseExternalPosts k v =
   fromMaybe [] $
-    v ^? key k . _Array . to (mapMaybe parseExternalPost . V.toList)
+    v
+      ^? key (Key.fromText k)
+        . _Array
+        . to (mapMaybe parseExternalPost . V.toList)
 
 parseExternalPost :: Value -> Maybe PostInfo
 parseExternalPost o = do

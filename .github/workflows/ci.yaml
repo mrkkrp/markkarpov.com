@@ -41,24 +41,26 @@ jobs:
           then nix build '.#site'
           else nix build '.#site-preview'
           fi
-      - name: Deploy to Netlify
-        id: deploy
-        run: |
-          [ "$GITHUB_REF" = "refs/heads/master" ] && flags=--prod
           # Netlify does not see a symlink as a directory, so we have to
           # copy the contents.
           cp -R result/ publish/
-          nix run '.#netlify' -- deploy $flags --json | tee result.json
-          echo -e "\n::set-output name=deploy_url::$(nix run '.#jq' -- -r .deploy_url result.json)"
+      - name: Deploy to Netlify (preview)
+        if: github.ref != 'refs/heads/master'
+        uses: nwtgck/actions-netlify@v2
+        with:
+          publish-dir: ./publish
+          netlify-config-path: ./netlify.toml
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          enable-pull-request-comment: true
+          enable-commit-comment: false
+          enable-commit-status: true
         env:
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-      - name: Add commit status
-        uses: Sibz/github-status-action@v1.1.0
-        with:
-          authToken: ${{ secrets.GITHUB_TOKEN }}
-          sha: ${{ github.event.pull_request.head.sha || github.sha }}
-          context: deploy/netlify
-          description: Deploy preview ready
-          state: success
-          target_url: ${{ steps.deploy.outputs.deploy_url }}
+      - name: Deploy to Netlify (production)
+        if: github.ref == 'refs/heads/master'
+        run: |
+          nix run '.#netlify' -- deploy --prod
+        env:
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}

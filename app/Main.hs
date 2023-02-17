@@ -363,7 +363,7 @@ main = shakeArgs shakeOptions $ do
     env <- commonEnv
     getPostHelper env path
   let gatherLocalInfo ::
-        Ord a =>
+        (Ord a) =>
         Route ->
         (LocalInfo -> a) ->
         Action [LocalInfo]
@@ -378,7 +378,7 @@ main = shakeArgs shakeOptions $ do
       gatherLocalInfo (GenPat pat) _ =
         fail $ "cannot gather local info about: " ++ pat
       gatherWritingPieces ::
-        Ord a =>
+        (Ord a) =>
         Route ->
         (WritingPiece -> a) ->
         Action [WritingPiece]
@@ -665,7 +665,7 @@ selectTemplate :: PName -> Template -> Template
 selectTemplate name t = t {templateActual = name}
 
 renderAndWrite ::
-  MonadIO m =>
+  (MonadIO m) =>
   -- | Templates to use
   Template ->
   -- | Names of templates, in order
@@ -779,7 +779,7 @@ getPostHelper env path = do
           v = fromMaybe (object []) (MMark.projectYaml doc)
       return (v, L.renderText (MMark.render r))
 
-interpretValue :: FromJSON v => Value -> Action v
+interpretValue :: (FromJSON v) => Value -> Action v
 interpretValue v =
   case fromJSON v of
     Error str -> fail str
@@ -797,10 +797,10 @@ mkTitle = provideAs "title" . menuItemTitle
 mkLocation :: FilePath -> Value
 mkLocation = provideAs "location" . dropDirectory1
 
-provideAs :: ToJSON v => Text -> v -> Value
+provideAs :: (ToJSON v) => Text -> v -> Value
 provideAs k v = Object (KeyMap.singleton (Key.fromText k) (toJSON v))
 
-parseDay :: MonadFail m => Text -> m Day
+parseDay :: (MonadFail m) => Text -> m Day
 parseDay = parseTimeM True defaultTimeLocale "%B %e, %Y" . T.unpack
 
 localNormalizedUpdated :: LocalInfo -> Day

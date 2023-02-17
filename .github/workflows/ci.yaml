@@ -15,6 +15,7 @@ jobs:
       - uses: mrkkrp/ormolu-action@v9
   build:
     runs-on: ubuntu-latest
+    permissions: write-all
     needs: ormolu
     steps:
       - uses: actions/checkout@v3

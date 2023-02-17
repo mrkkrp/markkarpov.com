@@ -137,7 +137,6 @@
     rec {
       inherit compiler resume;
       netlify-cli = pkgs.netlify-cli;
-      jq = pkgs.jq;
       app = haskellPackages.markkarpov-com;
       site = mkSite true false;
       site-quick = mkSite false false;

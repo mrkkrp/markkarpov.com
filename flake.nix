@@ -14,7 +14,7 @@
         system = "x86_64-linux";
         config.allowUnfree = true;
       };
-      compiler = "ghc943";
+      compiler = "ghc945";
       appSourceRegex = [
         "^app.*$"
         "^markkarpov-com\.cabal$"
@@ -39,7 +39,6 @@
             "markkarpov-com" = super.callCabal2nix "markkarpov-com"
               (pkgs.lib.sourceByRegex ./. appSourceRegex)
               { };
-            "ghc-syntax-highlighter" = super.ghc-syntax-highlighter_0_0_9_0;
           });
         };
       html5validator = with pkgs.python39Packages; buildPythonPackage rec {

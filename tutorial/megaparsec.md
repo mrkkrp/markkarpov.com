@@ -3083,7 +3083,9 @@ instance TraversableStream MyStream where
       sameLine = sourceLine newSourcePos == sourceLine pstateSourcePos
       newSourcePos =
         case post of
-          [] -> pstateSourcePos
+          [] -> case unMyStream pstateInput of
+            [] -> pstateSourcePos
+            xs -> endPos (last xs)
           (x:_) -> startPos x
       (pre, post) = splitAt (o - pstateOffset) (unMyStream pstateInput)
       (preStr, postStr) = splitAt tokensConsumed (myStreamInput pstateInput)

@@ -8,19 +8,20 @@ high-profile Haskell libraries, tutorials, and a technical blog.
 
 ## Professional experience
 
-* January 14, 2019–present. Senior software engineer at
-  [Tweag](https://tweag.io), Paris, France. Tweag is a software consultancy
-  built around a number of things: Haskell and FP in general,
-  [Nix](https://nixos.org/), Scalable Build systems (think
+* January 14, 2019–present. Senior software engineer (level assigned:
+  principal consultant) at [Tweag](https://tweag.io), Paris, France. Tweag
+  is a software consultancy built around a number of things: Haskell and FP
+  in general, [Nix](https://nixos.org/), Scalable Build systems (think
   [Bazel](https://bazel.build/)), and data science to name a few. I have
-  spent almost 6 years at Tweag and worked with a wide range of clients,
+  spent 6 years at Tweag and worked with a wide range of clients,
   consistently getting positive feedback, exploring the industry through
   working on diverse client projects, and continuously learning. Other than
   doing many FP and Bazel/Nix-related projects, I have had the experience of
   shaping the company in various ways (e.g. introducing knowledge sharing
-  sessions, book budget, and other initiatives), interviewing a lot of
-  candidates, leading teams both at Tweag internally and in the context of
-  client projects, being a hive supporter, and being a blog editor.
+  sessions, book budget, and other initiatives), interviewing many
+  candidates for engineering positions, leading teams both at Tweag
+  internally and in the context of client projects, being a hive supporter,
+  delivery manager, and a blog editor.
 * January 25, 2018–January 11, 2019. Software engineer at Tweag (remote).
 * May 4, 2016–May 20, 2017. Tier 2 Haskell developer at [Stack
   Builders](https://www.stackbuilders.com/) (remote).
@@ -51,7 +52,9 @@ The full list can be found at <https://markkarpov.com/oss.html>.
 * Haskell.
 * Nix is one of the main technologies we use at Tweag. I run NixOS as my
   primary OS and use Nix daily in my work and for personal projects.
-* Build systems (did a number of client projects, notably related to Bazel).
+* Build systems: correctness, reproducibility, and scalability (I did a
+  number of client projects, notably related to Bazel in the context of
+  large industrial users).
 * Strong knowledge of Git.
 * DevOps experience (knowledge of some technologies in this area may be
   rusty).
@@ -64,10 +67,11 @@ The full list can be found at <https://markkarpov.com/oss.html>.
 
 ## Soft skills
 
-* The experience of leading teams.
+* The experience of leading teams and supporting fellow employees.
 * The ability to work with people with diverse personalities and skill
   levels.
-* Good communicator.
+* Good communicator; many years of experience as a consultant in a diverse
+  range of companies.
 * I speak Russian (native), English (fluent), and French (intermediate).
 
 ## Education

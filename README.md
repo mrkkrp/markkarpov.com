@@ -14,7 +14,7 @@ it locally.
 For interactive editing of articles:
 
 ```shell
-$ ./watch.fish
+$ ./watch.sh
 ```
 
 ## License

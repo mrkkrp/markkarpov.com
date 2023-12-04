@@ -19,8 +19,6 @@ import Data.Aeson.Lens
 import qualified Data.HashMap.Strict as HM
 import Data.List (foldl', foldl1', sortOn)
 import Data.List.NonEmpty (NonEmpty (..))
-import Data.Map.Strict (Map)
-import qualified Data.Map.Strict as Map
 import Data.Maybe (fromMaybe, mapMaybe)
 import Data.Ord (Down (..))
 import Data.Set (Set)
@@ -109,8 +107,6 @@ cssR,
   ossR,
   writingR,
   writingPieceR,
-  galleriesR,
-  photoGalleryR,
   learnHaskellR,
   postsR,
   postR,
@@ -128,8 +124,6 @@ aboutR = Ins "about.md" (-<.> "html")
 ossR = Gen "oss.html"
 writingR = Gen "writing.html"
 writingPieceR = Ins "writing/*.md" (-<.> "html")
-galleriesR = Gen "galleries.html"
-photoGalleryR = GenPat "gallery/*.html"
 learnHaskellR = Gen "learn-haskell.html"
 postsR = Gen "posts.html"
 tagsR = GenPat "tag/*.html"
@@ -242,7 +236,6 @@ data MenuItem
   | LearnHaskell
   | OSS
   | Writing
-  | Photos
   | Resume
   | About
   deriving (Eq, Ord, Show, Enum, Bounded)
@@ -254,89 +247,8 @@ menuItemTitle = \case
   LearnHaskell -> "Learn Haskell"
   OSS -> "OSS"
   Writing -> "Writing"
-  Photos -> "Photos"
   Resume -> "Resume"
   About -> "About me"
-
-----------------------------------------------------------------------------
--- Galleries
-
--- | Photo inventory.
-data PhotoInventory = PhotoInventory
-  { photoCameras :: !(Map Text Text),
-    photoLenses :: !(Map Text Text)
-  }
-  deriving (Eq, Show)
-
-instance FromJSON PhotoInventory where
-  parseJSON = withObject "photo inventory" $ \o -> do
-    photoCameras <- o .: "cameras"
-    photoLenses <- o .: "lenses"
-    return PhotoInventory {..}
-
--- | Information about a photo gallery.
-data PhotoGallery = PhotoGallery
-  { pgalleryTitle :: !Text,
-    pgallerySlug :: !FilePath,
-    pgalleryUpdated :: !Day,
-    pgalleryPhotos :: ![Photo]
-  }
-  deriving (Eq, Show)
-
-instance FromJSON PhotoGallery where
-  parseJSON = withObject "photo gallery" $ \o -> do
-    pgalleryTitle <- o .: "title"
-    pgallerySlug <- o .: "slug"
-    pgalleryUpdated <- (o .: "updated") >>= parseDay
-    pgalleryPhotos <- o .: "photos"
-    return PhotoGallery {..}
-
-instance ToJSON PhotoGallery where
-  toJSON PhotoGallery {..} =
-    object
-      [ "title" .= pgalleryTitle,
-        "slug" .= pgallerySlug,
-        "updated" .= renderDay pgalleryUpdated,
-        "photos" .= pgalleryPhotos
-      ]
-
--- | Description of a photo in a gallery.
-data Photo = Photo
-  { photoFile :: !FilePath,
-    photoDate :: !Day,
-    photoCamera :: !Text,
-    photoLens :: !Text,
-    photoAperture :: !Text,
-    photoExposure :: !Text,
-    photoIso :: !Text,
-    photoComment :: !(Maybe Text)
-  }
-  deriving (Eq, Show)
-
-instance FromJSON Photo where
-  parseJSON = withObject "photo" $ \o -> do
-    photoFile <- o .: "file"
-    photoDate <- (o .: "date") >>= parseDay
-    photoCamera <- o .: "camera"
-    photoLens <- o .: "lens"
-    photoAperture <- o .: "aperture"
-    photoExposure <- o .: "exposure"
-    photoIso <- o .: "iso"
-    photoComment <- o .:? "comment"
-    return Photo {..}
-
-instance ToJSON Photo where
-  toJSON Photo {..} =
-    object
-      [ "file" .= photoFile,
-        "date" .= renderDay photoDate,
-        "camera" .= photoCamera,
-        "lens" .= photoLens,
-        "aperture" .= photoAperture,
-        "exposure" .= photoExposure,
-        "iso" .= photoIso,
-        "comment" .= photoComment
-      ]
 
 ----------------------------------------------------------------------------
 -- Build system
@@ -465,38 +377,6 @@ main = shakeArgs shakeOptions $ do
       ["about", "default"]
       (Just content)
       [menuItem About env, mkTitle About, v]
-      output
-  buildRoute galleriesR $ \_ output -> do
-    env <- commonEnv
-    ts <- templates
-    gs <- getPhotoGalleries env
-    need (photoGalleryToPath <$> gs)
-    renderAndWrite
-      ts
-      ["galleries", "default"]
-      Nothing
-      [ menuItem Photos env,
-        provideAs "gallery" gs,
-        mkTitle Photos
-      ]
-      output
-  buildRoute photoGalleryR $ \_ output -> do
-    env <- commonEnv
-    ts <- templates
-    inventory <- getPhotoInventory env
-    gs <- resolvePhotoInventory inventory <$> getPhotoGalleries env
-    thisGallery <- case dropWhile ((/= output) . photoGalleryToPath) gs of
-      [] ->
-        fail $
-          "Trying to build " ++ output ++ " but no matching galleries found"
-      (g : _) -> return g
-    renderAndWrite
-      ts
-      ["gallery", "default"]
-      Nothing
-      [ menuItem Photos env,
-        toJSON thisGallery
-      ]
       output
   buildRoute ossR $ \_ output ->
     justFromTemplate (Right OSS) "oss" output
@@ -716,40 +596,6 @@ filterByTag tag = filter f
     f = \case
       InternalPost LocalInfo {..} -> tag `elem` localTags
       ExternalPost {} -> False
-
-getPhotoInventory :: Value -> Action PhotoInventory
-getPhotoInventory o =
-  case o ^? key "photo_inventory" of
-    Nothing -> error "Failed to find photo inventory"
-    Just v -> interpretValue v
-
-getPhotoGalleries :: Value -> Action [PhotoGallery]
-getPhotoGalleries o =
-  case o ^? key "photo_gallery" of
-    Nothing -> error "Failed to find definitions of galleries"
-    Just v -> interpretValue v
-
-photoGalleryToPath :: PhotoGallery -> FilePath
-photoGalleryToPath PhotoGallery {..} =
-  outdir </> "gallery" </> pgallerySlug <.> "html"
-
-resolvePhotoInventory :: PhotoInventory -> [PhotoGallery] -> [PhotoGallery]
-resolvePhotoInventory PhotoInventory {..} = fmap $ \g ->
-  g {pgalleryPhotos = resolvePhoto <$> pgalleryPhotos g}
-  where
-    resolvePhoto p =
-      p
-        { photoCamera = case Map.lookup (photoCamera p) photoCameras of
-            Nothing ->
-              error $
-                "Failed to resolve camera: " ++ T.unpack (photoCamera p)
-            Just x -> x,
-          photoLens = case Map.lookup (photoLens p) photoLenses of
-            Nothing ->
-              error $
-                "Failed to resolve lens: " ++ T.unpack (photoLens p)
-            Just x -> x
-        }
 
 getPostHelper :: Value -> FilePath -> Action (Value, TL.Text)
 getPostHelper env path = do

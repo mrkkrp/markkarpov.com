@@ -9,9 +9,8 @@ authored some [open source projects][oss], [blog posts][posts], and
 moved to France.
 
 I enjoy traveling and I am an avid reader. My hobbies include
-[writing](/writing.html), music, [photography](/galleries.html), and
-painting. I'm working on adding some of my creative output to this site,
-stay tuned!
+[writing](/writing.html), music, photography, and painting. I'm working on
+adding some of my creative output to this site, stay tuned!
 
 Here are my contacts and social accounts:
 

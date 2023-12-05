@@ -38,6 +38,5 @@ executable mk-com
         stache,
         text,
         time,
-        unordered-containers,
         vector,
         yaml

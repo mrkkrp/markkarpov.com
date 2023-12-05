@@ -16,9 +16,9 @@ import Data.Aeson
 import Data.Aeson.Key qualified as Key
 import Data.Aeson.KeyMap qualified as KeyMap
 import Data.Aeson.Lens
-import Data.HashMap.Strict qualified as HM
 import Data.List (foldl', foldl1', sortOn)
 import Data.List.NonEmpty (NonEmpty (..))
+import Data.Map.Strict qualified as Map
 import Data.Maybe (fromMaybe, mapMaybe)
 import Data.Ord (Down (..))
 import Data.Set (Set)
@@ -79,9 +79,9 @@ buildRoute (Ins pat mapOut') f = do
     getMatchingFiles pat >>= need . fmap mapOut
   inputMap <- fmap ($ ()) . newCache $ \() -> do
     ifiles <- getMatchingFiles pat
-    return $ HM.fromList (zip (mapOut <$> ifiles) ifiles)
+    return $ Map.fromList (zip (mapOut <$> ifiles) ifiles)
   mapOut pat %> \output -> do
-    input <- (HM.! output) <$> inputMap
+    input <- (Map.! output) <$> inputMap
     f input output
 buildRoute (Gen outFile') f = do
   let outFile = outdir </> outFile'

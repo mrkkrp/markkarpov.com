@@ -18,7 +18,7 @@ source-repository head
 executable mk-com
     main-is:          Main.hs
     hs-source-dirs:   app
-    default-language: Haskell2010
+    default-language: GHC2021
     ghc-options:
         -O2 -Wall -threaded -Wall -Werror -Wredundant-constraints
         -Wpartial-fields -Wunused-packages

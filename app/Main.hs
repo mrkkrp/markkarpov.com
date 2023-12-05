@@ -13,35 +13,35 @@ import Control.Lens hiding ((.=), (<.>))
 import Control.Monad
 import Control.Monad.IO.Class
 import Data.Aeson
-import qualified Data.Aeson.Key as Key
-import qualified Data.Aeson.KeyMap as KeyMap
+import Data.Aeson.Key qualified as Key
+import Data.Aeson.KeyMap qualified as KeyMap
 import Data.Aeson.Lens
-import qualified Data.HashMap.Strict as HM
+import Data.HashMap.Strict qualified as HM
 import Data.List (foldl', foldl1', sortOn)
 import Data.List.NonEmpty (NonEmpty (..))
 import Data.Maybe (fromMaybe, mapMaybe)
 import Data.Ord (Down (..))
 import Data.Set (Set)
-import qualified Data.Set as E
+import Data.Set qualified as E
 import Data.Text (Text)
-import qualified Data.Text as T
-import qualified Data.Text.IO as T
-import qualified Data.Text.Lazy as TL
-import qualified Data.Text.Lazy.IO as TL
+import Data.Text qualified as T
+import Data.Text.IO qualified as T
+import Data.Text.Lazy qualified as TL
+import Data.Text.Lazy.IO qualified as TL
 import Data.Time
-import qualified Data.Time.Format.ISO8601 as ISO8601
-import qualified Data.Vector as V
-import qualified Data.Yaml as Y
+import Data.Time.Format.ISO8601 qualified as ISO8601
+import Data.Vector qualified as V
+import Data.Yaml qualified as Y
 import Development.Shake hiding (Verbosity (..))
 import Development.Shake.FilePath
-import qualified Lucid as L
-import qualified Text.MMark as MMark
-import qualified Text.MMark.Extension as Ext
-import qualified Text.MMark.Extension.Common as Ext
-import qualified Text.Megaparsec as M
+import Lucid qualified as L
+import Text.MMark qualified as MMark
+import Text.MMark.Extension qualified as Ext
+import Text.MMark.Extension.Common qualified as Ext
+import Text.Megaparsec qualified as M
 import Text.Mustache
 import Text.URI (URI)
-import qualified Text.URI as URI
+import Text.URI qualified as URI
 import Text.URI.Lens (uriPath, uriScheme)
 import Text.URI.QQ (scheme)
 

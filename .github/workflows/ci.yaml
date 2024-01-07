@@ -22,7 +22,7 @@ jobs:
       - uses: cachix/install-nix-action@v24
       - uses: cachix/cachix-action@v13
         with:
-          name: markkarpov-com
+          name: markkarpov-sites
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
       - name: Build the environment
         run: |

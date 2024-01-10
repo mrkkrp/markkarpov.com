@@ -34,9 +34,15 @@ jobs:
           then nix build '.#site'
           else nix build '.#site-preview'
           fi
+          mkdir publish/
           # Netlify does not see a symlink as a directory, so we have to
           # copy the contents.
-          cp -R result/ publish/
+          cp -R result/* publish/
+          # The images are relatively heavy so we don't want to include them
+          # in the Nix derivation in order to avoid blowing up the Cachix
+          # cache. Therefore, the static/ directory has to be copied
+          # separately.
+          cp -R --parents static/ publish/
       - name: Deploy to Netlify (preview)
         if: github.ref != 'refs/heads/master'
         uses: nwtgck/actions-netlify@v2

@@ -28,7 +28,6 @@
         "^post.*$"
         "^resume$"
         "^resume/resume\.md$"
-        "^static.*$"
         "^templates.*$"
         "^tutorial.*$"
         "^writing.*$"

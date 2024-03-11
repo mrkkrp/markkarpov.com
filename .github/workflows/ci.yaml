@@ -45,7 +45,7 @@ jobs:
           cp -R --parents static/ publish/
       - name: Deploy to Netlify (preview)
         if: github.ref != 'refs/heads/master'
-        uses: nwtgck/actions-netlify@v2
+        uses: nwtgck/actions-netlify@v3
         with:
           publish-dir: ./publish
           netlify-config-path: ./netlify.toml

@@ -46,7 +46,7 @@ Let's list some uses of TH:
   `aeson` and `lens`.
 
 * *Creation of TH DSLs* that are integrated into systems built in Haskell.
-  Examples of such DLSs are the language for model declaration used in
+  Examples of such DSLs are the language for model declaration used in
   [`persistent`][persistent], and various other mini-languages used in the
   [`yesod`][yesod] web framework.
 

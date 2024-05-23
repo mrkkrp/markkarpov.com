@@ -2252,8 +2252,8 @@ Common pieces of advice:
   whenever you can. [This blog post][more-speed-more-power-hope] explains
   why they are so fast.
 
-* Avoid `oneOf` and `noneOf` preferring `satisfy` and `notChar` whenever
-  possible.
+* Avoid `oneOf` and `noneOf` preferring `satisfy` and `anySingleBut`
+  whenever possible.
 
 While most of the points above do not require additional comment, I think it
 would be beneficial to get into the habit of using the newer fast

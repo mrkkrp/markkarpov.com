@@ -8,10 +8,6 @@ authored some [open source projects][oss], [blog posts][posts], and
 [tutorials][tutorials]. In the beginning of 2018 I joined Tweag, and soon
 moved to France.
 
-I enjoy traveling and I am an avid reader. My hobbies include
-[writing](/writing.html), music, photography, and painting. I'm working on
-adding some of my creative output to this site, stay tuned!
-
 Here are my contacts and social accounts:
 
 * <fa:envelope> [x](social:email)

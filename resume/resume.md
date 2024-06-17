@@ -2,18 +2,18 @@
 
 I am a software engineer who applies the principles of functional
 programming to solve real-world problems. I have been working as a
-consultant in the domain of functional programming, reproducible build
-systems, and Nix for more than 7 years. My personal projects include
+consultant in the domain of reproducible build systems, functional
+programming, and Nix for more than 7 years. My personal projects include
 high-profile Haskell libraries, tutorials, and a technical blog.
 
 ## Professional experience
 
-* January 14, 2019–present. Senior software engineer (level assigned:
-  principal consultant) at [Tweag](https://tweag.io), Paris, France. Tweag
-  is a software consultancy built around a number of things: Haskell and FP
-  in general, [Nix](https://nixos.org/), Scalable Build systems (think
+* 2023–2024. Principal consultant at Tweag. Primarily Bazel consulting for
+  big industrial users of this build system. Tweag is a software consultancy
+  built around a number of things: Haskell and FP in general,
+  [Nix](https://nixos.org/), Scalable Build systems (think
   [Bazel](https://bazel.build/)), and data science to name a few. I have
-  spent 6 years at Tweag and worked with a wide range of clients,
+  spent 7 years at Tweag and worked with a wide range of clients,
   consistently getting positive feedback, exploring the industry through
   working on diverse client projects, and continuously learning. Other than
   doing many FP and Bazel/Nix-related projects, I have had the experience of
@@ -22,6 +22,8 @@ high-profile Haskell libraries, tutorials, and a technical blog.
   candidates for engineering positions, leading teams both at Tweag
   internally and in the context of client projects, being a hive supporter,
   delivery manager, and a blog editor.
+* January 14, 2019–2023. Senior software engineer at
+  [Tweag](https://tweag.io), Paris, France.
 * January 25, 2018–January 11, 2019. Software engineer at Tweag (remote).
 * May 4, 2016–May 20, 2017. Tier 2 Haskell developer at [Stack
   Builders](https://www.stackbuilders.com/) (remote).
@@ -49,12 +51,12 @@ The full list can be found at <https://markkarpov.com/oss.html>.
 
 ## Technologies
 
-* Haskell.
-* Nix is one of the main technologies we use at Tweag. I run NixOS as my
-  primary OS and use Nix daily in my work and for personal projects.
 * Build systems: correctness, reproducibility, and scalability (I did a
   number of client projects, notably related to Bazel in the context of
   large industrial users).
+* Nix is one of the main technologies we use at Tweag. I run NixOS as my
+  primary OS and use Nix daily in my work and for personal projects.
+* Haskell.
 * Strong knowledge of Git.
 * DevOps experience (knowledge of some technologies in this area may be
   rusty).

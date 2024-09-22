@@ -763,7 +763,7 @@ Let's see what is going on:
   that counts the number of values that inhabit the type, this is done in
   `countTypeE`.
 
-* For `NormalC` and `RecC` constructors we just multiple expressions we've
+* For `NormalC` and `RecC` constructors we just multiply expressions we've
   got for the individual types, this is done in `handleCon` (we handle
   product type this way).
 
@@ -1191,7 +1191,7 @@ Finally, in our last example, let's re-implement (in a simplified form) the
 popular package [`file-embed`][file-embed], which allows to load contents of
 a file and splice them as a `IsString a => a` value (the type of string
 literals in Haskell in the presence of the `OverloadedStrings` language
-extension.)
+extension).
 
 If we have this in `TH.hs` file:
 

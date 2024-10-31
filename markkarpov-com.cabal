@@ -15,9 +15,14 @@ source-repository head
     type:     git
     location: https://github.com/mrkkrp/markkarpov.com.git
 
-executable mk-com
-    main-is:          Main.hs
-    hs-source-dirs:   app
+library
+    exposed-modules:
+        Markdown
+        Post
+        Route
+        Utils
+
+    hs-source-dirs:   lib
     default-language: GHC2021
     ghc-options:
         -O2 -Wall -threaded -Wall -Werror -Wredundant-constraints
@@ -35,8 +40,26 @@ executable mk-com
         mmark-ext,
         modern-uri,
         shake,
+        text,
+        time
+
+executable mk-com
+    main-is:          Main.hs
+    hs-source-dirs:   app
+    default-language: GHC2021
+    ghc-options:
+        -O2 -Wall -threaded -Wall -Werror -Wredundant-constraints
+        -Wpartial-fields -Wunused-packages
+
+    build-depends:
+        aeson >=2,
+        base,
+        containers,
+        lens,
+        lens-aeson >=1.2,
+        markkarpov-com,
+        shake,
         stache,
         text,
-        time,
         vector,
         yaml

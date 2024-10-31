@@ -5,7 +5,7 @@
 </h1>
 
 {{# tag }}
-<a href="/tag/{{ . }}.html" class="badge bg-primary">{{ . }}</a>
+<a href="{{ page }}" class="badge bg-primary">{{ value }}</a>
 {{/ tag }}
 
 <table class="table table-striped mt-3">
@@ -18,7 +18,7 @@
       <span class="fa fa-external-link"></span>
       {{/ url }}
       {{^ url }}
-      <a href="{{ file }}">{{ title }}</a>
+      <a href="{{ page }}">{{ title }}</a>
       {{/ url }}
     </td>
   </tr>

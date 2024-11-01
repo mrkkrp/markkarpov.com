@@ -29,6 +29,7 @@
         "^post.*$"
         "^resume$"
         "^resume/resume\.md$"
+        "^robots\.txt$"
         "^templates.*$"
         "^tutorial.*$"
         "^writing.*$"
@@ -98,12 +99,12 @@
         buildPhase = ''
           cp ${resume}/resume.pdf resume/resume.pdf
           mk-com
-          echo 'User-agent: *' > _build/robots.txt
         '' + (if isPreview
         then ''
+          echo 'User-agent: *' > _build/robots.txt
           echo 'Disallow: /' >> _build/robots.txt
         ''
-        else "");
+        else "cp robots.txt _build/robots.txt");
         inherit doCheck;
         checkPhase = ''
           vnu --version

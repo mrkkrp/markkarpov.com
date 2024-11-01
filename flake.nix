@@ -41,24 +41,6 @@
               { };
           });
         };
-      html5validator = with pkgs.python39Packages; buildPythonPackage rec {
-        pname = "html5validator";
-        version = "0.4.0";
-        src = fetchPypi {
-          inherit pname version;
-          sha256 = "sha256-PObj5zbJx7N+XibrFzugd3rgB3ZUm9YIkz+hSVUmDUk=";
-        };
-        propagatedBuildInputs = [
-          pkgs.openjdk
-          pyyaml
-        ];
-        doCheck = false;
-        meta = {
-          description = "Command line tool that tests files for HTML5 validity";
-          homepage = https://github.com/svenkreiss/html5validator;
-          license = pkgs.lib.licenses.mit;
-        };
-      };
       texlive = pkgs.texlive.combine {
         inherit (pkgs.texlive)
           cm-super
@@ -107,8 +89,8 @@
         name = "mk-com";
         buildInputs = [
           haskellPackages.markkarpov-com
-          html5validator
           pkgs.glibcLocales
+          pkgs.validator-nu
           pkgs.zlib
         ];
         LANG = "en_US.UTF-8";
@@ -124,8 +106,8 @@
         else "");
         inherit doCheck;
         checkPhase = ''
-          html5validator --version
-          html5validator --root _build/ --show-warnings --ignore "This document appears to be written in"
+          vnu --version
+          vnu --skip-non-html --Werror --verbose _build/
         '';
         installPhase = ''
           mkdir "$out"

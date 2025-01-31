@@ -1,6 +1,6 @@
 # Mark Karpov's personal web site
 
-![CI](https://github.com/mrkkrp/markkarpov.com/workflows/CI/badge.svg?branch=master)
+[![CI](https://github.com/mrkkrp/markkarpov.com/actions/workflows/ci.yaml/badge.svg)](https://github.com/mrkkrp/markkarpov.com/actions/workflows/ci.yaml)
 
 To build the site:
 

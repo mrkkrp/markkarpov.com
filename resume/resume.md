@@ -7,30 +7,15 @@ programming, and Nix for more than 7 years.
 
 ## Professional experience
 
-* 2023–present. **Principal consultant at [Modus Create][modus].** As a
-  consultant, I spend most of my time helping our clients to achieve their
-  goals through use of [Bazel][bazel]. This includes ensuring hermeticity
-  and reproducibility of builds, optimization of build speed and CI times,
-  dependency management, integration between various tools and the build
-  system. Many of our clients are large companies, in particular in the
-  automotive industry and robotics.
-
-  I have spent more than 7 years at [Tweag][tweag] and Modus Create (which
-  acquired the former in 2022). During this time I have worked with a number
-  of clients ranging from startups to large international corporations, in
-  various industries and domains. In a number of projects my
-  responsibilities included leading teams. On some occasions I was invited
-  as a Bazel architect to help plan large Bazel migration efforts. Besides
-  my direct duties as a consultant, I made contributions to Tweag's culture
-  at its earlier stages by introducing some initiatives such as knowledge
-  sharing sessions and the book budget. Tweag/Modus Create have been
-  increasingly relying on my interviewing skills. I have conducted around
-  200 interviews over the years and virtually every member of the Scalable
-  Builds technical group since 2022 had at least one interview with me. I
-  regularly participate in sales and pre-sales calls. Otherwise at different
-  times my additional responsibilities included: blog editor, delivery
-  manager, and hive supporter (a “hive” being an internal unit of
-  organization at the company).
+* 2025–present. **Senior principal scalable builds engineer at [Modus
+  Create][modus].** As a consultant, I spend most of my time helping our
+  clients to achieve their goals through use of [Bazel][bazel]. This
+  includes ensuring hermeticity and reproducibility of builds, optimization
+  of build speed and CI times, dependency management, integration between
+  various tools and the build system. Many of our clients are large
+  companies, in particular in the automotive industry and robotics. I am
+  also a manager with around 8 reports.
+* 2023–2025. **Principal consultant at [Modus Create][modus].**
 * 2019–2023. **Senior software engineer at Tweag** in Paris, France.
 * 2018–2019. **Software engineer at Tweag** (remote).
 * 2016–2017. **Tier 2 Haskell developer at [Stack Builders][stackbuilders]**

@@ -78,7 +78,7 @@ and for Tweag/Modus Create. Over a period of time I was a blog editor for
 [modus]: https://moduscreate.com/
 [stackbuilders]: https://www.stackbuilders.com/
 [haskell]: https://www.haskell.org/
-[ormolu]: https://github.com/tweag/ormolu
+[ormolu]: https://github.com/mrkkrp/ormolu
 [megaparsec]: https://github.com/mrkkrp/megaparsec
 [req]: https://github.com/mrkkrp/req
 [hermetic-bazel]: https://www.tweag.io/blog/2022-09-15-hermetic-bazel/

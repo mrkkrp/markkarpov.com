@@ -233,7 +233,7 @@ Happy parsing!
 [replace-megaparsec]: https://hackage.haskell.org/package/replace-megaparsec
 [idris]: https://github.com/idris-lang/Idris-dev
 [dhall]: https://github.com/dhall-lang/dhall-haskell
-[ormolu]: https://github.com/tweag/ormolu
+[ormolu]: https://github.com/mrkkrp/ormolu
 [hacking]: https://github.com/mrkkrp/megaparsec/blob/master/HACKING.md
 [patches]: https://github.com/mrkkrp/megaparsec/tree/31b917b1297950c22925f9ee7f7a588834293103/nix/patches
 [location-setting-example]: https://github.com/mmark-md/mmark/blob/8f5534d8068c2b7a139b893639ee5920bcaedd84/Text/MMark/Parser.hs#L787-L790

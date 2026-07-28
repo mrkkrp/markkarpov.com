@@ -1,14 +1,14 @@
 <h1>Learn Haskell</h1>
 
 <h2>My tutorials</h2>
-<table class="table table-striped">
+<table class="site-table fixed-table">
   {{# my_tutorials }}
   <tr>
-    <td>{{ published }}</td>
+    <td class="whitespace-nowrap text-neutral-500">{{ published }}</td>
     <td>
       {{# url }}
-      <a href="{{ . }}" target="_blank">{{ title }}</a>
-      <span class="fa fa-external-link"></span>
+      <a href="{{ . }}" target="_blank" rel="noopener noreferrer">{{ title }}</a>
+      {{> icon-external-link }}
       {{/ url }}
       {{^ url }}
       <a href="{{ page }}">{{ title }}</a>
@@ -19,13 +19,13 @@
 </table>
 
 <h2>Recommended tutorials</h2>
-<table class="table table-striped">
+<table class="site-table fixed-table">
   {{# recommended_tutorials }}
   <tr>
     <td>{{ topic }}</td>
     <td>
-      <a href="{{ url }}" target="_blank">{{ title }}</a>
-      <span class="fa fa-external-link"></span>
+      <a href="{{ url }}" target="_blank" rel="noopener noreferrer">{{ title }}</a>
+      {{> icon-external-link }}
     </td>
   </tr>
   {{/ recommended_tutorials }}

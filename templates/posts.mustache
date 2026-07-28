@@ -1,21 +1,24 @@
-<h1>Posts
-  <a href="/feed.atom" class="float-end">
-    <span class="fa fa-rss"></span>
+<h1 class="flex items-center justify-between gap-4">
+  <span>Posts</span>
+  <a href="/feed.atom" title="Subscribe to the Atom feed"
+     class="inline-flex items-center gap-1.5 rounded-md border border-neutral-300 px-2.5 py-1 text-sm font-medium text-neutral-600 no-underline hover:border-(--color-primary) hover:text-(--color-primary)">
+    {{> icon-rss }}
+    <span>RSS</span>
   </a>
 </h1>
 
 {{# tag }}
-<a href="{{ page }}" class="badge bg-primary">{{ value }}</a>
+<a href="{{ page }}" class="inline-block rounded px-2 py-0.5 text-sm no-underline bg-(--color-tag-bg) text-(--color-tag-text) hover:bg-(--color-tag-bg-hover) hover:text-(--color-tag-text)">{{ value }}</a>
 {{/ tag }}
 
-<table class="table table-striped mt-3">
+<table class="site-table mt-3">
   {{# post }}
   <tr>
-    <td>{{ published }}</td>
+    <td class="whitespace-nowrap text-neutral-500">{{ published }}</td>
     <td>
       {{# url }}
-      <a href="{{ . }}" target="_blank">{{ title }}</a>
-      <span class="fa fa-external-link"></span>
+      <a href="{{ . }}" target="_blank" rel="noopener noreferrer">{{ title }}</a>
+      {{> icon-external-link }}
       {{/ url }}
       {{^ url }}
       <a href="{{ page }}">{{ title }}</a>

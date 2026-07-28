@@ -13,7 +13,6 @@ module Post
 where
 
 import Data.Aeson
-import Data.List (foldl')
 import Data.Maybe (fromMaybe)
 import Data.Set (Set)
 import Data.Set qualified as Set

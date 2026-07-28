@@ -1,12 +1,14 @@
 <h1>{{ title }}</h1>
 
-{{# tag }}
-<a href="{{ page }}" class="badge bg-primary">{{ value }}</a>
-{{/ tag }}
+<div class="mt-4 flex flex-wrap gap-2">
+  {{# tag }}
+  <a href="{{ page }}" class="inline-block rounded px-2 py-0.5 text-sm no-underline bg-(--color-tag-bg) text-(--color-tag-text) hover:bg-(--color-tag-bg-hover) hover:text-(--color-tag-text)">{{ value }}</a>
+  {{/ tag }}
+</div>
 
 {{# date }}
-<p>
-  <em class="text-muted">
+<p class="mt-4 mb-8">
+  <em class="text-neutral-500">
     Published on {{ published }}{{# updated }}, last updated {{ . }}{{/ updated }}
   </em>
 </p>

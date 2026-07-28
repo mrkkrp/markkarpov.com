@@ -253,10 +253,15 @@ renderAndWrite ts pnames minner context out =
   liftIO . TL.writeFile out $
     foldl f (fromMaybe TL.empty minner) pnames
   where
+    -- The site-root-relative URL of the page being rendered. Used for
+    -- canonical and Open Graph URLs.
+    pageUrl = "/" ++ dropDirectory1 out
     f inner pname =
       renderMustache
         (selectTemplate pname ts)
-        (mkContext (provideAs "inner" inner : context))
+        ( mkContext
+            (provideAs "page_url" pageUrl : provideAs "inner" inner : context)
+        )
 
 menuItem :: MenuItem -> Value -> Value
 menuItem item = over (key "main_menu" . _Array) . V.map $ \case

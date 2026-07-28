@@ -20,6 +20,9 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            accept-flake-config = true
       - uses: cachix/cachix-action@v17
         with:
           name: markkarpov-sites
@@ -38,11 +41,14 @@ jobs:
           # Netlify does not see a symlink as a directory, so we have to
           # copy the contents.
           cp -R result/* publish/
+          # Files copied out of the read-only Nix store are read-only; make
+          # them writable so we can merge the images into publish/static/ below.
+          chmod -R u+w publish/
           # The images are relatively heavy so we don't want to include them
           # in the Nix derivation in order to avoid blowing up the Cachix
-          # cache. Therefore, the static/ directory has to be copied
-          # separately.
-          cp -R --parents static/ publish/
+          # cache. Therefore, the static/img/ directory has to be copied
+          # separately. (The CSS is embedded in the site derivation.)
+          cp -R --parents static/img/ publish/
       - name: Deploy to Netlify (preview)
         if: github.ref != 'refs/heads/master'
         uses: nwtgck/actions-netlify@v4

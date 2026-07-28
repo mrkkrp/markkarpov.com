@@ -1,0 +1,5 @@
+packages: .
+
+-- Pin the Hackage index so dependency resolution is reproducible and
+-- cache-friendly. Bump this date to pull in newer package versions.
+index-state: 2026-07-01T00:00:00Z

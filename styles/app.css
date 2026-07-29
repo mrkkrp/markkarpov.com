@@ -340,3 +340,22 @@
   .source-code .ra { color: var(--color-code-func); }       /* record accessors */
   .source-code .co { color: var(--color-code-comment); font-style: italic; } /* comments */
 }
+
+/* On narrow screens a 15rem first column leaves too little room for the second
+   column, and the `whitespace-nowrap` first cells (Posts, Learn Haskell) can't
+   shrink, so the table overflows the viewport. Give the fixed column a smaller
+   share of the width and let cells wrap instead of pushing past the edge. This
+   rule is intentionally UNLAYERED so it beats the inline Tailwind
+   `whitespace-nowrap` utility (layered CSS loses to unlayered regardless of
+   specificity), the same reason the responsive navbar rule above is unlayered. */
+@media (max-width: 767px) {
+  .fixed-table td:first-child,
+  .fixed-table th:first-child {
+    width: 40%;
+  }
+  .site-table td,
+  .site-table th {
+    overflow-wrap: break-word;
+    white-space: normal;
+  }
+}

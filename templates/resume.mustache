@@ -1,14 +1,3 @@
 <h1>{{ title }}</h1>
 
-<p class="flex flex-col gap-1">
-  <span>{{> icon-envelope }}
-  <a href="mailto:{{ social.email }}">{{ social.email }}</a></span>
-  <span>{{> icon-github }}
-  <a href="{{ social.github }}">{{ social.github }}</a></span>
-  <span>{{> icon-linkedin }}
-  <a href="{{ social.linkedin }}">{{ social.linkedin }}</a></span>
-  <span>{{> icon-file-pdf }}
-  <a href="{{ resume_pdf_page }}">PDF version of the resume</a></span>
-</p>
-
 {{& inner }}

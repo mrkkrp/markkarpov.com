@@ -130,18 +130,15 @@ main = shakeArgs shakeOptions $ do
     templates <- templateCache
     need [input]
     (v, content) <- getMd input
-    let resumePdfPage = Route.page Route.resumePdf Route.resumePdfInput
     renderAndWrite
       templates
       ["resume", "default"]
       (Just content)
       [ menuItem Resume env,
         mkTitle Resume,
-        v,
-        provideAs "resume_pdf_page" resumePdfPage
+        v
       ]
       output
-  Route.rule Route.resumePdf copyFile'
   Route.rule Route.about $ \input output -> do
     env <- envCache
     templates <- templateCache

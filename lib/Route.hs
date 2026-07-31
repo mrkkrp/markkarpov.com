@@ -11,8 +11,6 @@ module Route
     post,
     posts,
     resumeHtml,
-    resumePdf,
-    resumePdfInput,
     tags,
     tutorial,
     postPattern,
@@ -58,19 +56,15 @@ notFound = Fixed "404.html"
 oss = Fixed "oss.html"
 posts = Fixed "posts.html"
 
-about, post, resumeHtml, resumePdf, tutorial :: Route FilePath
+about, post, resumeHtml, tutorial :: Route FilePath
 about = FromInput "about.md" (-<.> "html")
 post = FromInput postPattern (-<.> "html")
 resumeHtml = FromInput "resume/resume.md" (\x -> dropDirectory1 x -<.> "html")
-resumePdf = FromInput resumePdfInput dropDirectory1
 tutorial = FromInput tutorialPattern (-<.> "html")
 
 postPattern, tutorialPattern :: FilePattern
 postPattern = "post/*.md"
 tutorialPattern = "tutorial/*.md"
-
-resumePdfInput :: FilePath
-resumePdfInput = "resume/resume.pdf"
 
 tags :: Action (Set Text) -> Route Text
 tags = OpenSet "tag/*.html" (\tag -> "tag" </> T.unpack tag <.> ".html")

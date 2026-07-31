@@ -33,7 +33,6 @@
       };
       hsPkgs = hsProject.hsPkgs;
       mk-com = hsPkgs.markkarpov-com.components.exes.mk-com;
-      stache = hsProject.tool "stache" "latest";
 
       siteSourceRegex = [
         "^about\.md$"
@@ -63,14 +62,11 @@
           xcolor
           xelatex-dev;
       };
-      resume = pkgs.stdenv.mkDerivation {
+      mkResume = site: pkgs.stdenv.mkDerivation {
         name = "resume-in-pdf";
-        src = pkgs.lib.sourceByRegex ./. [
-          "^env\.yaml$"
-          "^resume.*$"
-        ];
+        dontUnpack = true;
         buildInputs = [
-          stache
+          pkgs.htmlq
           pkgs.pandoc
           texlive
         ];
@@ -81,18 +77,17 @@
           ];
         };
         buildPhase = ''
-          stache -o resume/pdf-only-prefix.md -c env.yaml pdf-only-prefix resume
-          pushd resume
-          pandoc --from=commonmark --to=pdf --pdf-engine=xelatex --metadata-file=metadata.yaml pdf-only-prefix.md resume.md -o resume.pdf
-          popd
+          htmlq --remove-nodes 'div.content > ul:first-of-type > li:last-child' --remove-nodes 'a.anchor' --remove-nodes 'svg' 'div.content' < ${site}/resume.html > resume-body.html
+          sed -i 's,<h1>Resume</h1>,<h1>Mark Karpov</h1>,' resume-body.html
+          pandoc --from=html --to=pdf --pdf-engine=xelatex --metadata-file=${./resume/metadata.yaml} resume-body.html -o resume.pdf
         '';
         installPhase = ''
           mkdir "$out"
-          cp resume/resume.pdf $out/resume.pdf
+          cp resume.pdf $out/resume.pdf
         '';
       };
-      mkSite = doCheck: isPreview: pkgs.stdenv.mkDerivation {
-        name = "mk-com";
+      mkSiteInner = doCheck: isPreview: pkgs.stdenv.mkDerivation {
+        name = "mk-com-inner";
         buildInputs = [
           mk-com
           pkgs.glibcLocales
@@ -102,7 +97,6 @@
         LANG = "en_US.UTF-8";
         src = pkgs.lib.sourceByRegex ./. siteSourceRegex;
         buildPhase = ''
-          cp ${resume}/resume.pdf resume/resume.pdf
           mk-com
           mkdir -p _build/static/css
           cp ${styles}/css/styles.css _build/static/css/styles.css
@@ -122,6 +116,17 @@
           cp -r _build/. "$out/"
         '';
       };
+      mkSite = doCheck: isPreview:
+        let
+          site = mkSiteInner doCheck isPreview;
+          resume = mkResume site;
+        in
+        pkgs.runCommand "mk-com" { } ''
+          mkdir "$out"
+          cp -r ${site}/. "$out/"
+          chmod -R u+w "$out"
+          cp ${resume}/resume.pdf "$out/resume.pdf"
+        '';
       styles = pkgs.stdenv.mkDerivation {
         name = "mk-com-styles";
         src = pkgs.lib.sourceByRegex ./. [
@@ -144,7 +149,8 @@
       };
     in
     rec {
-      inherit compiler resume styles;
+      inherit compiler styles;
+      resume = mkResume site-quick;
       netlify-cli = pkgs.netlify-cli;
       app = mk-com;
       site = mkSite true false;

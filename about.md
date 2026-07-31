@@ -24,10 +24,11 @@ Scalable Builds department.
 
 Here are my contacts and social accounts:
 
-* <fa:envelope> [x](social:email)
-* <fa:github> [GitHub](social:github)
-* <fa:reddit> [Reddit](social:reddit)
-* <fa:linkedin> [LinkedIn](social:linkedin)
+* NOBULLETS
+  * <fa:envelope> [x](social:email)
+  * <fa:github> [x](social:github)
+  * <fa:reddit> [x](social:reddit)
+  * <fa:linkedin> [x](social:linkedin)
 
 [chateau]: https://en.wikipedia.org/wiki/Ch%C3%A2teau-Thierry
 [tweag]: https://tweag.io

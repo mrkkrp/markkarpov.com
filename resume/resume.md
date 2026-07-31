@@ -1,3 +1,9 @@
+* NOBULLETS
+  * <fa:envelope> [x](social:email)
+  * <fa:github> [x](social:github)
+  * <fa:linkedin> [x](social:linkedin)
+  * <fa:file-pdf> [PDF version of the resume](/resume.pdf "_blank")
+
 ## Summary
 
 I am a software engineer who applies the principles of functional

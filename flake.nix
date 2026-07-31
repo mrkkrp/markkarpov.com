@@ -52,6 +52,7 @@
           enumitem
           etoolbox
           fontspec
+          lastpage
           microtype
           pgf
           scheme-basic
@@ -68,6 +69,7 @@
         buildInputs = [
           pkgs.htmlq
           pkgs.pandoc
+          pkgs.python3Packages.fonttools
           texlive
         ];
         LANG = "en_US.UTF-8";
@@ -77,9 +79,22 @@
           ];
         };
         buildPhase = ''
+          # The website's sans-serif is Noto Sans. google-fonts ships it only as
+          # a variable font, which xelatex's PDF backend (xdvipdfmx) cannot
+          # embed, so instance out static Regular/Bold weights to feed pandoc.
+          mkdir fonts
+          notosans='${pkgs.google-fonts}/share/fonts/truetype/NotoSans[wdth,wght].ttf'
+          fonttools varLib.instancer "$notosans" wght=400 wdth=100 -o fonts/NotoSans-Regular.ttf
+          fonttools varLib.instancer "$notosans" wght=700 wdth=100 -o fonts/NotoSans-Bold.ttf
+
           htmlq --remove-nodes 'div.content > ul:first-of-type > li:last-child' --remove-nodes 'a.anchor' --remove-nodes 'svg' 'div.content' < ${site}/resume.html > resume-body.html
           sed -i 's,<h1>Resume</h1>,<h1>Mark Karpov</h1>,' resume-body.html
-          pandoc --from=html --to=pdf --pdf-engine=xelatex --metadata-file=${./resume/metadata.yaml} resume-body.html -o resume.pdf
+          pandoc --from=html --to=pdf --pdf-engine=xelatex \
+            --metadata-file=${./resume/metadata.yaml} \
+            -V mainfont='NotoSans-Regular.ttf' \
+            -V 'mainfontoptions:Path='"$PWD"'/fonts/' \
+            -V 'mainfontoptions:BoldFont=NotoSans-Bold.ttf' \
+            resume-body.html -o resume.pdf
         '';
         installPhase = ''
           mkdir "$out"

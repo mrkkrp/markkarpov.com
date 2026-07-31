@@ -186,6 +186,14 @@
     list-style-type: circle;
   }
 
+  /* Bullet lists opted out of their markers via a leading NOBULLETS item,
+     tagged `no-bullets` by the disableBullets MMark extension in
+     lib/Markdown.hs. */
+  .content ul.no-bullets {
+    list-style: none;
+    padding-left: 0;
+  }
+
   /* Horizontal rule — most commonly the separator MMark places before the
      footnotes list. Give it room from the preceding paragraph. */
   .content hr {

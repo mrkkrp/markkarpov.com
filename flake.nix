@@ -131,7 +131,7 @@
           cp -r _build/. "$out/"
         '';
       };
-      mkSite = doCheck: isPreview:
+      mkSite = doCheck: isPreview: withResumePdf:
         let
           site = mkSiteInner doCheck isPreview;
           resume = mkResume site;
@@ -140,7 +140,9 @@
           mkdir "$out"
           cp -r ${site}/. "$out/"
           chmod -R u+w "$out"
-          cp ${resume}/resume.pdf "$out/resume.pdf"
+          ${pkgs.lib.optionalString withResumePdf ''
+            cp ${resume}/resume.pdf "$out/resume.pdf"
+          ''}
         '';
       styles = pkgs.stdenv.mkDerivation {
         name = "mk-com-styles";
@@ -168,9 +170,9 @@
       resume = mkResume site-quick;
       netlify-cli = pkgs.netlify-cli;
       app = mk-com;
-      site = mkSite true false;
-      site-quick = mkSite false false;
-      site-preview = mkSite true true;
+      site = mkSite true false true;
+      site-quick = mkSite false false false;
+      site-preview = mkSite true true true;
       defaultPackage.x86_64-linux = site;
       apps.x86_64-linux.netlify = {
         type = "app";

@@ -1,25 +1,19 @@
 ---
 title: Megaparsec tutorial
-desc: This is a Megaparsec tutorial which originally was written as a chapter for the Intermediate Haskell book.
+desc: A comprehensive tutorial for the Megaparsec parser combinator library.
 date:
   published: February 23, 2019
-  updated: August 1, 2026
+  updated: August 2, 2026
 ---
-
-*This is the Megaparsec tutorial, which was originally written as a chapter
-for the [Intermediate Haskell][ih] book. Due to the lack of progress with the
-book, the other authors agreed to let me publish the text as a standalone
-tutorial so that people can benefit at least from this part of our work.*
 
 [Japanese translation][japanese], [Chinese translation][chinese].
 
 ```toc
 ```
 
-The toy parser combinators developed in the chapter “An Example: Writing Your
-Own Parser Combinators” are not suitable for real-world use, so let's
-continue by taking a look at the libraries in the Haskell ecosystem that
-solve the same problem, and note the various trade-offs they make:
+Haskell is an excellent language to write parsers in, so let's start by
+taking a look at the numerous libraries in the Haskell ecosystem that solve
+this problem, and note the various trade-offs they make:
 
 * [`parsec`][parsec] has been the “default” parsing library in Haskell for a
   long time. The library is said to be focused on the quality of its error
@@ -36,6 +30,22 @@ solve the same problem, and note the various trade-offs they make:
   under-documented and hard to figure out. It can parse `String` and
   `ByteString` out-of-the-box, but not `Text`.
 
+* [`flatparse`][flatparse] is a newer library built for raw speed, often
+  approaching the performance of hand-written parsers. It achieves this by
+  giving up some conveniences: it works only with strict `ByteString`, does
+  not support incremental input, and leans on Template Haskell for efficient
+  matching of literals and character classes. A good choice when performance
+  is the overriding concern.
+
+* [`Earley`][earley] takes a different approach altogether. Instead of parser
+  combinators with limited lookahead, it implements Earley's algorithm for
+  general context-free grammars. This means it can handle left-recursive and
+  ambiguous grammars—returning all possible parses when there is more than
+  one—which conventional parser combinators cannot do. That generality comes
+  at a price, though: it is typically slower, its error messages are less
+  refined, and it does not offer the fine-grained control over backtracking
+  and failure that combinator libraries provide.
+
 * [`megaparsec`][megaparsec] is a fork of `parsec` that has been actively
   developed in the last few years. The current version tries to find a nice
   balance between speed, flexibility, and quality of parse errors. As an
@@ -43,10 +53,17 @@ solve the same problem, and note the various trade-offs they make:
   familiar for users who have used that library or who have read `parsec`
   tutorials.
 
-It would be impractical to try to cover all these libraries, and so we will
+All of the above are combinator libraries (or, in the case of `Earley`, an
+embedded grammar description) that live inside your Haskell program. A
+different tradition is that of parser *generators*, which take a grammar
+written in a separate file and generate Haskell code from it:
+[`happy`][happy] is the classic parser generator and [`alex`][alex] its
+companion lexer generator. These tools shine for large, formally specified
+grammars.
+
+It would be impractical to try to cover all these options, and so we will
 focus on `megaparsec`. More precisely, we are going to cover version 9, which
-by the time this book is published will probably have replaced the older
-versions almost everywhere.
+is the version in wide use today.
 
 ## `ParsecT` and `Parsec` monads
 
@@ -107,7 +124,7 @@ type Parser = Parsec Void Text
 ```
 
 Until we start dealing with custom parsing errors, assume this type whenever
-you see `Parser` in the chapter.
+you see `Parser` in this tutorial.
 
 ## Character and binary streams
 
@@ -754,12 +771,11 @@ consumed some input!
 This is done for performance reasons, and because it would make no sense to
 run `bar`, feeding it the leftovers of `foo`, anyway. `bar` wants to be run
 from the same point in the input stream as `foo`. `megaparsec` does not go
-back automatically, unlike, for example, `attoparsec` or the toy combinators
-from the previous chapter, so we must use a primitive called `try` to express
-our wish to backtrack explicitly. `try p` makes it so that if `p` fails after
-consuming input, `try p` fails as if no input had been consumed (in fact, it
-backtracks the entire parser state). This allows `(<|>)` to try its
-right-hand alternative:
+back automatically, unlike, for example, `attoparsec`, so we must use a
+primitive called `try` to express our wish to backtrack explicitly. `try p`
+makes it so that if `p` fails after consuming input, `try p` fails as if no
+input had been consumed (in fact, it backtracks the entire parser state). This
+allows `(<|>)` to try its right-hand alternative:
 
 ```haskell
 alternatives :: Parser (Char, Char)
@@ -894,14 +910,20 @@ what is going on is to use the built-in `dbg` helper from the
 `Text.Megaparsec.Debug` module:
 
 ```haskell
-dbg :: (VisualStream s, ShowToken (Token s), ShowErrorComponent e, Show a)
+dbg :: (MonadParsecDbg e s m, Show a)
   => String            -- ^ Debugging label
-  -> ParsecT e s m a   -- ^ Parser to debug
-  -> ParsecT e s m a   -- ^ Parser that prints debugging messages
+  -> m a               -- ^ Parser to debug
+  -> m a               -- ^ Parser that prints debugging messages
 ```
 
-The `VisualStream` type class is defined for input streams that can be
-printed on the screen in readable form. We will not dwell on it here.
+`MonadParsecDbg` is the type class of parser monads that support debugging;
+`ParsecT` (and thus `Parsec`) is an instance. Its whole reason for existing is
+to make `dbg` work through transformer stacks: whenever you wrap `ParsecT` in
+an MTL transformer such as `StateT` or `ReaderT`, there is a corresponding
+`MonadParsecDbg` instance that lifts `dbg` through that layer, so you can debug
+parsers no matter how the stack is assembled. If the parser's result type is
+not an instance of `Show`, there is also `dbg'`, which works exactly like
+`dbg` but does not print the parsed value.
 
 Let's use it in `pUri`:
 
@@ -1174,8 +1196,8 @@ is the type signature of `runParser'`:
 ```haskell
 runParser'
   :: Parsec e s a -- ^ Parser to run
-  -> State s    -- ^ Initial state
-  -> (State s, Either (ParseErrorBundle s e) a)
+  -> State s e  -- ^ Initial state
+  -> (State s e, Either (ParseErrorBundle s e) a)
 ```
 
 Modifying `State` manually is advanced usage of the library, and we are not
@@ -1735,7 +1757,7 @@ running `p`, and then fail. There is now a mismatch between what remains
 unconsumed and the offset position, but it does not matter in this case,
 because we end parsing immediately by calling `fail`. It may matter in other
 cases. We will see how to do better in situations like this later in this
-chapter.
+tutorial.
 
 ## Parsing expressions
 
@@ -1787,8 +1809,8 @@ Let's start with the term parser. It is helpful to think of a term as a box
 that is to be treated as an indivisible whole by the expression-parsing
 algorithm when it works with things like associativity and precedence. In our
 case there are three things that fall into this category: variables, integers,
-and entire expressions in parentheses. Using the definitions from previous
-chapters, we can define the term parser as:
+and entire expressions in parentheses. Using the definitions introduced
+earlier, we can define the term parser as:
 
 ```haskell
 pVariable :: Parser Expr
@@ -2181,15 +2203,16 @@ pComplexItem = L.indentBlock scn p
 
 pLineFold :: Parser String
 pLineFold = L.lineFold scn $ \sc' ->
-  let ps = some (alphaNumChar <|> char '-') `sepBy1` try sc'
-  in unwords <$> ps <* scn -- (1)
+  let ps = some (alphaNumChar <|> char '-') `sepBy1` try sc' -- (1)
+  in unwords <$> ps <* scn -- (2)
 ```
 
 `lineFold` works like this: we give it a space consumer that accepts newlines,
 `scn`, and it gives back a special space consumer, `sc'`, that we can use in
 the callback to consume space between the elements of the line fold.
 
-Why use `try sc'` and `scn` on line (1)? The situation is the following:
+Why use `try sc'` on line (1) and `scn` on line (2)? The situation is the
+following:
 
 * The components of a line fold can only be more indented than its start.
 * `sc'` consumes white space, including newlines, in such a way that after
@@ -2202,7 +2225,7 @@ Why use `try sc'` and `scn` on line (1)? The situation is the following:
 * The `sc'` we used previously already probed the white space with a space
   consumer that consumes newlines. So it is only logical to consume newlines
   when picking up trailing white space too. This is why `scn`, and not `sc`,
-  is used on line (1).
+  is used on line (2).
 
 *EXERCISE: Playing with the final version of our parser is left as an exercise
 for the reader. You can create “items” that consist of multiple words, and as
@@ -2218,17 +2241,12 @@ way to know whether we are doing the right thing when tuning performance.
 
 Some common pieces of advice:
 
-* If your parser uses a monad stack instead of the plain `Parsec` monad
-  (recall that it is the `ParsecT` monad transformer over `Identity`, which is
-  quite lightweight), make sure you use at least version 0.5 of the
-  `transformers` library and at least version 7.0 of `megaparsec`. Both
-  libraries have critical performance improvements in these versions, so you
-  can get better performance for free.
-
-* The `Parsec` monad will always be faster than `ParsecT`-based monad
-  transformers. Avoid using `StateT`, `WriterT`, and other monad transformers
-  unless absolutely necessary. The more you add to the monadic stack, the
-  slower your parser will be.
+* Prefer the plain `Parsec` monad (recall that it is the `ParsecT` monad
+  transformer over `Identity`, which is quite lightweight). The `Parsec` monad
+  will always be faster than `ParsecT`-based monad transformers, so avoid
+  using `StateT`, `WriterT`, and other monad transformers unless absolutely
+  necessary. The more you add to the monadic stack, the slower your parser
+  will be.
 
 * Backtracking is an expensive operation. Avoid building long chains of
   alternatives where every alternative can go deep into the input before
@@ -2546,7 +2564,7 @@ exceptions][exceptions]. This is enabled by the `observing` primitive:
 
 observing :: MonadParsec e s m
   => m a             -- ^ The parser to run
-  -> m (Either (ParseError (Token s) e) a)
+  -> m (Either (ParseError s e) a)
 ```
 
 Here is a complete program demonstrating typical usage of `observing`:
@@ -2929,13 +2947,13 @@ check the leftovers of the input stream after parsing):
 ```haskell
 runParser'
   :: Parsec e s a      -- ^ Parser to run
-  -> State s           -- ^ Initial state
-  -> (State s, Either (ParseError (Token s) e) a)
+  -> State s e         -- ^ Initial state
+  -> (State s e, Either (ParseErrorBundle s e) a)
 
 runParserT' :: Monad m
   => ParsecT e s m a   -- ^ Parser to run
-  -> State s           -- ^ Initial state
-  -> m (State s, Either (ParseError (Token s) e) a)
+  -> State s e         -- ^ Initial state
+  -> m (State s e, Either (ParseErrorBundle s e) a)
 ```
 
 The `initialState` function takes the input stream and returns the initial
@@ -3192,12 +3210,15 @@ expecting +
 In other words, we now have a fully functional parser that parses a custom
 stream.
 
-[ih]: https://intermediatehaskell.com/
 [japanese]: https://haskell.e-bigmoon.com/posts/2019/07-14-megaparsec-tutorial.html
 [chinese]: https://blog.yzyzsun.me/megaparsec/
 [parsec]: https://hackage.haskell.org/package/parsec
 [attoparsec]: https://hackage.haskell.org/package/attoparsec
 [trifecta]: https://hackage.haskell.org/package/trifecta
+[flatparse]: https://hackage.haskell.org/package/flatparse
+[earley]: https://hackage.haskell.org/package/Earley
+[happy]: https://hackage.haskell.org/package/happy
+[alex]: https://hackage.haskell.org/package/alex
 [megaparsec]: https://hackage.haskell.org/package/megaparsec
 [hspec-megaparsec]: https://hackage.haskell.org/package/hspec-megaparsec
 [parser-combinators]: https://hackage.haskell.org/package/parser-combinators

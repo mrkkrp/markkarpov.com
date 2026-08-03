@@ -3,46 +3,46 @@ title: Template Haskell tutorial
 desc: The tutorial explains how to use Template Haskell for metaprogramming in Haskell.
 date:
   published: December 24, 2017
-  updated: August 1, 2026
+  updated: August 3, 2026
 ---
 
 ```toc
 ```
 
-The tutorial aims to introduce the reader to *Template Haskell* (TH)—the
-language extension that adds metaprogramming capabilities to the Haskell
-language. Here I assume some familiarity with Haskell, perhaps at a beginner
-or intermediate level, although these terms are rather nebulous and
-subjective. To express the prerequisites in a more tangible form: if you know
-what a monad is, you should probably be OK.
+This tutorial aims to introduce the reader to *Template Haskell* (TH)—the GHC
+extension that adds metaprogramming capabilities to Haskell. I assume some
+familiarity with the language, perhaps at a beginner or intermediate level,
+although these terms are rather nebulous and subjective. To express the
+prerequisites in a more tangible form: if you know what a monad is, you should
+probably be OK.
 
 TH has the reputation of being an expert-level topic that mere mortals are
 not prepared to comprehend. I don't think this is so. The ideas behind TH are
 simple and make sense, while the specific details can always be looked up in
 the Haddocks.
 
-The tutorial cannot possibly cover every use of TH, and so it is structured
-in such a way that we only get to see the most common, conventional, and
-benign uses of this GHC feature.
+The tutorial cannot possibly cover every use of TH, so it is structured in
+such a way that we only get to see the most common, conventional, and benign
+uses of this feature.
 
 ## Motivation
 
 Perhaps one of the main difficulties with TH is deciding whether it is the
 best solution to the problem at hand. Writing code that generates code is
 generally considered a sign that the tools of expression provided by the
-language and/or the programmer's imagination have failed to address a
-particular problem, and metaprogramming is being used as a last resort to get
-things done. True or not, TH is quite popular, and so knowing your way around
-it is a valuable skill that can be used to do things that often cannot be
-achieved otherwise.
+language, or the programmer's imagination, have failed to address a particular
+problem, so that metaprogramming has to be used as a last resort. Whether or
+not that is fair, TH is quite popular, and knowing your way around it is a
+valuable skill that lets you do things that often cannot be achieved
+otherwise.
 
 Let's list some uses of TH:
 
 * *Automatic deriving of type class instances* is still perhaps the most
   common use case for TH. Even though the same problem can often be
-  [addressed by generics][generics], they are known to make compilation times
-  longer (compared to TH-based solutions), so TH is still the preferred method
-  of automatic instance derivation in libraries like `aeson` and `lens`.
+  [addressed by generics][generics], generics are known to make compilation
+  times longer than TH-based solutions, so TH remains the preferred method of
+  automatic instance derivation in libraries like `aeson` and `lens`.
 
 * *Creation of TH DSLs* that are integrated into systems built in Haskell.
   Examples of such DSLs are the model-declaration language used in
@@ -64,9 +64,9 @@ Reasons not to use TH:
   no matter what sort of declarations it generates). Documentation becomes the
   main source of information about the semantics of TH code.
 
-* TH imposes restrictions on where the user should define TH functions
-  themselves, and sometimes also on how to order the definitions in files
-  where TH functions are used.
+* TH imposes restrictions on where TH functions may be defined, and sometimes
+  also on how definitions must be ordered in files where TH functions are
+  used.
 
 ## The `Q` monad
 
@@ -79,8 +79,8 @@ Generation of code requires certain features to be available to us:
   about a module, get the collection of instances of a particular type class,
   etc.
 
-* The ability to put and get some custom state that is then shared by all the
-  TH code in the same module.
+* The ability to put and get some custom state that is then shared by all TH
+  code in the same module.
 
 * The ability to run `IO` during compilation, so that we can, for example,
   read something from a file.
@@ -104,10 +104,12 @@ there are only five options:
 * [Expression][exp] `Exp`, such as `x + 1` or `\x -> x + 1`. It is probably
   the most common thing to generate.
 
-* [Typed expression][texp] `TExp`, which is identical to an expression `Exp`
-  but has a phantom type tag corresponding to the type of the expression
-  inside. For example, `TExp Int` means that the expression evaluates to an
-  `Int`.
+* [Typed expression][code], produced by a *typed quotation* and represented
+  by the `Code` type. It is essentially an expression `Exp` carrying a phantom
+  type tag corresponding to the type of the expression inside. For example,
+  `Code Q Int` means that the expression evaluates to an `Int`. (In older code
+  and pre-9.0 GHCs you'll see the type `Q (TExp Int)` instead; more on this in
+  the section on [typed expressions](#typed-expressions).)
 
 * [Type][type] `Type`, such as `Int`, `Maybe Int`, or just `Maybe`. The type
   doesn't have to be saturated (i.e. it may have any kind), so it may be
@@ -162,13 +164,13 @@ This is called *splicing*. The expression following the dollar sign is called
 a *splice*. A splice can occur in place of an expression, a pattern, or a
 type, or as a top-level declaration. It's worth noting that declarations *may*
 be spliced without the preceding `$`, because they live at the top level and
-there is no syntactic ambiguity. `makeLens` from the `lens` package is a
+there is no syntactic ambiguity. `makeLenses` from the `lens` package is a
 common example:
 
 ```haskell
-makeLens ''MyRecord -- Yes, we'll get to this quoting style too!
+makeLenses ''MyRecord -- Yes, we'll get to this quoting style too!
 -- the same:
-$(makeLens ''MyRecord)
+$(makeLenses ''MyRecord)
 ```
 
 Note that the `$` symbol now has an additional meaning, and so ambiguity is
@@ -255,26 +257,29 @@ AST of a correct shape that does not represent a Haskell program that
 compiles. In other words, manual construction of an AST is tedious and
 error-prone.
 
-Luckily, there is a way to get the AST of arbitrary Haskell code by using
-*quotation*. There are five types of quotation that are enabled by the
-`TemplateHaskell` language extension:
+Luckily, there is a way to obtain the AST of arbitrary Haskell code: use
+*quotation*. The `TemplateHaskell` language extension enables five kinds of
+quotation:
 
 Thing produced   | Quotation syntax | Type
------------------|:----------------:|:--------:
+-----------------|:----------------:|:----------:
 Declaration      | `[d| … |]`       | `Q [Dec]`
 Expression       | `[e| … |]`       | `Q Exp`
-Typed expression | `[|| … ||]`      | `Q (TExp a)`
+Typed expression | `[|| … ||]`      | `Code Q a`
 Type             | `[t| … |]`       | `Q Type`
 Pattern          | `[p| … |]`       | `Q Pat`
 
-Indeed, we need several different quoters because the same code may mean
-different things in different contexts, for example:
+We'll return to `Code` in the section on [typed
+expressions](#typed-expressions).
+
+We need several different quoters because the same code may mean different
+things in different contexts, for example:
 
 ```haskell
 λ> runQ [e| Just x |] -- an expression
-AppE (ConE GHC.Base.Just) (UnboundVarE x)
+AppE (ConE GHC.Internal.Maybe.Just) (UnboundVarE x)
 λ> runQ [p| Just x |] -- a pattern
-ConP GHC.Base.Just [VarP x_0]
+ConP GHC.Internal.Maybe.Just [] [VarP x_0]
 ```
 
 Since most of the time we work with expressions, the more lightweight quote
@@ -282,7 +287,7 @@ syntax `[| … |]` is equivalent to `[e| … |]`:
 
 ```haskell
 λ> runQ [| Just x |] -- an expression again
-AppE (ConE GHC.Base.Just) (UnboundVarE x)
+AppE (ConE GHC.Internal.Maybe.Just) (UnboundVarE x)
 ```
 
 Quotation can be used not only to quickly discover the representation of a
@@ -304,8 +309,8 @@ add2 = [| $myFunc . $myFunc |]
 
 This way we can write the code we want to generate almost as usual, using
 splicing just to vary the pieces of code that need to change algorithmically.
-Note, though, that as of GHC 8.2.2, splicing *declarations* inside
-*declaration* quoters does not work yet.
+Note, though, that splicing *declarations* inside *declaration* quoters is
+still not supported.
 
 Let's try `add2`:
 
@@ -316,12 +321,12 @@ Let's try `add2`:
 InfixE
   (Just (LamE [VarP x_2] -- lambda
         (InfixE (Just (VarE x_2))
-                (VarE GHC.Num.+)
+                (VarE GHC.Internal.Num.+)
                 (Just (LitE (IntegerL 1))))))
-  (VarE GHC.Base..) -- functional composition
+  (VarE GHC.Internal.Base..) -- functional composition
   (Just (LamE [VarP x_3] -- lambda
         (InfixE (Just (VarE x_3))
-                (VarE GHC.Num.+)
+                (VarE GHC.Internal.Num.+)
                 (Just (LitE (IntegerL 1))))))
 ```
 
@@ -330,13 +335,27 @@ It seems to work.
 ## Typed expressions
 
 Quotation for typed expressions is a bit special: it is the only way to
-create values of type `TExp a`, i.e. it's the introduction form for `TExp`.
-This way the compiler can ensure that the phantom type always corresponds to
-what is inside. For example, let's try to rewrite `myFunc` using quotation for
-typed expression splices:
+create a *typed expression*, i.e. it's the introduction form for the `Code`
+type. This way the compiler can ensure that the phantom type always
+corresponds to what is inside. A typed quotation `[|| … ||]` has the type
+`Code Q a`, where `a` is the type of the quoted expression. The
+`template-haskell` package also provides a convenient type synonym `CodeQ a
+= Code Q a`.
+
+*A bit of history: before GHC 9.0, typed quotation produced a value of type
+`Q (TExp a)` instead, where [`TExp`][texp] is a thin wrapper carrying a
+phantom type over an ordinary `Exp`. GHC 9.0 replaced `Q (TExp a)` with
+`Code Q a` (per the [“Make `Q (TExp a)` into a newtype”][code-texp-proposal]
+proposal). `TExp` still exists, and `Code` is defined roughly as `newtype Code
+m a = Code { examineCode :: m (TExp a) }`; the functions
+`examineCode`/`liftCode` and `unTypeCode` convert between the old and new
+representations if you ever need to. If you have to support both GHC 8 and
+GHC 9, the [`th-compat`][th-compat] package smooths over the difference.*
+
+For example, let's rewrite `myFunc` using typed quotation:
 
 ```haskell
-myFuncTyped :: Q (TExp a)
+myFuncTyped :: Code Q a
 myFuncTyped = [|| \x -> x + 1 ||]
 ```
 
@@ -348,31 +367,52 @@ type:
 Thus:
 
 ```haskell
-myFuncTyped :: Q (TExp (Integer -> Integer))
+myFuncTyped :: Code Q (Integer -> Integer)
 myFuncTyped = [|| \x -> x + 1 ||]
 ```
 
-It appears that returning something polymorphic is not yet possible:
+Returning something polymorphic, however, is not possible out of the box:
 
 ```haskell
-myFuncTyped :: Q (TExp (Num a => a -> a))
+myFuncTyped :: Code Q (Num a => a -> a)
 myFuncTyped = [|| \x -> x + 1 ||]
 ```
 
 GHC says:
 
 > Illegal qualified type: `Num a => a -> a` \
-  GHC doesn't yet support impredicative polymorphism
+  Suggested fix: Perhaps you intended to use `ImpredicativeTypes`
 
-*Impredicative polymorphism* is when you try to replace a polymorphic variable
-with an expression that itself contains a `forall`. In the case above, there
-is an implicit `forall` before the `Num a` constraint.
+*Impredicative polymorphism* is when you try to replace a polymorphic
+variable with an expression that itself contains a `forall`. In the case
+above, there is an implicit `forall` before the `Num a` constraint, so the
+`a` in `Code Q a` would have to be instantiated to a qualified (hence
+polymorphic) type—and that's exactly what plain Hindley–Milner forbids.
+
+GHC's suggestion to reach for `ImpredicativeTypes` is a bit of a red herring,
+though. Enabling it does silence the “illegal qualified type” complaint, but
+the quotation then fails with a different error:
+
+> Couldn't match type: `p0 -> p0` \
+  with: `Num a => a -> a`
+
+The reason is that a typed quotation `[|| e ||]` is always checked at type
+`Code m τ` where `τ` is a *monotype*: GHC infers a single, ungeneralised
+type for the quoted expression rather than a polymorphic scheme. Here it
+infers `p0 -> p0` for `\x -> x + 1` (with a lingering `Num p0` constraint),
+and no choice of the monotype `p0` can ever equal the polymorphic `Num a =>
+a -> a`. That's also why an explicit `:: forall a. Num a => a -> a`
+annotation *inside* the brackets doesn't rescue it—there is simply nowhere
+for the quoted term to acquire a `forall`. Left to its own devices, GHC
+would just default the constraint and settle on the monotype `Integer ->
+Integer`. The real lesson, then, is not to make a typed quotation
+polymorphic in the first place—give it a concrete, monomorphic type instead.
 
 Further, there is a special syntax for splicing of typed expressions. Let's
 try to write a typed version of `add2`:
 
 ```haskell
-add2Typed :: Q (TExp (Integer -> Integer))
+add2Typed :: Code Q (Integer -> Integer)
 add2Typed = [|| $$myFuncTyped . $$myFuncTyped ||]
 ```
 
@@ -384,11 +424,11 @@ When using the double dollar syntax, the compiler will make sure that we're
 splicing our typed expression in a correct context, so there won't be any type
 errors.
 
-Apart from splicing, there is another way to eliminate a value of type `TExp
-a`—just use `unType`:
+Apart from splicing, there is another way to eliminate a typed
+expression—just use `unTypeCode` to recover the underlying untyped `Exp`:
 
 ```haskell
-unType :: TExp a -> Exp
+unTypeCode :: Code Q a -> Q Exp
 ```
 
 A bit more information about typed expressions can be found in [this blog
@@ -445,13 +485,31 @@ concrete monad and at the same time wanted to leave themselves the option of
 defining the instance of `Quasi` that actually does all the work somewhere
 else (it's apparently not for us to see).
 
+`Quasi` collects the *full* metaprogramming interface—name generation,
+reification, `runIO`, and so on. Since GHC 9.0 there is also a much smaller
+[`Quote`][quote] class sitting underneath it:
+
+```haskell
+class Monad m => Quote m where
+  newName :: String -> m Name
+```
+
+`Quote` provides just enough to *desugar quotations* (all a quotation strictly
+needs is the ability to invent fresh names). Up to now we've written the types
+of quotations as `Q Exp` and `Code Q a` for simplicity, but the real,
+overloaded types you'll find in the Haddocks are `Quote m => m Exp` and `Quote
+m => Code m a`, tied not to `Q` but to any `Quote` instance. `Q` is an
+instance of both `Quote` and `Quasi`, so in practice you can keep writing
+everything in terms of `Q` and never think about `Quote` again; knowing about
+it just makes those more general signatures less surprising.
+
 ## Names
 
 As we know, the same name can refer to different things depending on the
 context in which it is used. This is why working with names has its own
 subtleties, which we're going to discuss now.
 
-When we generate or manipulate code, we work with two types of name:
+When we generate or manipulate code, we work with two types of names:
 
 * Names that mean something in the current context. The *current context* may
   be the context of the metaprogram that generates the code we're going to
@@ -543,7 +601,7 @@ mean that new names cannot be generated this way:
 λ> runQ [| \x -> x + 1 |]
 LamE [VarP x_4]
      (InfixE (Just (VarE x_4))
-             (VarE GHC.Num.+)
+             (VarE GHC.Internal.Num.+)
              (Just (LitE (IntegerL 1))))
 ```
 
@@ -556,7 +614,7 @@ function:
 
 ```haskell
 λ> runQ [| $(varE (mkName "x")) + 1 |]
-InfixE (Just (VarE x)) (VarE GHC.Num.+) (Just (LitE (IntegerL 1)))
+InfixE (Just (VarE x)) (VarE GHC.Internal.Num.+) (Just (LitE (IntegerL 1)))
 λ> let xPlus1 = it
 λ> let x = 99 in $(return xPlus1) -- value of variable named 'x' influences
                                   -- the result of evaluation
@@ -575,7 +633,7 @@ name in a quote:
 ```haskell
 λ> withZ <- runQ [| z + 1 |]
 λ> withZ
-InfixE (Just (UnboundVarE z)) (VarE GHC.Num.+) (Just (LitE (IntegerL 1)))
+InfixE (Just (UnboundVarE z)) (VarE GHC.Internal.Num.+) (Just (LitE (IntegerL 1)))
 λ> let z = 100 in $(return withZ)
 101
 ```
@@ -653,15 +711,18 @@ We could start without TH, like this:
 
 ```haskell
 class Countable a where
-  count :: Proxy a -> Integer
+  count :: Integer
 ```
 
-The `Proxy` is needed here because the methods of a type class cannot lack a
-“connection” to the type that is an instance of the type class. In other
-words, there must be an `a` somewhere in the signature of `count`. We are not
-interested in a particular value of type `a`, but we must still clarify which
-`a` we mean, by passing `Proxy a`. If this doesn't make any sense, it's OK—you
-can still continue reading.
+Notice that `a` does not appear anywhere in the type of `count`. It used to be
+that a method had to mention its class variable somewhere in its signature, so
+you'd see a `Proxy a` argument threaded through purely to pin down which `a`
+was meant. These days we can drop the `Proxy` and instead select the instance
+with a *visible type application* at the call site, e.g. `count @Bool`. For
+this to typecheck we need two extensions: `AllowAmbiguousTypes` (because `a` is
+now “ambiguous”—it can only ever be fixed by a type application) at the class
+definition, and `TypeApplications` wherever we call `count`. If this doesn't
+make any sense, it's OK—you can still continue reading.
 
 How do we write the instances? It looks like we could leverage the existing
 `Enum` and `Bounded` type classes, which already solve the problem, but only
@@ -670,8 +731,8 @@ for a limited set of types. If a type is an instance of both `Enum` and
 
 ```haskell
 instance (Enum a, Bounded a) => Countable a where
-  count Proxy = fromIntegral $
-    1 + fromEnum (maxBound :: a) - fromEnum (minBound :: a)
+  count = fromIntegral $
+    1 + fromEnum (maxBound @a) - fromEnum (minBound @a)
 ```
 
 This is not going to work, though, if we want to be able to define instances
@@ -697,8 +758,8 @@ Let's solve the first part of the task:
 deriveCountableSimple :: Name -> Q [Dec]
 deriveCountableSimple name = [d|
   instance Countable $a where
-    count Proxy = fromIntegral $
-      1 + fromEnum (maxBound :: $a) - fromEnum (minBound :: $a)
+    count = fromIntegral $
+      1 + fromEnum (maxBound @($a)) - fromEnum (minBound @($a))
   |]
   where
     a = conT name
@@ -719,11 +780,11 @@ deriveCountableSimple ''Char
 We can try it now:
 
 ```haskell
-λ> count (Proxy :: Proxy Bool)
+λ> count @Bool
 2
-λ> count (Proxy :: Proxy Word8)
+λ> count @Word8
 256
-λ> count (Proxy :: Proxy Char)
+λ> count @Char
 1114112
 ```
 
@@ -735,14 +796,14 @@ deriveCountableComposite name = do
   TyConI (DataD _ _ _ _ cons' _) <- reify name
   [d|
      instance Countable $(conT name) where
-       count Proxy = $(foldr addE [| 0 |] $ f <$> cons')
+       count = $(foldr addE [| 0 |] $ f <$> cons')
    |]
   where
     f (NormalC _ ts) = handleCon (snd <$> ts)
     f (RecC    _ ts) = handleCon (thd <$> ts)
     f _              = fail "unsupported data type"
     handleCon ts = foldr mulE [| 1 |] (countTypeE <$> ts)
-    countTypeE t = [| count (Proxy :: Proxy $(return t)) |]
+    countTypeE t = [| count @($(return t)) |]
     addE x y     = [| $x + $y |]
     mulE x y     = [| $x * $y |]
     thd (_,_,x)  = x
@@ -766,6 +827,16 @@ Let's see what is going on:
 * Finally, we add together the expressions for all the data constructors—this
   is how we handle sum types.
 
+Note that `f` only handles `NormalC` and `RecC`; it silently fails on the
+other constructor forms (`InfixC`, `GadtC`, `RecGadtC`). Pattern-matching on
+raw `Dec`/`Con` values like this is also fragile across GHC releases,
+because the shape of these types changes from version to version (`DataD`,
+for example, gained fields over the years). In real code you would reach for
+the [`th-abstraction`][th-abstraction] package, which presents datatype
+information through a single normalized interface that papers over these
+differences and handles all the constructor forms for you. We do it by hand
+here only to keep the example self-contained.
+
 Let's play with it now:
 
 ```haskell
@@ -776,7 +847,7 @@ deriveCountableComposite ''Foo
 ```
 
 ```haskell
-λ> count (Proxy :: Proxy Foo)
+λ> count @Foo
 4 -- = 2 + 2
 ```
 
@@ -791,7 +862,7 @@ deriveCountableComposite ''Foo
 ```
 
 ```haskell
-λ> count (Proxy :: Proxy Foo)
+λ> count @Foo
 516 -- = 2 * 2 + 256 * 2
 ```
 
@@ -815,9 +886,10 @@ to do on its own.
 
 Sometimes it is helpful to be able to see the code we're generating at splice
 sites. GHC [allows us to do that][viewing-th-code] with the `-ddump-splices`
-flag. Stack seems to eat that output, though, so I also had to add
-`-ddump-to-file` and search for a file with the suffix `-splices` in the
-`.stack-work/dist` directory.
+flag. If a build tool swallows that output, add `-ddump-to-file` and look for a
+file with the `-splices` suffix under the build directory (`dist-newstyle` for
+`cabal`, `.stack-work` for Stack). If you use HLS, it will also render the
+expansion of a splice inline in your editor.
 
 Here is what I've got:
 
@@ -826,39 +898,33 @@ src/Main.hs:22:1-22: Splicing declarations
     deriveCountable ''Bool
   ======>
     instance Countable Bool where
-      count Proxy
+      count
         = (fromIntegral
-             $ ((1 + (fromEnum (maxBound :: Bool)))
-                  - (fromEnum (minBound :: Bool))))
+             $ ((1 + fromEnum (maxBound @Bool)) - fromEnum (minBound @Bool)))
 
 src/Main.hs:23:1-23: Splicing declarations
     deriveCountable ''Word8
   ======>
     instance Countable Word8 where
-      count Proxy
+      count
         = (fromIntegral
-             $ ((1 + (fromEnum (maxBound :: Word8)))
-                  - (fromEnum (minBound :: Word8))))
+             $ ((1 + fromEnum (maxBound @Word8)) - fromEnum (minBound @Word8)))
 
 src/Main.hs:24:1-22: Splicing declarations
     deriveCountable ''Char
   ======>
     instance Countable Char where
-      count Proxy
+      count
         = (fromIntegral
-             $ ((1 + (fromEnum (maxBound :: Char)))
-                  - (fromEnum (minBound :: Char))))
+             $ ((1 + fromEnum (maxBound @Char)) - fromEnum (minBound @Char)))
 
 src/Main.hs:25:1-21: Splicing declarations
     deriveCountable ''Foo
   ======>
     instance Countable Foo where
-      count Proxy
-        = (((count (Proxy :: Proxy Bool))
-              * ((count (Proxy :: Proxy Bool)) * 1))
-             + (((count (Proxy :: Proxy Word8))
-                   * ((count (Proxy :: Proxy Bool)) * 1))
-                  + 0))
+      count
+        = ((count @Bool * (count @Bool * 1))
+             + ((count @Word8 * (count @Bool * 1)) + 0))
 ```
 
 This is a useful debugging tool.
@@ -873,12 +939,28 @@ outside world.
 The solution comes naturally in the form of the [`Lift`][lift] type class:
 
 ```haskell
-class Lift t where
-  lift :: t -> Q Exp
+class Lift (t :: TYPE r) where
+  lift      :: Quote m => t -> m Exp
+  liftTyped :: Quote m => t -> Code m t
 ```
 
-`lift` takes a value and returns an expression that reconstructs it. We could
-define some instances like so:
+`lift` takes a value and returns an (untyped) expression that reconstructs it,
+while `liftTyped` produces the typed counterpart. (`liftTyped` was added to
+the class in GHC 9.0; before that `Lift` had only `lift`, whose type was the
+less general `t -> Q Exp`.)
+
+*The `(t :: TYPE r)` in the class head is levity polymorphism. An ordinary
+type such as `Int` has kind `Type`, but that is really just a synonym for
+`TYPE 'LiftedRep`—`TYPE r` is the kind of *all* types, indexed by a runtime
+representation `r` that says how a value is laid out (boxed and lifted,
+unboxed, etc.). By quantifying over any `r` rather than fixing `Type`,
+`Lift` can have instances not only for boxed types but also for unboxed ones
+like `Int#` (of kind `TYPE 'IntRep`) or `Double#` (of kind `TYPE
+'DoubleRep`). You can ignore the annotation entirely when lifting ordinary
+values; it's there so the class is not artificially restricted to lifted
+types.*
+
+We could define some instances like so:
 
 ```haskell
 instance Lift Integer where
@@ -890,6 +972,10 @@ instance Lift Int where
 instance Lift Char where
   lift x = return (LitE (CharL x))
 ```
+
+In practice you almost never write `Lift` instances by hand, and you rarely
+even implement `liftTyped` yourself—`DeriveLift` (below) handles both methods
+for you.
 
 The `template-haskell` package defines `Lift` instances for all common data
 types. GHC also knows how to define `Lift` for new types. It is enough to
@@ -909,116 +995,83 @@ data Bar a
   deriving Lift
 ```
 
-However, sometimes we want to lift values of types that do not define or
-derive `Lift`, and so we risk introducing [*orphan
-instances*][orphan-instance]. Worse still, even if we were OK with defining
-orphan instances for things like `Text` and `ByteString`, we can't (at least
-not by using the `DeriveLift` extension):
+What about types you don't own? For the common ones you usually don't have
+to do anything at all: the `text` and `bytestring` libraries ship `Lift`
+instances for `Text` and `ByteString` upstream (`text` has done so since
+version 1.2.4.0, and recent `bytestring` likewise), so
 
 ```haskell
-{-# LANGUAGE DeriveLift         #-}
-{-# LANGUAGE StandaloneDeriving #-}
-
-module Main (main) where
-
-import Language.Haskell.TH
-import Language.Haskell.TH.Syntax (Lift)
-
-deriving instance Lift Text
+foo :: Quote m => Text -> m Exp
+foo txt = [| $(lift txt) <> "!" |]
 ```
 
-This produces the following compilation error:
+just works. Many other common libraries (`containers`, `vector`, and so on)
+do the same, and where an upstream instance is still missing,
+[`th-lift-instances`][th-lift-instances] fills the gaps.
 
-```
-• Can't make a derived instance of ‘Lift Text’:
-    The data constructors of ‘Text’ are not all in scope
-      so you cannot derive an instance for it
-• In the stand-alone deriving instance for ‘Lift Text’
-```
-
-The `text` and `bytestring` libraries do not expose the data constructors,
-so `DeriveLift` refuses to do its magic.
-
-Not all is lost, though. It so happens that the `Data` class provides enough
-introspection capabilities for `lift`ing, so TH has the following helper:
+Historically this was not the case, so it's worth knowing the general
+technique for when you hit a type that genuinely has no `Lift` instance and
+whose data constructors aren't exported (so `DeriveLift` can't help either).
+As it turns out, the `Data` class provides enough introspection to reconstruct
+a value, so TH offers the following helper:
 
 ```haskell
-liftData :: Data a => a -> Q Exp
+liftData :: (Data a, Quote m) => a -> m Exp
 ```
 
-If something is an instance of the `Data` type class, we can just lift it with
-the `liftData` function. This is great because no orphan instances are
-necessary; let's try it out.
-
-In one module we define a function that takes `Text` and generates an
-expression that appends `"!"` to it:
+If something is an instance of the `Data` type class, we can lift it with
+`liftData`, and no orphan `Lift` instance is necessary. There is a catch,
+though: `liftData` uses [`toConstr`][to-constr] internally, and it expects
+the constructor it reports to live in the same module as the data type. For
+a type like the old `Text`, whose `Data` instance reported `pack` (defined
+in `Data.Text`, not in the internal module where `Text` is defined), this
+used to fail with a scary interface-file error. The fix was to *override*
+the lifting for the problematic type. Suppose we still needed to lift a
+hypothetical `Text` that had no `Lift` instance; we would write a bespoke
+lifter,
 
 ```haskell
-foo :: Text -> Q Exp
-foo txt = [| $(liftData txt) <> "!" |]
-```
-
-In another module we try to use it:
-
-```haskell
-main :: IO ()
-main = TIO.putStrLn $(foo "Here goes the text")
-```
-
-And this is when it blows up:
-
-```
-• Can't find interface-file declaration for variable Data.Text.Internal.pack
-    Probable cause: bug in .hi-boot file, or inconsistent .hi file
-    Use -ddump-if-trace to get an idea of which file caused the error
-```
-
-*This is scary.* I'll save you the time, and we won't go into the internals of
-`liftData` here. Suffice it to say that `liftData` uses
-[`toConstr`][to-constr] internally, which returns `pack` for `Text`. The rest
-of the machinery apparently expects this `pack` function to be in the same
-module the data type is defined in, `Data.Text.Internal`, but `pack` is
-defined in `Data.Text`, so we get the error.
-
-`Text` is a pretty common type; how do we lift it? The first step would be to
-define a lifting function manually:
-
-```haskell
-liftText :: Text -> Q Exp
+liftText :: Quote m => Text -> m Exp
 liftText txt = AppE (VarE 'T.pack) <$> lift (T.unpack txt)
 ```
 
-Here we first `lift` a `String` and then apply `T.pack` (assuming we have
-imported `Data.Text` qualified as `T`). Now we could use `liftText` directly
-to lift a `Text` value, but what if it's inside a data structure? The general
-solution to lifting things involving `Text` seems to be the following:
+which first `lift`s the underlying `String` and then applies `T.pack`
+(assuming `Data.Text` is imported qualified as `T`). We then plug it into
+`liftData`'s more flexible sibling to handle the type wherever it appears
+inside a larger structure:
 
 ```haskell
-foo :: Text -> Q Exp
+foo :: Quote m => Text -> m Exp
 foo txt = [| $e <> "!" |]
   where
     e = dataToExpQ (fmap liftText . cast) txt
 ```
 
 This [`dataToExpQ`][data-to-expq] function in combination with
-[`cast`][cast] (that comes from `Data.Typeable`) does the trick.
+[`cast`][cast] (that comes from `Data.Typeable`) does the trick. Again, for
+`Text` and `ByteString` specifically you no longer need any of this—plain
+`lift` is enough—but the `dataToExpQ`/`cast` pattern remains the go-to escape
+hatch for any type that resists both `Lift` and `DeriveLift`.
 
 Let's see what `dataToExpQ` does:
 
 ```haskell
-dataToExpQ :: Data a => (forall b. Data b => b -> Maybe (Q Exp)) -> a -> Q Exp
+dataToExpQ
+  :: (Quote m, Data a)
+  => (forall b. Data b => b -> Maybe (m Exp)) -> a -> m Exp
 ```
 
 `dataToExpQ` works just like `liftData`, but it allows us to override the
-lifting for the values for which `forall b. Data b => b -> Maybe (Q Exp)`
+lifting for the values for which `forall b. Data b => b -> Maybe (m Exp)`
 returns `Just`. Don't be afraid of the rank-2 type here. The `forall`
 quantification of `b` inside that function in parentheses means that the
 function literally works *for all* `b`, but the choice of `b` is made not at
-the call site of `dataToExpQ`, but at the call site of this `forall b. Data b
-=> b -> Maybe (Q Exp)` function. Similarly, the choice of `a` is made at the
-call site of `dataToExpQ`, which also has an implicit `forall a.` at the
-beginning of its type signature. See the symmetry? (If you're a beginner, you
-may not understand rank-N types immediately; in that case, don't despair.)
+the call site of `dataToExpQ`, but at the call site of this `forall b. Data
+b => b -> Maybe (m Exp)` function. Similarly, the choice of `a` is made at
+the call site of `dataToExpQ`, which also has an implicit `forall a.` at the
+beginning of its type signature. See the symmetry? (If you're a beginner,
+you may not understand rank-N types immediately; in that case, don't
+despair.)
 
 `cast` performs type-safe casting between two types:
 
@@ -1038,8 +1091,8 @@ class Typeable a => Data a where
 ```
 
 If something in the above is not clear, it's OK. Just grab this trick and use
-it next time you need to lift data that contains `Text` or similar types. One
-more thing: you need at least GHC 8 to use `dataToExpQ`.
+it next time you need to lift data that contains a type with no usable `Lift`
+instance.
 
 ## Example 2: creating refined values at compile time
 
@@ -1058,7 +1111,7 @@ data URI = URI
   , uriPath      :: [RText 'PathPiece]
   , uriQuery     :: [QueryParam]
   , uriFragment  :: Maybe (RText 'Fragment)
-  } deriving (Show, Eq, Ord, Data, Typeable, Generic)
+  } deriving (Show, Eq, Ord, Data, Typeable, Generic, Lift)
 
 mkURI :: Text -> Maybe URI
 ```
@@ -1070,8 +1123,9 @@ becomes:
 * If the returned value is `Nothing`, signal a compile-time error. Otherwise
   lift the entire `URI` data structure we have parsed.
 
-By now we know how to tackle every part of the task. Here is the complete TH
-helper:
+By now we know how to tackle every part of the task. Since `URI` derives
+`Lift` (all of its leaf types, including `Text`, are liftable nowadays), the
+helper is short:
 
 ```haskell
 mkURI' :: Text -> Q Exp
@@ -1079,14 +1133,26 @@ mkURI' txt =
   case mkURI txt of
     -- Instead of 'fail' we could also use 'reportError'. There is also
     -- 'reportWarning' just in case you ever want to report warnings.
-    Nothing -> fail "The input does not contain a valid URI"
-    Just uri -> dataToExpQ (fmap liftText . cast) uri -- the same trick
+    Nothing  -> fail "The input does not contain a valid URI"
+    Just uri -> lift uri
 ```
+
+Note that we stay in the concrete `Q` monad here rather than a polymorphic
+`Quote m`, because we call `fail`, which needs `MonadFail`—a capability `Q`
+has but the bare `Quote` class does not. And had `URI` *not* derived `Lift`,
+we could still have lifted it with the escape hatch from the previous section,
+`dataToExpQ (fmap liftText . cast) uri`.
 
 We could finish the section here, but there is a nicer way, syntax-wise, to
 make use of such a validating helper. The feature we're going to explore is
-called *quasi-quotes*. It turns out that TH allows us to define our own custom
-quasi-quoters, like the `d`, `e`, `t`, and `p` we saw earlier.
+called *quasi-quotes*. It turns out that TH allows us to define our own
+custom quasi-quoters, like the `d`, `e`, `t`, and `p` we saw earlier.
+Quasi-quoters are more common than you might think: they are the machinery
+behind many everyday libraries, such as the string-interpolation packages
+[`neat-interpolation`][neat-interpolation],
+[`string-interpolate`][string-interpolate], and [`PyF`][pyf]. Whenever you
+see a `[foo| … |]` bracket with custom syntax inside, a quasi-quoter is
+turning that string into an AST at compile time.
 
 Defining a quasi-quoter is easy. It is enough to import the
 [`QuasiQuoter`][quasi-quoter] data type from `Language.Haskell.TH.Quote`:
@@ -1114,7 +1180,7 @@ uri = QuasiQuoter
   { quoteExp  = \str ->
       case mkURI (T.pack str) of
         Nothing -> fail "The input does not contain a valid URI"
-        Just x  -> dataToExpQ (fmap liftText . cast) x
+        Just x  -> lift x
   , quotePat  = error "Usage as a pattern is not supported"
   , quoteType = error "Usage as a type is not supported"
   , quoteDec  = error "Usage as a declaration is not supported" }
@@ -1179,10 +1245,10 @@ addDependentFile :: FilePath -> Q ()
 ## Example 3: the `file-embed` package
 
 Finally, in our last example, let's reimplement (in a simplified form) the
-popular package [`file-embed`][file-embed], which allows us to load the
-contents of a file and splice them as an `IsString a => a` value (the type of
-string literals in Haskell in the presence of the `OverloadedStrings` language
-extension).
+popular [`file-embed`][file-embed] package, which lets us load the contents of
+a file and splice them as an `IsString a => a` value—the type of string
+literals in Haskell in the presence of the `OverloadedStrings` language
+extension.
 
 If we have this in a `TH.hs` file:
 
@@ -1233,9 +1299,9 @@ further information, refer directly to the Haddocks:
 
 <https://hackage.haskell.org/package/template-haskell>
 
-The [`th-abstraction`][th-abstraction] package may also be of interest. It
-normalizes variations in the interface for inspecting datatype information
-across different versions of the `template-haskell` library.
+Remember to also consider the [`th-abstraction`][th-abstraction] package for
+real work. It normalizes variations in the interface for inspecting datatype
+information across different versions of the `template-haskell` library.
 
 Good luck!
 
@@ -1246,13 +1312,20 @@ Good luck!
 [gitrev]: https://hackage.haskell.org/package/gitrev
 [file-embed]: https://hackage.haskell.org/package/file-embed
 [th-abstraction]: https://hackage.haskell.org/package/th-abstraction
+[th-compat]: https://hackage.haskell.org/package/th-compat
+[th-lift-instances]: https://hackage.haskell.org/package/th-lift-instances
+[neat-interpolation]: https://hackage.haskell.org/package/neat-interpolation
+[string-interpolate]: https://hackage.haskell.org/package/string-interpolate
+[pyf]: https://hackage.haskell.org/package/PyF
 
 [dec]: https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#t:Dec
 [exp]: https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#t:Exp
 [texp]: https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#t:TExp
+[code]: https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#t:Code
 [type]: https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#t:Type
 [pat]: https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#t:Pat
 [quasi]: https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH-Syntax.html#t:Quasi
+[quote]: https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH-Syntax.html#t:Quote
 [quasi-quoter]: https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH-Quote.html#t:QuasiQuoter
 [reify]: https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#v:reify
 [info]: https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH.html#t:Info
@@ -1273,6 +1346,7 @@ Good luck!
 [lib-module]: https://hackage.haskell.org/package/template-haskell/docs/Language-Haskell-TH-Lib.html
 
 [typed-th]: https://www.cs.drexel.edu/~mainland/2013/05/31/type-safe-runtime-code-generation-with-typed-template-haskell/
+[code-texp-proposal]: https://ghc-proposals.readthedocs.io/en/latest/proposals/0195-code-texp.html
 [viewing-th-code]: https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/glasgow_exts.html#viewing-template-haskell-generated-code
 [orphan-instance]: https://wiki.haskell.org/Orphan_instance
 [generics]: /tutorial/generics.html

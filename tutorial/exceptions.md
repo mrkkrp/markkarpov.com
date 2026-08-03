@@ -169,7 +169,7 @@ let x = (1/0) + (error "Urk")
 in getException x == getException x
 ```
 
-Here, `getException :: a -> Either SomeException a` is a hypothetical function
+Here, `getException :: a -> Either Exception a` is a hypothetical function
 that allows us to catch exceptions in pure code. What this expression will
 return, `True` or `False`? It would seem natural to state that the result
 should be `True`, but it could be `False` just as well because of the
@@ -187,7 +187,7 @@ a non-strict language deterministic, so the next best thing we can do is to
 admit that `getException` cannot be deterministic in pure code, and so, we
 have to put it in `IO`.
 
-With `getException :: a -> IO (Either SomeException a)`, we can write:
+With `getException :: a -> IO (Either Exception a)`, we can write:
 
 ```haskell
 main :: IO ()

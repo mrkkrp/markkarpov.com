@@ -3,11 +3,8 @@ title: Haskell generics explained
 desc: This tutorial serves as an introduction to generics in GHC.
 date:
   published: November 22, 2019
-  updated: August 1, 2026
+  updated: August 3, 2026
 ---
-
-*This is a new, revised version of [the old tutorial I
-wrote][original-tutorial].*
 
 ```toc
 ```
@@ -92,12 +89,27 @@ which looks like this:
 fmap :: (a -> b) -> Rep f -> Rep f
 ```
 
-Here, `Rep f` maps to the type of the generic representation of `f :: * ->
-*`. There is a problem, though. You see, the functor's inner type that
-changes from `a` to `b` in this example is not found in `Rep f`! This
-approach works only for types of kind `*` and type classes such as `Show`.
-If we want to use this system to derive a `Functor` instance, we need to
-allow it to work with the kind `* -> *`.
+Here, `Rep f` is the generic representation of `f`, expressed with the
+combinators we introduced above. There is a problem, though. The whole point
+of `fmap` is to transform the values inside the functor, turning every `a`
+into a `b`. But look at the type: `Rep f` mentions neither `a` nor `b`. The
+representation we have built so far describes only the *shape* of a data
+type—its sums and products—and gives us no handle on the elements that
+`fmap` is supposed to touch.
+
+The reason is that our combinators can only stand in for a fully applied
+type, something of kind `Type`, like `Maybe Int`. That is enough for a class
+like `Show`, which inspects a complete value and never needs to know that the
+`Int` used to be a type variable. A `Functor`, on the other hand, operates on
+a type constructor of kind `Type -> Type`, such as `Maybe`, precisely because
+it needs to reach the argument and replace it. So to support `Functor` we
+must extend the representation to keep track of that argument.
+
+*A note on notation: throughout this tutorial we write kinds using `Type`,
+the kind of ordinary types, which is exported from `Data.Kind`. You may still
+see the old spelling `*` in older material; it means exactly the same thing.
+Modern GHC and its documentation print `Type`, and the `*` syntax is
+gradually being phased out.*
 
 The solution is to add one more type parameter `p` to all our combinators:
 
@@ -115,14 +127,14 @@ fmap :: (a -> b) -> Rep f a -> Rep f b
 --                  p  =  a    p  =  b
 ```
 
-But what happens to the type classes that work with the `*` kind? Our
+But what happens to the type classes that work with the `Type` kind? Our
 choices are:
 
-* Have a separate set of combinator types for each case (the `*` and `* ->
-  *` kinds).
+* Have a separate set of combinator types for each case (the `Type` and
+  `Type -> Type` kinds).
 
-* Use the most general form (with `p`), but for the `*` kind just treat the
-  extra `p` parameter as a dummy type index that has no meaning.
+* Use the most general form (with `p`), but for the `Type` kind just treat
+  the extra `p` parameter as a dummy type index that has no meaning.
 
 The authors of the generics extension went with the second option, and I
 can't blame them. We will see that there are already a lot of wrappers, and
@@ -135,27 +147,33 @@ still missing something:
 data Maybe a = Nothing | Just a
 
 -- Interestingly, we could build a representation that works on ‘Maybe a’,
--- that is, a thing of kind *, if we wanted to derive something like ‘Show’.
+-- that is, a thing of kind Type, if we wanted to derive something like ‘Show’.
 -- At the same time, if we wanted to derive ‘Functor’, we would work with
--- ‘Maybe’ of kind * -> *. This means that there are actually two different
+-- ‘Maybe’ of kind Type -> Type. This means that there are actually two different
 -- possible representations depending on our aim. This is addressed with two
 -- different generics type classes, as we will see later.
 
--- For kind *, things like ‘Show’:
+-- For kind Type, things like ‘Show’:
 
 -- type: (U1 :+: ?) p
 ```
 
-How do we represent `Just a`? We need a way to let it have an argument.
-Let's add the following:
+How do we represent `Just a`? The constructor `Just` holds a field, and so
+far none of our combinators can stand in for an arbitrary field type. What we
+need is a simple wrapper that carries the field's value while still exposing
+the dummy `p` parameter that all combinators must have:
 
 ```haskell
 data Rec0 c p = Rec0 { unRec0 :: c }
 ```
 
-The `Rec` part in the type's name hints that it may be recursive.
+Here `c` is the type of the field (the `a` in `Maybe a`), and `p` is the
+usual dummy parameter that `Rec0` ignores. The `Rec` part of the name is a
+reminder that such a field can also be a *recursive* occurrence of the data
+type we are representing—we will see exactly that when we get to lists.
 
-In fact, due to a historical accident, it's defined a bit differently:
+Due to a historical accident, `Rec0` is not a standalone type but a synonym
+for a more general wrapper called `K1`:
 
 ```haskell
 type Rec0 = K1 R
@@ -168,10 +186,11 @@ newtype K1 i c p = K1 { unK1 :: c } -- c is the value, ‘a’ in ‘Maybe a’
 -- type-level tag, R or P
 ```
 
-You see the type-level tag `R`? There used to be another one, `P`, along
-with the type synonym `type Par0 = K1 P`, which is now deprecated. Bottom
-line: `Rec0` is used for data constructor arguments (fields) that are not the
-`p` parameter.
+`K1` takes an extra type-level tag `i` whose only job is to distinguish
+different kinds of wrapped values. `Rec0` fixes that tag to `R`. There used
+to be a second tag, `P`, exposed as `type Par0 = K1 P`, but it is now
+deprecated. The bottom line is simple: `Rec0` wraps any constructor field
+that is *not* the `p` parameter.
 
 With `Rec0`, we can finally build the representation of `Maybe a`:
 
@@ -187,7 +206,7 @@ With `Rec0`, we can finally build the representation of `Maybe a`:
 --            +--- L1 and R1 are from our representation of sum types
 ```
 
-Let's derive a different representation that works with `* -> *` kinds:
+Let's derive a different representation that works with `Type -> Type` kinds:
 
 ```haskell
 -- Type of our representation: (U1 :+: ?) p
@@ -219,7 +238,7 @@ list:
 data List a = Nil | Cons a (List a)
 ```
 
-How do we build its generic representation for the kind `* -> *`? The tricky
+How do we build its generic representation for the kind `Type -> Type`? The tricky
 part is, of course, `List a`, which is a recursive occurrence of the entire
 functorish part with the parameter inside it. If we mark occurrences of the
 parameter with `Par1`, then why not mark this recursive occurrence too? For
@@ -242,24 +261,28 @@ second argument of `Cons`.
 ## The `Generic` and `Generic1` type classes
 
 The type classes that map types to their representations are called
-`Generic` (for type classes that work with the `*` kind) and `Generic1` (for
-type classes that work with the `* -> *` kind). They live in the module
-called `GHC.Generics`, together with the types used to build the data type
-representations that we have just discussed.
+`Generic` (for type classes that work with the `Type` kind) and `Generic1`
+(for type classes that work with the `Type -> Type` kind). They live in the
+module called `GHC.Generics`, together with the types used to build the data
+type representations that we have just discussed.
 
 Let's see what these type classes look like:
 
 ```haskell
 class Generic a where
-  type Rep a :: * -> *
+  type Rep a :: Type -> Type
   from :: a -> Rep a p
   to   :: Rep a p -> a
 
-class Generic1 f where
-  type Rep1 f :: * -> *
+class Generic1 (f :: k -> Type) where
+  type Rep1 f :: k -> Type
   from1 :: f p -> Rep1 f p
   to1   :: Rep1 f p -> f p
 ```
+
+*`Generic1` is nowadays poly-kinded: it works not only with the `Type ->
+Type` kind but with any `k -> Type`. For the purposes of this tutorial you
+can safely read `k` as `Type`.*
 
 `from` and `from1` map values of data types to their generic
 representations. `Rep` and `Rep1` are associated type functions (the feature
@@ -446,11 +469,23 @@ defaultCountFields = countFields . from
 ```
 
 But here is a catch—the code above does not compile. `CountFields` has the
-kind `CountFields :: * -> Constraint`, but we give it `Rep a`, which has the
-kind `* -> *`.
+kind `CountFields :: Type -> Constraint`, but we give it `Rep a`, which has
+the kind `Type -> Type`.
 
-The typical solution is to have a helper class that works with things of the
-`* -> *` kind (this also removes the `p` parameters from the signatures):
+The typical solution splits the work across two classes. We introduce a
+*separate* helper class, `CountFields1`, that operates directly on things of
+the `Type -> Type` kind (this also removes the `p` parameters from the
+signatures), and we move all the representation instances we wrote above onto
+it. `CountFields` is then demoted to a thin *frontend*: it keeps only its
+original, user-facing method `countFields :: a -> Natural` and no longer
+carries any representation instances itself.
+
+The result is a clear division of labor. `CountFields` remains the entry
+point—the class users write instances of and call `countFields` on—while
+`CountFields1` is the *backend* that does the actual work on the
+representation, hidden behind `CountFields`. The bridge between the two is
+`defaultCountFields`, which converts a value with `from` and hands it to
+`countFields1`; users never touch `CountFields1` directly.
 
 ```haskell
 class CountFields1 f where
@@ -542,7 +577,6 @@ a few interesting packages that complement or build on top of GHC generics.
 Once you feel comfortable with vanilla generics, libraries like
 [`generics-sop`][generics-sop] may be of interest.
 
-[original-tutorial]: https://www.stackbuilders.com/tutorials/haskell/generics/
-[data-typeable]: http://chrisdone.com/posts/data-typeable
+[data-typeable]: https://chrisdone.com/posts/data-typeable
 [ghc-generics-datatype]: https://hackage.haskell.org/package/base/docs/GHC-Generics.html#t:Datatype
 [generics-sop]: https://hackage.haskell.org/package/generics-sop

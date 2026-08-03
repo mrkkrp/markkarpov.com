@@ -1,15 +1,10 @@
 ---
 title: Exceptions tutorial
-desc: This is a tutorial about exceptions in Haskell which originally was written as a chapter for the Intermediate Haskell book.
+desc: This is a tutorial about exceptions in Haskell.
 date:
   published: March 3, 2019
-  updated: July 31, 2026
+  updated: August 3, 2026
 ---
-
-*This text originally was written as a chapter for the [Intermediate
-Haskell][ih] book. Due to lack of progress with the book in the last year,
-other authors agreed to let me publish the text as a standalone tutorial so
-that people can benefit at least from this part of our work.*
 
 ```toc
 ```
@@ -174,7 +169,7 @@ let x = (1/0) + (error "Urk")
 in getException x == getException x
 ```
 
-Here, `getException :: a -> Either Exception a` is a hypothetical function
+Here, `getException :: a -> Either SomeException a` is a hypothetical function
 that allows us to catch exceptions in pure code. What this expression will
 return, `True` or `False`? It would seem natural to state that the result
 should be `True`, but it could be `False` just as well because of the
@@ -192,7 +187,7 @@ a non-strict language deterministic, so the next best thing we can do is to
 admit that `getException` cannot be deterministic in pure code, and so, we
 have to put it in `IO`.
 
-With `getException :: a -> IO (Either Exception a)`, we can write:
+With `getException :: a -> IO (Either SomeException a)`, we can write:
 
 ```haskell
 main :: IO ()
@@ -341,6 +336,9 @@ class (Typeable e, Show e) => Exception e where
 
   displayException :: e -> String
   displayException = show
+
+  backtraceDesired :: e -> Bool
+  backtraceDesired _ = True
 ```
 
 First of all, an `Exception` needs to be printable (in case it bubbles to
@@ -348,6 +346,12 @@ the top level and terminates a program), hence `Show` is a superclass of
 `Exception`. `displayException` (which was added later) allows us to define
 a human-readable representation of exception, which is by default
 `show`-based.
+
+The `backtraceDesired` method was added in `base-4.20.0.0` (shipped with GHC
+9.10) as part of the machinery for automatically collecting backtraces when
+an exception is thrown. It lets an exception type opt out of backtrace
+collection; the default is `True`, meaning that backtraces are gathered by
+default. We will come back to backtraces in a moment.
 
 Of course, the interesting part of the definition here is the `toException`
 and `fromException` methods: they provide a way to inject and project an
@@ -403,10 +407,10 @@ without adding any information about the type of exception to catch, we will
 get an ambiguous type error.*
 
 `cast` can be used only with instances of `Typeable`, which is why it is a
-superclass of the `Exception` type class. The `Typeable` type class,
-derivable by the compiler with the `DeriveTypeable` language extension
-(which is not necessary with the newer versions of GHC), allows us to get
-the type of a value at runtime. We will not go into the details here, but
+superclass of the `Exception` type class. The `Typeable` type class allows us
+to get the type of a value at runtime. Every type is `Typeable` automatically;
+instances are solved by the compiler and cannot be written by hand (the old
+`DeriveTypeable` extension has been a no-op since GHC 7.10). We will not go into the details here, but
 suffice it to say that, knowing the type of a value, we can check whether it
 is the same as the type we want to convert to, so we can go from the abstract
 `e` to a concrete type.
@@ -426,8 +430,8 @@ quite simple to add another existential wrapper between `SomeException` and
 concrete instance of `Exception` with the aim of selecting a subset of all
 exceptions that are wrapped with that wrapper.
 
-Let's pick the `SomeAsyncException` from `base` as an example of such a
-wrapper. It is defined in the same fashion as `SomeException`:
+Let's pick `SomeAsyncException` from `base` as an example of such a wrapper.
+It is defined in the same fashion as `SomeException`:
 
 ```haskell
 data SomeAsyncException = forall e. Exception e => SomeAsyncException e
@@ -464,6 +468,176 @@ have a working hierarchy for our exceptions now.
 
 *This system of exception organization was proposed in the paper [An
 extensible Dynamically-Typed Hierarchy of Exceptions][ext-exceptions].*
+
+## Backtraces and exception context
+
+Historically, one of the weaker points of Haskell exceptions was the lack of
+good backtraces: when an exception bubbled to the top and terminated the
+program, it was often hard to tell where it had originated. GHC 9.10 (with
+`base-4.20.0.0`) shipped a systematic solution built around *exception
+context*, following the design of
+[GHC proposal #330][exception-backtraces-proposal].
+
+### Exception context
+
+The central idea is that `SomeException` now carries not only the wrapped
+exception value, but also an `ExceptionContext`—a bag of *annotations*
+attached to the exception. Recall the old definition:
+
+```haskell
+data SomeException = forall e. Exception e => SomeException e
+```
+
+Conceptually it now looks more like this:
+
+```haskell
+data SomeException =
+  forall e. Exception e => SomeException ExceptionContext e
+```
+
+An `ExceptionContext` is essentially a list of annotations. Because those
+annotations can be of different types, each one is hidden behind an
+existential wrapper (`SomeExceptionAnnotation`), much like `SomeException`
+itself hides the concrete exception type. Annotations can be attached at the
+point where an exception is thrown and accumulated as it travels up the
+stack.
+
+The most important kind of annotation is a `Backtrace`, which records where
+the exception was thrown. GHC can collect backtraces from several
+sources—`HasCallStack` call stacks, cost centre stacks (from profiling),
+DWARF execution stacks, and native Haskell execution stacks—and which of
+these are gathered is governed by the RTS. Crucially, the functions used to
+throw exceptions now carry a `HasCallStack` constraint:
+
+```haskell
+throw   :: (HasCallStack, Exception e) => e -> a
+throwIO :: (HasCallStack, Exception e) => e -> IO a
+```
+
+(These are the fuller, current signatures of the `throw` and `throwIO`
+functions we introduced earlier; we omitted the `HasCallStack` constraint
+before to keep the focus on evaluation versus execution.) This is what makes
+`HasCallStack` backtraces usable as annotations: as long as the chain of
+functions leading to the throw propagates `HasCallStack`, GHC can reconstruct
+a call stack and attach it automatically. The runtime cost is negligible
+because it only affects the cold failure path.
+
+### Controlling backtrace collection
+
+The `backtraceDesired` method we saw earlier is the opt-out switch for this
+mechanism. When GHC is about to throw an exception, it consults
+`backtraceDesired` to decide whether collecting a backtrace makes sense for
+that particular exception type. Control-flow exceptions for which a backtrace
+would be pure noise (for example, an exception used internally to implement
+early exit) can define `backtraceDesired _ = False`. There is also a
+`NoBacktrace` wrapper that suppresses backtrace collection for a specific
+throw site, regardless of the exception type:
+
+```haskell
+throwIO (NoBacktrace MyException)
+```
+
+A few functions from `Control.Exception` let us work with the context
+directly:
+
+* `addExceptionContext` attaches an annotation to an exception (this is how
+  backtraces get added in the first place):
+
+  ```haskell
+  addExceptionContext
+    :: ExceptionAnnotation a => a -> SomeException -> SomeException
+  ```
+
+* `someExceptionContext` extracts the `ExceptionContext` from a
+  `SomeException`.
+
+* The `ExceptionWithContext` pattern lets us catch an exception *together
+  with* its context, which is useful when we want to inspect or re-emit the
+  accumulated backtrace rather than discard it.
+
+* The `WhileHandling` annotation records the situation where an exception is
+  thrown while another exception is being handled, so that the original
+  context is not lost.
+
+### What this means in practice
+
+For everyday code none of this needs explicit handling—the payoff is simply
+that an uncaught exception now prints a useful backtrace by default:
+
+```
+myprogram: Prelude.head: empty list
+
+HasCallStack backtrace:
+  error, called at libraries/base/GHC/List.hs:1646:3 in base:GHC.List
+  errorEmptyList, called at libraries/base/GHC/List.hs:85:11 in base:GHC.List
+  badHead, called at libraries/base/GHC/List.hs:81:28 in base:GHC.List
+  head, called at app/Main.hs:12:14 in main:Main
+```
+
+There are, however, a few sharp edges worth keeping in mind:
+
+* **`displayException` does not print annotations.** The default
+  `displayException` shows only the exception value, so a backtrace can look
+  “missing” even though it is attached. The top-level handler installed by
+  the RTS does print the context, but if you write your own handler and want
+  to see the backtrace, you have to render the context yourself (for example
+  via `displayExceptionContext` on the result of `someExceptionContext`).
+
+* **Re-throwing a value of type `SomeException` clears the context.** If you
+  catch an exception as `e :: SomeException` and then `throwIO e`, the
+  accumulated context is *discarded*. The reason is subtle: `throwIO` calls
+  `toException` on its argument, and the `Exception` instance for
+  `SomeException` deliberately resets the context to empty:
+
+  ```haskell
+  instance Exception SomeException where
+    toException se = let ?exceptionContext = emptyExceptionContext in se
+    -- …
+  ```
+
+  So the offending step is not the `catch`, but throwing a value that is
+  *already* a `SomeException`, which re-normalizes it through this instance
+  and drops the annotations. To rethrow while preserving the context,
+  `Control.Exception` provides combinators that carry the context explicitly
+  in an `ExceptionWithContext`:
+
+  ```haskell
+  newtype ExceptionWithContext a = ExceptionWithContext ExceptionContext a
+
+  -- catch without adding a WhileHandling annotation:
+  catchNoPropagate
+    :: Exception e => IO a -> (ExceptionWithContext e -> IO a) -> IO a
+
+  -- rethrow the caught exception together with its original context:
+  rethrowIO :: Exception e => ExceptionWithContext e -> IO a
+
+  -- like try, but hand back the context alongside the exception:
+  tryWithContext
+    :: Exception e => IO a -> IO (Either (ExceptionWithContext e) a)
+  ```
+
+  A context-preserving catch-and-rethrow thus looks like this:
+
+  ```haskell
+  action `catchNoPropagate` \ec@(ExceptionWithContext _ e) -> do
+    cleanup e
+    rethrowIO ec
+  ```
+
+  In fact this is exactly how `base` itself now defines combinators such as
+  `onException`.
+
+* **Older GHCs lose context in `catch`/`bracket`.** In GHC 9.10 the
+  annotations tended to disappear during catch-and-rethrow cycles and around
+  `bracket`/`onException`. This was substantially improved in GHC 9.12 and
+  9.14, with further fixes slated for GHC 10.0, so if backtraces matter to
+  you it is worth being on a recent GHC.
+
+The main takeaway is that `SomeException` is no longer just an existential
+wrapper around a value: it also carries context, and that context is part of
+what flows through `catch`, `throwIO`, and friends. Most of the time you get
+the benefit for free, but once you start catching and re-throwing exceptions
+yourself, it pays to be deliberate about preserving that context.
 
 ## Asynchronous exceptions
 
@@ -556,9 +730,18 @@ is the function to run with asynchronous exceptions disabled or “masked” (or
 rather delayed). That function in turn receives another callback that allows
 us to unmask asynchronous exceptions.
 
-On a lower level, there are wrappers like `block :: IO a -> IO a` and
-`unblock :: IO a -> IO a` that modify the *masking state* of a thread while
-the inner code is executed. When `block` and `unblock` are nested, only the
+Underlying all of this is the notion of the *masking state* of a thread,
+which determines whether asynchronous exceptions can be delivered to it.
+Historically, `base` exposed two low-level wrappers, `block :: IO a -> IO a`
+and `unblock :: IO a -> IO a`, that set this state directly for the duration
+of the inner computation. They were deprecated in favor of `mask` and removed
+in `base-4.7` (GHC 7.8), because using them safely turned out to be too
+error-prone—`mask` is a strictly better interface. We will nonetheless refer
+to hypothetical `block`/`unblock` operations below purely as a way to talk
+about the masking state; think of them as pseudo-code, not functions you can
+call today.
+
+The essential rule is that when masking-state changes are nested, only the
 innermost layer matters:
 
 ```haskell
@@ -582,7 +765,9 @@ data MaskingState
   | MaskedUninterruptible -- ^ Thread is inside uninterruptibleMask.
 ```
 
-`mask` is defined like this:
+Conceptually, `mask` behaves as if it were defined like this (using the
+hypothetical `block`/`unblock`/`blockUninterruptible` operations to set the
+masking state):
 
 ```haskell
 mask :: ((forall a. IO a -> IO a) -> IO b) -> IO b
@@ -722,8 +907,9 @@ Now that we know that masking asynchronous exceptions with `mask` can be
 pierced, we also need to discuss a way to mask in an uninterruptible fashion
 and when it is useful.
 
-Similar to `mask`, there is `uninterruptibleMask`, which uses
-`blockUninterruptible` instead of `block`. It should be noted that the
+Similar to `mask`, there is `uninterruptibleMask`, which sets the masking
+state to `MaskedUninterruptible` instead of `MaskedInterruptible`. It should
+be noted that the
 ability to interrupt operations is there for a good reason: if your program
 hangs inside of an uninterruptible mask, it will become unresponsive and
 there will be no way to kill it.
@@ -827,7 +1013,12 @@ a temporary directory and then deletes it), it is only guaranteed to clean
 up properly if it is run in the main thread. The most natural solution to
 this is not to fork manually, but with `withAsync` from the [`async`][async]
 package. That function will ensure that the forked thread is killed when the
-inner computation returns or throws.*
+inner computation returns or throws. The `async` package was written by Simon
+Marlow, and his book [*Parallel and Concurrent Programming in
+Haskell*][parallel-and-concurrent] is the definitive, authoritative treatment
+of how it uses asynchronous exceptions to build safe, structured concurrency
+(see in particular the chapters on `Async` and on cancellation); we refer the
+reader there rather than reproducing that material here.*
 
 ### The `throwTo` function
 
@@ -914,10 +1105,11 @@ Here we just briefly enumerate the main points for curious readers:
    current masking state so it can be restored after handling an exception.
 
 5. Two more marks (or “frames” in the terminology of the above-mentioned
-   paper) are necessary: one for `block` and another one for `unblock`. When
-   execution passes either of these, masking state changes accordingly.
-   There are also some rules for keeping the evaluation stack from growing
-   unnecessarily, but we will not include them here.
+   paper) are necessary: one for entering a masked region and another one for
+   restoring the previous masking state. When execution passes either of
+   these, masking state changes accordingly. There are also some rules for
+   keeping the evaluation stack from growing unnecessarily, but we will not
+   include them here.
 
 6. `throwTo` simply places an exception in the queue of the target thread,
    then blocks until the exception is delivered.
@@ -934,7 +1126,11 @@ straightforward, and `base` cannot depend on [`transformers`][transformers].
 In this section, we are going to look at the [`exceptions`][exceptions]
 package first. Then we will consider a somewhat more flexible but
 lower-level alternative in the form of the [`monad-control`][monad-control]
-package. Finally, we will examine the newer [`unliftio`][unliftio] package.
+package. Finally, we will examine the [`unliftio`][unliftio] package. These
+days the community has largely consolidated on the `unliftio` approach for new
+code, so if you just want a recommendation, skip to that part; the
+`monad-control` material is included mostly to explain a technique you will
+still encounter in existing libraries.
 
 ### Lifting with `exceptions`
 
@@ -953,7 +1149,7 @@ setting also shortcuts execution):
 
 ```haskell
 class Monad m => MonadThrow m where
-  throwM :: Exception e => e -> m a
+  throwM :: (HasCallStack, Exception e) => e -> m a
 
 instance MonadThrow [] where
   throwM _ = []
@@ -1104,8 +1300,9 @@ bracket acquire release use = mask $ \unmasked -> do
   return result
 ```
 
-It does make sense, although the generality of the lifting technique until
-recently did not extend quite long enough to support all useful monads.
+It does make sense, although, as we will see shortly, this `mask`-based
+formulation does not extend quite far enough to support all useful monads
+(notably short-circuiting ones like `ExceptT`).
 Also, when we deal with stateful monadic stacks, there may be several
 different implementations of `bracket` that differ in how the state is
 passed around, and depending on your use-case, you may want one or another:
@@ -1152,14 +1349,14 @@ definition of `bracket` we can see that if `acquire` or `use resource`
 happen to return something inside `Left`, the later actions (including
 `release`) have no chance to run—guarantees of `bracket` are broken.
 
-Until recently `MonadMask` had to rely on the guarantee that `MonadCatch`
+Early versions of `MonadMask` had to rely on the guarantee that `MonadCatch`
 catches all possible exceptions and there is no other way for the
 computation to exit early—therefore, although there was a possible instance
 of `MonadCatch` for `ExceptT`, it was not considered valid and so there was
 no `MonadMask` instance for `ExceptT`.
 
-Since version `0.9.0` of the `exceptions` package, the problem is solved by
-introducing a new method of the `MonadMask` type class:
+The `exceptions` package solves this with a third method of the `MonadMask`
+type class, `generalBracket`:
 
 ```haskell
 generalBracket
@@ -1286,8 +1483,8 @@ type RunInBase m b = forall a. m a -> b (StM m a)          -- (5)
    `b` is uniquely identified by the choice of `m`.
 
 2. `StM m a` is an associated type of the type class `MonadBaseControl`.
-   This feature is enabled by the `-XTypeFamilies` language extension. This
-   is the type of state we have talked about.
+   This feature is enabled by the `TypeFamilies` language extension. This is
+   the type of state we have talked about.
 
 3. `liftBaseWith` is a function that takes another function `RunInBase m b
    -> b a`, inside which we generate a value in base monad `b`. The
@@ -1393,7 +1590,7 @@ instance MonadTransControl (ReaderT r) where
 instance MonadTransControl (StateT s) where
   type StT (StateT s) a = (a, s)
   liftWith f = StateT $ \s ->
-    liftM (\x -> (x, s)) (f $ \t -> runStateT t s)
+    fmap (\x -> (x, s)) (f $ \t -> runStateT t s)
   restoreT = StateT . const
 ```
 
@@ -1463,18 +1660,11 @@ stacks but it takes a bit different form:
 ```haskell
 class MonadIO m => MonadUnliftIO m where
 
-  -- | Capture the current monadic context, providing the ability to
-  -- run monadic actions in 'IO'.
-
-  askUnliftIO :: m (UnliftIO m)
-  askUnliftIO = withRunInIO (\run -> return (UnliftIO run))
-
   -- | Convenience function for capturing the monadic context and running an 'IO'
   -- action with a runner function. The runner function is used to run a monadic
   -- action @m@ in @IO@.
 
   withRunInIO :: ((forall a. m a -> IO a) -> IO b) -> m b
-  withRunInIO inner = askUnliftIO >>= \u -> liftIO (inner (unliftIO u))
 
 -- | The ability to run any monadic action @m a@ as @IO a@.
 --
@@ -1483,17 +1673,44 @@ class MonadIO m => MonadUnliftIO m where
 -- support in GHC for impredicative types.
 
 newtype UnliftIO m = UnliftIO { unliftIO :: forall a. m a -> IO a }
+
+-- | Capture the current monadic context, providing the ability to
+-- run monadic actions in 'IO'.
+
+askUnliftIO :: MonadUnliftIO m => m (UnliftIO m)
+askUnliftIO = withRunInIO (\run -> return (UnliftIO run))
 ```
+
+The class has a single method, `withRunInIO`. Earlier versions of `unliftio`
+also had `askUnliftIO` as a method with each defined in terms of the other,
+but the class was later slimmed down: `askUnliftIO` is now a plain
+definition built on top of `withRunInIO`, shown here below the class.
 
 `withRunInIO` is essentially the same thing as `liftBaseWith` from
 `monad-control`, only specialized to `IO` as the base monad (the most common
-use case, if not the only). The `UnliftIO` newtype is necessary to be able
-to return a function that has universally quantified arguments (introduced
-with `forall`s) in its signature (this is the “impredicative polymorphism”
-the documentation mentions). We only need this in `askUnliftIO`. The method
-is rather unique to `unliftio`: it provides the running function `forall a.
-m a -> IO a` that one can pass around freely and apply several times, to
-different `a` types.
+use case, if not the only). It hands us a *runner*—a function of type `forall
+a. m a -> IO a` that turns any action in our monad `m` into an `IO` action—so
+that inside the callback we can drop down to plain `IO`, use functions like
+`catch` and `bracket` from `base`, and run bits of `m` whenever we need to.
+
+The `UnliftIO` newtype shown above is simply a wrapper around such a runner.
+Historically the wrapper was considered necessary because the runner is
+universally quantified (it works for *any* `a`), and returning a bare
+`forall`-quantified function as a first-class value requires *impredicative
+polymorphism*, which GHC did not support reliably—this is the limitation the
+newtype's Haddock comment refers to. That comment is now somewhat dated: GHC
+has had robust `ImpredicativeTypes` (via the Quick Look algorithm) since GHC
+9.2, so the bare `forall` type is no longer strictly out of reach. The
+`newtype` nonetheless remains for compatibility, and it is convenient in its
+own right—wrapping the runner gives it a name and lets us pass it around
+without pinning down the impredicative machinery.
+
+We only need the `UnliftIO` wrapper (and hence `askUnliftIO`) when we want to
+capture the runner as a first-class value and pass it around; `withRunInIO`
+covers the common case where we just want to use the runner within a single
+callback. Either way, the running function can be applied several times, to
+different `a` types—that reusability is what makes it more convenient than
+`monad-control`'s `RunInBase`.
 
 The second difference between the library and `monad-control` is that it
 only defines instances of `MonadUnliftIO` for stateless monadic stacks which
@@ -1520,11 +1737,11 @@ catchErrorCall m = catch m h
 
 synchronous :: IO ()
 synchronous = catchErrorCall $
-  throwIO (ErrorCallWithLocation "Synchronously thrown." "")
+  throwIO (ErrorCall "Synchronously thrown.")
 
 asynchronous :: IO ()
 asynchronous = withAsync (catchErrorCall (threadDelay 1000000)) $ \a ->
-  throwTo (asyncThreadId a) (ErrorCallWithLocation "Asynchronously thrown." "")
+  throwTo (asyncThreadId a) (ErrorCall "Asynchronously thrown.")
 ```
 
 ```
@@ -1559,11 +1776,13 @@ import Control.Concurrent
 import Control.Concurrent.Async
 import Control.Exception
 
-catchOnlySync :: Exception e => IO a -> (e -> IO a) -> IO a
-catchOnlySync = catchJust $ \e -> -- catchJust from Control.Exception
-  case fromException e of
-    Nothing -> fromException e
-    Just (SomeAsyncException _) -> Nothing
+catchOnlySync :: IO a -> (SomeException -> IO a) -> IO a
+catchOnlySync = catchJust selectSync -- catchJust from Control.Exception
+  where
+    selectSync :: SomeException -> Maybe SomeException
+    selectSync e = case fromException e of
+      Just (SomeAsyncException _) -> Nothing -- async: leave it alone
+      Nothing -> Just e  -- sync: catch it
 
 catchAllSync :: IO () -> IO ()
 catchAllSync m = catchOnlySync m h
@@ -1573,7 +1792,7 @@ catchAllSync m = catchOnlySync m h
 
 synchronous :: IO ()
 synchronous = catchAllSync $
-  throwIO (ErrorCallWithLocation "A synchronous exception." "")
+  throwIO (ErrorCall "A synchronous exception.")
 
 asynchronous :: IO ()
 asynchronous = withAsync (catchAllSync action) $ \a ->
@@ -1630,9 +1849,7 @@ difference is that the functions are lifted with `MonadUnliftIO` instead of
 being defined in terms of classes from `exceptions`. We recommend just using
 the `UnliftIO.Exception` module from `unliftio`.
 
-[ih]: https://intermediatehaskell.com/
 [hasql]: https://hackage.haskell.org/package/hasql
-[deepseq]: https://hackage.haskell.org/package/deepseq
 [base]: https://hackage.haskell.org/package/base
 [async]: https://hackage.haskell.org/package/async
 [transformers]: https://hackage.haskell.org/package/transformers
@@ -1641,11 +1858,12 @@ the `UnliftIO.Exception` module from `unliftio`.
 [unliftio]: https://hackage.haskell.org/package/unliftio
 [a-semantics-for-imprecise-exceptions]: https://www.microsoft.com/en-us/research/wp-content/uploads/1999/05/except.pdf
 [exception-hierarchy]: /static/img/exception-hierarchy.svg
-[ext-exceptions]: http://community.haskell.org/~simonmar/papers/ext-exceptions.pdf
-[parallel-and-concurrent]: http://chimera.labs.oreilly.com/books/1230000000929
+[ext-exceptions]: https://simonmar.github.io/bib/papers/ext-exceptions.pdf
+[parallel-and-concurrent]: https://simonmar.github.io/pages/pcph.html
 [bracket]: https://ro-che.info/articles/2014-07-30-bracket
 [async-exceptions-in-haskell]: https://www.microsoft.com/en-us/research/wp-content/uploads/2016/07/asynch-exns.pdf
 [general-bracket]: https://hackage.haskell.org/package/exceptions/docs/Control-Monad-Catch.html#v:generalBracket
+[exception-backtraces-proposal]: https://github.com/ghc-proposals/ghc-proposals/blob/master/proposals/0330-exception-backtraces.rst
 [safe-exceptions]: https://hackage.haskell.org/package/safe-exceptions
 [safe-exceptions-readme]: https://github.com/fpco/safe-exceptions#readme
 [existentials]: /post/existential-quantification.html

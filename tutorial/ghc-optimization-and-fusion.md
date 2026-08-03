@@ -3,11 +3,8 @@ title: GHC optimization and fusion
 desc: The tutorial is my attempt to explain all important GHC optimization ideas in one place. I included some benchmarked examples that should help to demonstrate the techniques in practice.
 date:
   published: November 22, 2019
-  updated: August 1, 2026
+  updated: August 4, 2026
 ---
-
-*This is a new, revised version of [the old tutorial I
-wrote][original-tutorial].*
 
 ```toc
 ```
@@ -81,7 +78,7 @@ following:
   side (LHS) of their definition.* This makes sense, because otherwise the
   body would need to be wrapped in a lambda anyway.
 
-  To clarify, let's steal one more example from the GHC user guide:
+  To clarify, let's steal an example from the GHC user guide:
 
   ```haskell
   comp1 :: (b -> c) -> (a -> b) -> a -> c
@@ -222,72 +219,63 @@ module Goaf
 where
 
 inlining0 :: Int -> Int
-inlining0 x =
-  product [x..1000000] +
-  product [x..1000000] +
-  product [x..1000000] +
-  product [x..1000000] +
-  product [x..1000000] +
-  product [x..1000000] +
-  product [x..1000000]
+inlining0 0 = 0
+inlining0 n = n * n + inlining0 (n - 1)
 ```
 
-Here I managed to convince GHC that `inlining0` doesn't look very
-inlineable. If we compile with `-O2` (as we will do in every example from
-now on) and dump the `Goaf.hi` interface file, we will see no unfolding of
-`inlining0`'s body (if you use a different version of GHC, you may be unable
-to reproduce this output exactly):
+`inlining0` is self-recursive, so GHC will not consider it for inlining, and
+by default it will not dump its unfolding into the interface file either. If
+we compile with `-O2` (as we will do in every example from now on) and dump
+the `Goaf.hi` interface file, we will see no unfolding of the recursive
+worker's body (the exact output depends on your GHC version; this is from GHC
+9.10):
 
 ```
 $ ghc --show-iface Goaf.hi
 
 …
 
-142c0e92c650162b33735c798cb20be3
-  $winlining0 :: Int# -> Int#
-  {- Arity: 1, HasNoCafRefs, Strictness: <S,U>, Inline: [0] -}
-e447f016aa264b71f156911b664944d0
-  inlining0 :: Int -> Int
-  {- Arity: 1, HasNoCafRefs, Strictness: <S(S),1*U(U)>m,
-     Inline: INLINE[0],
-     Unfolding: InlineRule (1, True, False)
-                (\ (w :: Int) ->
-                 case w of ww { I# ww1 ->
-                 case $winlining0 ww1 of ww2 { DEFAULT -> I# ww2 } }) -}
+  $winlining0 :: GHC.Prim.Int# -> GHC.Prim.Int#
+  [HasNoCafRefs, TagSig: <TagDunno>, LambdaFormInfo: LFReEntrant 1,
+   Arity: 1, Strictness: <1L>, Inline: [2]]
+
+  inlining0 :: GHC.Types.Int -> GHC.Types.Int
+  [HasNoCafRefs, TagSig: <TagProper>, LambdaFormInfo: LFReEntrant 1,
+   Arity: 1, Strictness: <1!P(1L)>, CPR: 1, Inline: [2],
+   Unfolding: Core: StableSystem <1,TrueFalse>
+              \ (ds :: GHC.Types.Int) ->
+              case ds of wild { GHC.Types.I# ww ->
+              case $winlining0 ww of ww1 { DEFAULT -> GHC.Types.I# ww1 } }]
 
 …
 ```
 
 `$winlining0` is a compiled function that works on unboxed integers `Int#`,
-and it is not inlineable. `inlining0` itself is a thin wrapper around it that
-turns the result of type `Int#` into a normal `Int` by wrapping it with
-`Int`'s constructor `I#`. We will not go into a detailed explanation of
-unboxed data and primitives, but `Int#` is just your bare-metal,
-hard-working C `int`, while `Int` is our familiar boxed, lazy Haskell `Int`.
+and it does the actual recursion. `inlining0` itself is a thin wrapper around
+it that unwraps its `Int` argument and wraps the result of type `Int#` back
+into a normal `Int` using `Int`'s constructor `I#`. We will not go into a
+detailed explanation of unboxed data and primitives, but `Int#` is just your
+bare-metal, hard-working C `int`, while `Int` is our familiar boxed, lazy
+Haskell `Int`.
 
 We see two important things here:
 
-* `inlining0` itself (in the form of `$winlining0`) is not dumped into the
-  interface file, which means that we have lost the ability to look inside
-  it.
+* The body of the recursive worker `$winlining0` is *not* dumped into the
+  interface file—there is no `Unfolding:` line for it—which means that other
+  modules have lost the ability to look inside it.
 
-* Still, GHC turned the `inlining0` function into a wrapper that is itself
-  inlineable. The idea is that if `inlining0` is called in an arithmetic
-  context with some other operations on `Int`s, GHC might be able to optimize
-  further and better glue together the things that work on `Int#`s.
+* Still, GHC turned `inlining0` itself into a small wrapper whose unfolding
+  *is* dumped (that's the `Unfolding: Core: StableSystem` part). The idea is
+  that if `inlining0` is called in an arithmetic context with some other
+  operations on `Int`s, GHC might be able to inline the wrapper and better
+  glue together the things that work on `Int#`s.
 
 Now let's use the `INLINEABLE` pragma:
 
 ```haskell
 inlining1 :: Int -> Int
-inlining1 x =
-  product [x..1000000] +
-  product [x..1000000] +
-  product [x..1000000] +
-  product [x..1000000] +
-  product [x..1000000] +
-  product [x..1000000] +
-  product [x..1000000]
+inlining1 0 = 0
+inlining1 n = n * n + inlining1 (n - 1)
 {-# INLINEABLE inlining1 #-}
 ```
 
@@ -296,27 +284,31 @@ which results in:
 ```
 …
 
-033f89de148ece86b9e431dfcd7dde8c
-  $winlining1 :: Int# -> Int#
-  {- Arity: 1, HasNoCafRefs, Strictness: <S,U>, Inline: INLINABLE[0],
-     Unfolding: <stable> (\ (ww :: Int#) ->
+  $winlining1 :: GHC.Prim.Int# -> GHC.Prim.Int#
+  [HasNoCafRefs, TagSig: <TagDunno>, LambdaFormInfo: LFReEntrant 1,
+   Arity: 1, Strictness: <1L>, Inline: [2],
+   Unfolding(loop-breaker): Core: StableUser
+                            \ (ww :: GHC.Prim.Int#) ->
+                            case ww of ds {
+                              DEFAULT
+                              -> case $winlining1 (GHC.Prim.-# ds 1#) of ww1 { DEFAULT ->
+                                 GHC.Prim.+# (GHC.Prim.*# ds ds) ww1 }
+                              0# -> 0# }]
 
-       … a LOT of code…
-
-6a60cad1d71ad9dfde046c97c2b6f2e9
-  inlining1 :: Int -> Int
-  {- Arity: 1, HasNoCafRefs, Strictness: <S(S),1*U(U)>m,
-     Inline: INLINE[0],
-     Unfolding: InlineRule (1, True, False)
-                (\ (w :: Int) ->
-                 case w of ww { I# ww1 ->
-                 case $winlining1 ww1 of ww2 { DEFAULT -> I# ww2 } }) -}
+  inlining1 :: GHC.Types.Int -> GHC.Types.Int
+  [HasNoCafRefs, TagSig: <TagProper>, LambdaFormInfo: LFReEntrant 1,
+   Arity: 1, Strictness: <1!P(1L)>, CPR: 1, Inline: [2],
+   Unfolding: Core: StableSystem <1,TrueFalse>
+              \ (ds :: GHC.Types.Int) ->
+              case ds of wild { GHC.Types.I# ww ->
+              case $winlining1 ww of ww1 { DEFAULT -> GHC.Types.I# ww1 } }]
 ```
 
-The result is almost the same, but now we have the complete unfolding of
-`$winlining1` in our interface file. It is unlikely that this will improve
-performance considerably, because our functions are rather slow and executed
-only once:
+The wrapper looks the same as before, but now the recursive worker
+`$winlining1` has a complete unfolding in our interface file (the
+`Unfolding(loop-breaker): Core: StableUser` part). It is unlikely that this
+will improve performance of a call like this considerably, because our
+function is rather slow and executed only once:
 
 ```
 benchmarking inlining0
@@ -332,7 +324,9 @@ mean                 5.447 ms   (5.432 ms .. 5.458 ms)
 std dev              38.08 μs   (28.36 μs .. 58.38 μs)
 ```
 
-As expected, inlining gives only marginal improvement in this case.
+As expected, `INLINEABLE` gives only marginal improvement in this case. Its
+real value is that the worker's body is now available for cross-module
+inlining and specialization, as we'll see shortly.
 
 It turns out that inlining is not the only thing that requires access to the
 function body to work; some other optimizations do as well. The `INLINEABLE`
@@ -366,7 +360,7 @@ get the `IORef` of the global manager, the following code is used:
 ```haskell
 globalManager :: IORef Manager
 globalManager =
-  unsafePerformIO (newManager tlsManagerSettings >>= newIORef)
+  unsafePerformIO (newTlsManager >>= newIORef)
 {-# NOINLINE globalManager #-}
 ```
 
@@ -395,7 +389,8 @@ foo = …
 
 This means that the function should work differently for different `a`s.
 This is accomplished by passing around a dictionary that is indexed by the
-methods of a given type class. The example above turns into:
+methods of a given type class. During compilation, the example above turns
+into:
 
 ```haskell
 foo :: Num a -> a -> a
@@ -488,43 +483,50 @@ special0 :: Int -> Int
 special0 x = special0' x `rem` 10
 ```
 
-In the interface file we get:
+In the interface file we get (I've elided the very long body of the
+specialized worker):
 
 ```
 …
 
-3d2b7aef38f4af3a87867079a7fb9d7d
-  $w$sspecial0' :: Int# -> Int#
-  {- Arity: 1, HasNoCafRefs, Strictness: <S,U>, Inline: [0] -}
+  $w$sspecial0' :: GHC.Prim.Int# -> GHC.Prim.Int#
+  [HasNoCafRefs, LambdaFormInfo: LFReEntrant 1, Arity: 1,
+   Strictness: <L>, Inline: [2],
+   Unfolding: Core: <vanilla>
+              \ (ww :: GHC.Prim.Int#) -> … a LOT of code …]
 
-9aab4f68c56ea324d5b4f1ae96f44304
-  special0 :: Int -> Int
-  {- Arity: 1, HasNoCafRefs, Strictness: <S(S),1*U(U)>m,
-     Unfolding: InlineRule (1, True, False)
-                (\ (x :: Int) ->
-                 case special0_$sspecial0' x of wild2 { I# x1 ->
-                 I# (remInt# x1 10#) }) -}
-97c360215ea1cab7acdf5a4928d349e8
-  special0' :: (Num a, Enum a) => a -> a
-  {- Arity: 3, HasNoCafRefs,
-     Strictness: <S(C(C(S))LLLLLL),U(C(C1(U)),A,U,A,A,A,C(U))><L,U(A,A,A,A,A,A,C(C1(U)),A)><L,U> -}
-efc0709eeb0afdb2be8cdce06cc54623
-  special0_$sspecial0' :: Int -> Int
-  {- Arity: 1, HasNoCafRefs, Strictness: <S(S),1*U(U)>m,
-     Inline: INLINE[0],
-     Unfolding: InlineRule (1, True, False)
-                (\ (w :: Int) ->
-                 case w of ww { I# ww1 ->
-                 case $w$sspecial0' ww1 of ww2 { DEFAULT -> I# ww2 } }) -}
-"SPEC special0' @ Int" [ALWAYS] forall ($dNum :: Num Int)
-                                       ($dEnum :: Enum Int)
-  special0' @ Int $dNum $dEnum = special0_$sspecial0'
+  special0 :: GHC.Types.Int -> GHC.Types.Int
+  [HasNoCafRefs, TagSig: <TagProper>, LambdaFormInfo: LFReEntrant 1,
+   Arity: 1, Strictness: <1!P(L)>, CPR: 1,
+   Unfolding: Core: StableSystem <1,TrueFalse>
+              \ (x :: GHC.Types.Int) ->
+              case special0_$sspecial0' x of a1 { GHC.Types.I# ipv ->
+              GHC.Types.I# (GHC.Prim.remInt# ipv 10#) }]
+
+  special0' ::
+    (GHC.Internal.Num.Num a, GHC.Internal.Enum.Enum a) => a -> a
+  [HasNoCafRefs, LambdaFormInfo: LFReEntrant 3, Arity: 3,
+   Strictness: <SP(SC(S,C(1,L)),A,LC(L,C(1,L)),A,A,A,L)>…]
+
+  special0_$sspecial0' :: GHC.Types.Int -> GHC.Types.Int
+  [HasNoCafRefs, TagSig: <TagProper>, LambdaFormInfo: LFReEntrant 1,
+   Arity: 1, Strictness: <1!P(L)>, CPR: 1, Inline: [2],
+   Unfolding: Core: StableSystem <1,TrueFalse>
+              \ (x :: GHC.Types.Int) ->
+              case x of wild { GHC.Types.I# ww ->
+              case $w$sspecial0' ww of ww1 { DEFAULT -> GHC.Types.I# ww1 } }]
+
+"SPEC special0' @Int" forall ($dNum :: GHC.Internal.Num.Num GHC.Types.Int)
+                             ($dEnum :: GHC.Internal.Enum.Enum GHC.Types.Int).
+  special0' @GHC.Types.Int $dNum $dEnum = special0_$sspecial0'
 ```
 
 GHC is really good at specializing when a polymorphic function is defined and
 used in the same module. I could not really find a case where GHC would fail
 to specialize on its own, bravo! The specialized version of `special0'` is
-called `$w$sspecial0'` here, and it works on `Int#` for maximal speed.
+called `$w$sspecial0'` here, and it works on `Int#` for maximal speed. Note
+the `"SPEC special0' @Int"` rewrite rule at the bottom: it rewrites any call
+of `special0'` at type `Int` into a call of the specialized version.
 
 What else do we see? `special0'` is compiled, but not dumped into the
 interface file. This means that if we use it from another module, we should
@@ -574,19 +576,21 @@ special0' x =
 {-# SPECIALIZE special0' :: Int -> Int #-}
 ```
 
-This brings our specialization back:
+This brings our specialization back (GHC labels rules generated from an
+explicit `SPECIALIZE` pragma with `USPEC`, for “user SPEC”):
 
 ```
-  special0'_$sspecial0' :: Int -> Int
-  {- Arity: 1, HasNoCafRefs, Strictness: <S(S),1*U(U)>m,
-     Inline: INLINE[0],
-     Unfolding: InlineRule (1, True, False)
-                (\ (w :: Int) ->
-                 case w of ww { I# ww1 ->
-                 case $w$sspecial0' ww1 of ww2 { DEFAULT -> I# ww2 } }) -}
-"SPEC special0'" [ALWAYS] forall ($dNum :: Num Int)
-                                 ($dEnum :: Enum Int)
-  special0' @ Int $dNum $dEnum = special0'_$sspecial0'
+  special0'_$sspecial0' :: GHC.Types.Int -> GHC.Types.Int
+  [HasNoCafRefs, TagSig: <TagProper>, LambdaFormInfo: LFReEntrant 1,
+   Arity: 1, Strictness: <1!P(L)>, CPR: 1, Inline: [2],
+   Unfolding: Core: StableSystem <1,TrueFalse>
+              \ (x :: GHC.Types.Int) ->
+              case x of wild { GHC.Types.I# ww ->
+              case $w$sspecial0' ww of ww1 { DEFAULT -> GHC.Types.I# ww1 } }]
+
+"USPEC special0' @Int" forall ($dEnum :: GHC.Internal.Enum.Enum GHC.Types.Int)
+                              ($dNum :: GHC.Internal.Num.Num GHC.Types.Int).
+  special0' @GHC.Types.Int $dNum $dEnum = special0'_$sspecial0'
 ```
 
 And `special0_alt` starts to run fast again:
@@ -795,9 +799,13 @@ have the potential to interfere with each other in undesirable ways. There
 must be a way to say: this should happen first, that should happen after.
 Well, there is a way.
 
-GHC has the concept of *simplifier phases*. The phases are numbered. The
-first phase that runs currently has the number 4, followed by numbers 3, 2,
-1, and finally the last phase, which has the number 0.
+GHC has the concept of *simplifier phases*. The phases are numbered and run
+in decreasing order towards zero. By default (controlled by
+`-fsimplifier-phases`, which defaults to `2`) the numbered phases are 2, 1,
+and finally the last phase, which has the number 0. There is also an initial
+“gentle” phase that runs before the numbered ones, but you cannot attach
+phase numbers to it, so for our purposes the phases we can talk about are 2,
+1, and 0.
 
 Unfortunately, the phase separation does not give fine-grained control, but
 just enough for us to construct something that works. In an ideal world, we
@@ -1663,13 +1671,35 @@ fusedFilter       80,000,016  153  OK
 The introduction of `Skip` promised fame and fortune, but it's not much of an
 improvement in this case.
 
-[original-tutorial]: https://www.stackbuilders.com/tutorials/haskell/ghc-optimization-and-fusion/
-[secrets-of-ghc-inliner]: http://research.microsoft.com/en-us/um/people/simonpj/Papers/inlining/inline.pdf
+## Conclusion
+
+Writing fast Haskell is predicated on understanding what GHC does with your
+code. The pragmas from the first half of this tutorial and the rewrite rule
+machinery are the tools you use to guide the compiler, and fusion is what
+those tools make possible: a way to eliminate intermediate data structures
+so that a pipeline of transformations runs in a single pass with no
+allocation in between.
+
+The takeaways worth remembering:
+
+* Reach for benchmarking ([`criterion`][criterion]) and allocation
+  measurement ([`weigh`][weigh]) before optimizing. Guessing at performance
+  is unreliable; GHC's behavior is easy to confirm and often surprising.
+* Rewrite rules are not checked for correctness—it is on you to ensure that
+  the two sides are equivalent, that your rules are confluent, and that
+  phase control lets them fire in the right order.
+* Fusion frameworks such as stream fusion are already implemented for you in
+  libraries like [`vector`][vector] and [`text`][text]. Most of the time the
+  right move is to use them rather than roll your own.
+
+[original-tutorial]: https://www.stackbuilders.com/insights/ghc-optimization-and-fusion/
+[secrets-of-ghc-inliner]: https://www.microsoft.com/en-us/research/wp-content/uploads/2002/07/inline.pdf
 [object-file]: https://en.wikipedia.org/wiki/Object_file
+[criterion]: https://hackage.haskell.org/package/criterion
 [http-client-tls]: https://hackage.haskell.org/package/http-client-tls
 [weigh]: https://hackage.haskell.org/package/weigh
 [repa]: https://hackage.haskell.org/package/repa
-[stream-fusion]: http://community.haskell.org/~duncan/thesis.pdf
+[stream-fusion]: https://ora.ox.ac.uk/objects/uuid:b4971f57-2b94-4fdf-a5c0-98d6935a44da
 [vector]: https://hackage.haskell.org/package/vector
 [text]: https://hackage.haskell.org/package/text
 [existentials]: /post/existential-quantification.html

@@ -4,7 +4,7 @@ desc: Digital photgraphy workflow I use on Linux.
 date:
   published: November 16, 2019
   updated: December 4, 2019
-tag: photography
+tag: other
 ---
 
 ```toc

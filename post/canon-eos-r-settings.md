@@ -4,7 +4,7 @@ desc: Tweaks I made to the configuration of the Canon EOS R camera with explanat
 date:
   published: November 16, 2019
   updated: April 24, 2020
-tag: photography
+tag: other
 ---
 
 ```toc

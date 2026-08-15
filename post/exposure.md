@@ -4,7 +4,7 @@ desc: This article is about getting perfect exposure without giving up any artis
 date:
   published: January 2, 2020
   updated: September 8, 2021
-tag: photography
+tag: other
 ---
 
 This article is about getting perfect exposure without giving up artistic

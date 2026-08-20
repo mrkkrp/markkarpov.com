@@ -60,6 +60,9 @@
   --color-code-special: #b4267a; /* operators/symbols: magenta (325°) */
   --color-code-var: #155e91; /* variables/values: same saturated blue as hyperlinks (--color-link) */
   --color-code-comment: #736b62; /* comments: warm gray (32°) */
+  --color-code-highlight: #fbf0c0; /* lines the prose points at: a warm marker,
+                                      so it reads as an annotation rather than
+                                      as one more token color */
 
   /* Width of the navbar inner row and the content card (was 720px, widened a
      bit since the card now has its own horizontal padding). */
@@ -347,6 +350,20 @@
   .source-code .it { color: var(--color-code-type); }       /* implicit type */
   .source-code .ra { color: var(--color-code-func); }       /* record accessors */
   .source-code .co { color: var(--color-code-comment); font-style: italic; } /* comments */
+
+  /* Lines named by a {2,4-6} specification in a code block's info string,
+     emitted by the LineHighlight/Skylighting/GhcSyntaxHighlighter extensions.
+
+     This stays inline on purpose. The newline that ends the line falls inside
+     the span, so turning it into a block would break the line twice and leave
+     a blank one behind. The box-shadow widens the marker past the text
+     without taking up any space, which keeps every line where it was. */
+  .highlighted-line {
+    background-color: var(--color-code-highlight);
+    box-shadow:
+      -0.25em 0 0 var(--color-code-highlight),
+      0.25em 0 0 var(--color-code-highlight);
+  }
 }
 
 /* On narrow screens a 15rem first column leaves too little room for the second

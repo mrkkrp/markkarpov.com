@@ -193,16 +193,16 @@ Using TH currently has some limitations:
   the GHC user manual:
 
   > Top-level declaration splices break up a source file into *declaration
-    groups*. A *declaration group* is the group of declarations created by a
-    top-level declaration splice, plus those following it, down to but not
-    including the next top-level declaration splice. N.B. only top-level
-    splices delimit declaration groups, not expression splices. *The first
-    declaration group in a module includes all top-level definitions down to
-    but not including the first top-level declaration splice.*
-
-    Each declaration group is mutually recursive only within the group.
-    Declaration groups can refer to definitions within previous groups, but
-    not later ones.
+  > groups*. A *declaration group* is the group of declarations created by a
+  > top-level declaration splice, plus those following it, down to but not
+  > including the next top-level declaration splice. N.B. only top-level
+  > splices delimit declaration groups, not expression splices. *The first
+  > declaration group in a module includes all top-level definitions down to
+  > but not including the first top-level declaration splice.*
+  >
+  > Each declaration group is mutually recursive only within the group.
+  > Declaration groups can refer to definitions within previous groups, but
+  > not later ones.
 
 Let's see an example of this. Suppose we want to use the `lens` library to
 generate some lenses. We might have code like this:

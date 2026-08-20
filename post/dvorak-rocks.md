@@ -50,8 +50,8 @@ how *proper* touch typing is done.
 ***
 
 > footnotes
-
-  1. And yes, now in 2017, I do type 80 wpm and I feel I have not reached my
-     maximal speed yet.
+>
+> 1. And yes, now in 2017, I do type 80 wpm and I feel I have not reached my
+>    maximal speed yet.
 
 [without-pain]: /post/working-with-text-without-pain.html

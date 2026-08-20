@@ -8,12 +8,12 @@ tag: bazel
 ---
 
 > Hark ye yet again,—the little lower layer. All visible objects, man, are
-  but as pasteboard masks. But in each event—in the living act, the
-  undoubted deed—there, some unknown but still reasoning thing puts forth
-  the mouldings of its features from behind the unreasoning mask. If man
-  will strike, strike through the mask!
-
-  *Herman Melville, Moby-Dick, 1851*
+> but as pasteboard masks. But in each event—in the living act, the
+> undoubted deed—there, some unknown but still reasoning thing puts forth
+> the mouldings of its features from behind the unreasoning mask. If man
+> will strike, strike through the mask!
+>
+> *Herman Melville, Moby-Dick, 1851*
 
 Bazel's entire value proposition—correct caching, remote execution,
 trustworthy incremental builds—rests on hermeticity, yet Bazel gives you

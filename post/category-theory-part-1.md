@@ -481,9 +481,9 @@ isomorphism is usually called by the one word **automorphism**.*
 ***
 
 > footnotes
-
-  1. Sorry, I must admit I've abandoned the series as of 1st of July, 2017.
-  2. OK, as one my friend noticed, from now on we rather discuss category of
-     sets, not category theory (which is more abstract, there are no
-     *elemenets* in objects for example). Too late for me to rewrite
-     everything, though!
+>
+> 1. Sorry, I must admit I've abandoned the series as of 1st of July, 2017.
+> 2. OK, as one my friend noticed, from now on we rather discuss category of
+>    sets, not category theory (which is more abstract, there are no
+>    *elemenets* in objects for example). Too late for me to rewrite
+>    everything, though!

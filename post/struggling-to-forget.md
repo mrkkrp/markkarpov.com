@@ -198,9 +198,9 @@ proponent of using *simple* Haskell? People will be confused.
 ----
 
 > footnotes
-
-  1. There are more, but they are just variations of these, e.g. in the form
-     of quasi-quotes or TH helpers.
+>
+> 1. There are more, but they are just variations of these, e.g. in the form
+>    of quasi-quotes or TH helpers.
 
 [path]: https://hackage.haskell.org/package/path
 [existential-quantification]: /post/existential-quantification.html

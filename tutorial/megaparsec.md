@@ -3232,9 +3232,9 @@ stream.
 ***
 
 > footnotes
-
-  1. There is actually a package,
-     [`modern-uri`](https://hackage.haskell.org/package/modern-uri), which
-     contains a real-world Megaparsec parser that can parse URIs according to
-     RFC 3986. The parser from that package is much more complex than the one
-     we describe here, though.
+>
+> 1. There is actually a package,
+>    [`modern-uri`](https://hackage.haskell.org/package/modern-uri), which
+>    contains a real-world Megaparsec parser that can parse URIs according to
+>    RFC 3986. The parser from that package is much more complex than the one
+>    we describe here, though.

@@ -3,6 +3,7 @@ title: Announcing Ahab
 desc: Announcing Ahab—a hermeticity analyzer for Bazel.
 date:
   published: August 14, 2026
+  updated: August 21, 2026
 tag: bazel
 ---
 
@@ -189,19 +190,14 @@ It turned out to be too crude a model, but it was a start.
 
 Ahab is the kind of tool where you have to get the foundation right and then
 it is a matter of throwing it at a lot of real-world projects and addressing
-the findings patiently and systematically. I had done this before when I
-made [Ormolu][ormolu-hackage]—the de facto standard source code formatter
-for Haskell. Ormolu succeeded where many other attempts failed precisely
-because it was built and systematically tested against a huge corpus of real
-code. I was going to take Ahab on a similar fishing trip.
-
-To this end I made [the fishery][the-fishery]. The fishery is a harness that
-fetches a real-world Bazel project or rule set at a pinned commit, runs Ahab
-against it, and records the report. That recording is the point: a change to
-a check can then be judged by what it does to somebody else's build, and a
-check that quietly starts flagging four hundred more things says so in the
-diff rather than in production. It is both a powerful integration test and a
-way to discover what is actually out there.
+the findings patiently and systematically. To this end I made [the
+fishery][the-fishery]. The fishery is a harness that fetches a real-world
+Bazel project or rule set at a pinned commit, runs Ahab against it, and
+records the report. That recording is the point: a change to a check can
+then be judged by what it does to somebody else's build, and a check that
+quietly starts flagging four hundred more things says so in the diff rather
+than in production. It is both a powerful integration test and a way to
+discover what is actually out there.
 
 I currently run Ahab against thirteen projects and rule sets on every
 commit—[Abseil][abseil], [Dagger][dagger], [Envoy][envoy],
@@ -318,7 +314,6 @@ monorepo, and round the one after that, and round perdition's flames before
 I give it up.
 
 [ahab-repo]: https://github.com/mrkkrp/ahab
-[ormolu-hackage]: https://hackage.haskell.org/package/ormolu
 [the-fishery]: https://github.com/mrkkrp/ahab/tree/master/fishery
 [abseil]: https://github.com/abseil/abseil-cpp
 [buildtools]: https://github.com/bazelbuild/buildtools

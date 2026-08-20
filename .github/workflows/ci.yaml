@@ -8,15 +8,15 @@ on:
       - opened
       - synchronize
 jobs:
-  ormolu:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: haskell-actions/run-ormolu@v21
+  # ormolu:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v7
+  #     - uses: haskell-actions/run-ormolu@v21
   build:
     runs-on: ubuntu-latest
     permissions: write-all
-    needs: ormolu
+    # needs: ormolu
     steps:
       - uses: actions/checkout@v7
       - uses: cachix/install-nix-action@v31

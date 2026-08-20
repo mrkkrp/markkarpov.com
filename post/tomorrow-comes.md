@@ -3,6 +3,7 @@ title: Tomorrow comes
 desc: A few announcements for the Haskell community.
 date:
   published: August 5, 2026
+  update: August 21, 2026
 tag: haskell
 ---
 
@@ -50,26 +51,7 @@ whether I have achieved that goal.
 
 ## Ormolu
 
-I created Ormolu in 2019 and have shaped its design ever since. My work on
-it continues at [mrkkrp/ormolu][mrkkrp-ormolu], while an up-to-date Ormolu
-Live is now available at [https://ormolu-live.markkarpov.com][ormolu-live].
-[Ormolu 0.8.2.0][ormolu-0820] is the first release made from the new repo
-and it is already on Hackage, where I continue to maintain the `ormolu`
-package.
-
-To avoid confusion: the [tweag/ormolu][tweag-ormolu] repository continues
-separately. If you get Ormolu through Hackage, Stackage, or the usual
-Haskell tooling, you do not need to do anything—the releases you receive are
-the ones I make.
-
-I remain personally committed to maintaining Ormolu. Even though other
-things took a fair share of my mental space in the last 6 years or so, I
-have not abandoned a single practically useful Haskell package I have ever
-published—I assume a kind of responsibility over them. Come to think of it,
-Megaparsec is 11 years old at this point—it is a granddaddy of a package
-now! Some of my packages are more fun to maintain than others, but my idea
-of open source software development has always been about providing value
-and reliability rather than simple enjoyment of the process.
+*This section was removed.*
 
 ## Next steps
 
@@ -94,9 +76,5 @@ for people who are already familiar with markdown.
 This is all I wanted to share for now. Enjoy summer, and Happy Hacking!
 
 [tutorials]: /learn-haskell.html "_blank"
-[mrkkrp-ormolu]: https://github.com/mrkkrp/ormolu "_blank"
-[ormolu-live]: https://ormolu-live.markkarpov.com "_blank"
-[tweag-ormolu]: https://github.com/tweag/ormolu "_blank"
-[ormolu-0820]: https://hackage.haskell.org/package/ormolu-0.8.2.0 "_blank"
 [mmark]: https://github.com/mmark-md/mmark "_blank"
 [commonmark]: https://commonmark.org/ "_blank"

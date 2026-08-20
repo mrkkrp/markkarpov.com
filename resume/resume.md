@@ -42,7 +42,7 @@ I have been active in open source for over a decade. My most significant
 contributions to date are in the Haskell ecosystem (the full list is at
 <https://markkarpov.com/oss.html>):
 
-* [Ormolu][ormolu]—The de-facto standard formatter for Haskell source code.
+* [Ahab][ahab]—advanced hermeticity analyzer for Bazel.
 * [Megaparsec][megaparsec]—A widely used, industrial-strength monadic parser
   combinator library.
 * [Req][req]—An HTTP client library.
@@ -72,7 +72,7 @@ I speak Russian (native), English (fluent), and French (fluent).
 [tweag]: https://tweag.io
 [bazel-coverity]: https://www.tweag.io/blog/2026-02-05-bazel-coverity-integration/
 [bazel-ctcpp]: https://www.tweag.io/blog/2025-03-06-ctc++-revisited/
-[ormolu]: https://github.com/mrkkrp/ormolu
+[ahab]: https://github.com/mrkkrp/ahab
 [megaparsec]: https://github.com/mrkkrp/megaparsec
 [megaparsec-tutorial]: https://markkarpov.com/tutorial/megaparsec.html
 [req]: https://github.com/mrkkrp/req

@@ -8,7 +8,7 @@
 
 I am a software engineer with a focus on functional programming and build
 systems. My work in Haskell spans more than a decade and has produced widely
-used, recognized open source projects such as Ormolu and Megaparsec. In
+used, recognized open source projects such as Megaparsec and Req. In
 parallel, as an expert in Bazel and Nix I have helped many clients ranging
 from startups to international giants make their builds hermetic,
 reproducible, and fast.

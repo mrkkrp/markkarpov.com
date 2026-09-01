@@ -18,9 +18,6 @@
 /* now; the palette will be revisited once the migrated site is visible.     */
 
 @theme {
-  /* No custom fonts — use Tailwind's default system sans-serif stack for
-     everything (body, headings, brand), matching Ormolu Live. */
-
   /* Foundational color: rgb(86, 110, 128) = #566E80, a muted slate
      blue-gray (see new-color.md). Everything else is derived from it so the
      palette hangs together. */

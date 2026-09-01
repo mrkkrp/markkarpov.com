@@ -321,11 +321,6 @@ jobs:
       - run: cabal v2-sdist
 ```
 
-## See also
-
-* If you wish to have automatic source code formatting check, take a look at
-  the [Ormolu action][ormolu-action].
-
 [travis-ci]: https://travis-ci.org/
 [circle-ci]: https://circleci.com/
 [github-actions]: https://github.com/features/actions
@@ -334,4 +329,3 @@ jobs:
 [events]: https://docs.github.com/en/actions/reference/events-that-trigger-workflows
 [official-haskell-example]: https://github.com/actions/cache/blob/main/examples.md#haskell---cabal
 [appveyor]: https://www.appveyor.com/
-[ormolu-action]: https://github.com/marketplace/actions/ormolu-action

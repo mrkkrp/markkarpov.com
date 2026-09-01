@@ -49,10 +49,6 @@ page. My goal there was to construct a reasonable, objective, and up-to-date
 selection of nice writing on Haskell. I will leave it to you to judge
 whether I have achieved that goal.
 
-## Ormolu
-
-*This section was removed.*
-
 ## Next steps
 
 I intend to resume posting here from now on. I will most certainly write

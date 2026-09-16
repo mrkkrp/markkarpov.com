@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="470" viewBox="0 0 720 470"
+     font-family="Georgia, 'Times New Roman', serif" font-size="14">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#444"/>
+    </marker>
+  </defs>
+
+  <g stroke="#444" fill="none" stroke-width="1.2" marker-end="url(#arrow)">
+    <path d="M 360 52 L 360 82"/>
+    <path d="M 300 128 L 170 158"/>
+    <path d="M 420 128 L 550 158"/>
+    <path d="M 170 204 L 170 234"/>
+    <path d="M 550 204 L 550 234"/>
+    <path d="M 170 280 L 320 314"/>
+    <path d="M 550 280 L 400 314"/>
+    <path d="M 360 360 L 360 398"/>
+  </g>
+
+  <!-- the walk feeds itself: each re-export is another module to resolve -->
+  <path d="M 540 326 C 584 318, 584 356, 540 348"
+        stroke="#444" fill="none" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+  <!-- everything a cache hit answers for: both reads and the walk over them -->
+  <rect x="46" y="222" width="628" height="152" rx="6"
+        fill="none" stroke="#888" stroke-width="1.1" stroke-dasharray="4 3"/>
+  <g fill="#888" font-size="12" font-style="italic" text-anchor="middle">
+    <text x="360" y="248">cached between runs</text>
+    <text x="360" y="266">a hit skips all of it</text>
+  </g>
+
+  <g fill="#f6f6f4" stroke="#444" stroke-width="1.2">
+    <rect x="240" y="16" width="240" height="36" rx="4"/>
+    <rect x="240" y="82" width="240" height="46" rx="4"/>
+    <rect x="60"  y="158" width="220" height="46" rx="4"/>
+    <rect x="440" y="158" width="220" height="46" rx="4"/>
+    <rect x="60"  y="234" width="220" height="46" rx="4"/>
+    <rect x="440" y="234" width="220" height="46" rx="4"/>
+    <rect x="180" y="314" width="360" height="46" rx="4"/>
+    <rect x="200" y="398" width="320" height="36" rx="4"/>
+  </g>
+
+  <g fill="#222" text-anchor="middle">
+    <text x="360" y="39">the module being formatted</text>
+
+    <text x="360" y="100">its imports, and the build plan</text>
+    <text x="360" y="118" font-size="12" fill="#666">Cabal is asked to solve one if needed</text>
+
+    <text x="170" y="176">dependency is installed</text>
+    <text x="170" y="194" font-size="12" fill="#666">boot library, or a Nix shell</text>
+
+    <text x="550" y="176">dependency is not installed</text>
+    <text x="550" y="194" font-size="12" fill="#666">Cabal fetches the source tarball</text>
+
+    <text x="170" y="252">read the interface files</text>
+    <text x="170" y="270" font-size="12" fill="#666">already compiled: no CPP, no .hsc</text>
+
+    <text x="550" y="252">parse the sources</text>
+    <text x="550" y="270" font-size="12" fill="#666">CPP, .hsc and the rest, by hand</text>
+
+    <text x="360" y="332">follow re-exports to a fixed point</text>
+    <text x="360" y="350" font-size="12" fill="#666">children, namespaces, cycles</text>
+
+    <text x="360" y="421">a fixity for every operator, or an ambiguity</text>
+  </g>
+</svg>

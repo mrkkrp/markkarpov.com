@@ -174,6 +174,11 @@
       site-quick = mkSite false false false;
       site-preview = mkSite true true true;
       defaultPackage.x86_64-linux = site;
+      devShells.x86_64-linux.default = hsProject.shellFor {
+        tools.cabal = "latest";
+        withHoogle = false;
+        exactDeps = false;
+      };
       apps.x86_64-linux.netlify = {
         type = "app";
         program = "${pkgs.netlify-cli}/bin/netlify";

@@ -43,9 +43,9 @@ contributions to date are in the Haskell ecosystem (the full list is at
 <https://markkarpov.com/oss.html>):
 
 * [Ahab][ahab]—advanced hermeticity analyzer for Bazel.
-* [Megaparsec][megaparsec]—A widely used, industrial-strength monadic parser
-  combinator library.
-* [Req][req]—An HTTP client library.
+* [Tilia][tilia]—a formatter for Haskell source code.
+* [Megaparsec][megaparsec]—an industrial-strength monadic parser combinator
+  library.
 
 ## Writing
 
@@ -73,6 +73,7 @@ I speak Russian (native), English (fluent), and French (fluent).
 [bazel-coverity]: https://www.tweag.io/blog/2026-02-05-bazel-coverity-integration/
 [bazel-ctcpp]: https://www.tweag.io/blog/2025-03-06-ctc++-revisited/
 [ahab]: https://github.com/mrkkrp/ahab
+[tilia]: https://github.com/mrkkrp/tilia
 [megaparsec]: https://github.com/mrkkrp/megaparsec
 [megaparsec-tutorial]: https://markkarpov.com/tutorial/megaparsec.html
 [req]: https://github.com/mrkkrp/req

@@ -105,13 +105,13 @@ renderExtensions =
 addTableClasses :: RenderExtension
 addTableClasses = Render.blockRender $ \old block ->
   case block of
-    t@Table {} -> L.with (old t) [L.class_ "site-table"]
+    t@Table{} -> L.with (old t) [L.class_ "site-table"]
     other -> old other
 
 addImageClasses :: RenderExtension
 addImageClasses = Render.inlineRender $ \old inline ->
   case inline of
-    i@Image {} -> L.with (old i) [L.class_ "site-image"]
+    i@Image{} -> L.with (old i) [L.class_ "site-image"]
     other -> old other
 
 -- | The marker that opts a bullet list out of its bullets. Writing

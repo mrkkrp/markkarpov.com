@@ -60,7 +60,7 @@ tags = foldl' f Set.empty
   where
     f s = \case
       InternalPost local -> Set.union s (localTags (Route.unWithPage local))
-      ExternalPost {} -> s
+      ExternalPost{} -> s
 
 -- | Filter a collection of 'Post's by a tag.
 filterByTag :: Text -> [Post] -> [Post]
@@ -68,7 +68,7 @@ filterByTag tag = filter f
   where
     f = \case
       InternalPost local -> tag `elem` localTags (Route.unWithPage local)
-      ExternalPost {} -> False
+      ExternalPost{} -> False
 
 -- | Information about a post that is hosted on my site.
 data LocalPost = LocalPost
@@ -92,10 +92,10 @@ instance FromJSON LocalPost where
     localDesc <- o .: "desc"
     let localFile = ""
     localTags <- parseTags <$> (o .:? "tag" .!= "")
-    return LocalPost {..}
+    return LocalPost{..}
 
 instance ToJSON LocalPost where
-  toJSON localPost@LocalPost {..} =
+  toJSON localPost@LocalPost{..} =
     object
       [ "title" .= localTitle,
         "published" .= renderDay localPublished,
@@ -109,5 +109,5 @@ instance ToJSON LocalPost where
 -- | Return the 'Day' on which the local post was updated, or if it wasn't
 -- updated yet, return its creation date.
 localNormalizedUpdated :: LocalPost -> Day
-localNormalizedUpdated LocalPost {..} =
+localNormalizedUpdated LocalPost{..} =
   fromMaybe localPublished localUpdated

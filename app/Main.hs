@@ -231,7 +231,7 @@ main = shakeArgs shakeOptions $ do
 -- Helpers
 
 selectTemplate :: PName -> Template -> Template
-selectTemplate name t = t {templateActual = name}
+selectTemplate name t = t{templateActual = name}
 
 renderAndWrite ::
   (MonadIO m) =>

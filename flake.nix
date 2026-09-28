@@ -39,7 +39,7 @@
         }];
       };
       tiliaCheck = target: ''
-        ${tilia.packages.${system}.default}/bin/tilia check ${target} \
+        ${tilia.legacyPackages.${system}.ghc9124.tilia}/bin/tilia check ${target} \
           --build-plan ${hsProject.plan-nix}/plan.json \
           --no-cache \
           --no-downloads \
@@ -202,10 +202,12 @@
     extra-substituters = [
       "https://cache.iog.io"
       "https://markkarpov-sites.cachix.org"
+      "https://tilia.cachix.org"
     ];
     extra-trusted-public-keys = [
       "hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ="
       "markkarpov-sites.cachix.org-1:tzrAG4NHl/VkbtjotbuQJ7kCSaq/dkzj2IaSUgxo4Gs="
+      "tilia.cachix.org-1:bxzzQCOu9D/Suuzll8oRj2RaOb37KVTsETMiTDMLiJ4="
     ];
   };
 }

@@ -7,8 +7,9 @@
       inputs.stackage.url = "github:input-output-hk/empty-flake";
     };
     nixpkgs.follows = "haskellNix/nixpkgs-unstable";
+    tilia.url = "github:mrkkrp/tilia";
   };
-  outputs = { self, nixpkgs, haskellNix }:
+  outputs = { self, nixpkgs, haskellNix, tilia }:
     let
       system = "x86_64-linux";
       compiler = "ghc9122";
@@ -30,7 +31,20 @@
           "^README\.md$"
         ];
         compiler-nix-name = compiler;
+        modules = [{
+          packages.markkarpov-com.components = {
+            library.preBuild = tiliaCheck "lib:markkarpov-com";
+            exes.mk-com.preBuild = tiliaCheck "exe:mk-com";
+          };
+        }];
       };
+      tiliaCheck = target: ''
+        ${tilia.packages.${system}.default}/bin/tilia check ${target} \
+          --build-plan ${hsProject.plan-nix}/plan.json \
+          --no-cache \
+          --no-downloads \
+          --must-not-decline
+      '';
       hsPkgs = hsProject.hsPkgs;
       mk-com = hsPkgs.markkarpov-com.components.exes.mk-com;
 

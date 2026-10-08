@@ -1313,11 +1313,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1790606066,
-        "narHash": "sha256-IKhO14uD0GQBNv7ziheNn3omyBWtamAi0S0eMY4sX5I=",
+        "lastModified": 1791480931,
+        "narHash": "sha256-H4AzNgx0YiwIsIk5cQDQMh1YxInYwQb28rgr+Cx0zb8=",
         "owner": "mrkkrp",
         "repo": "tilia",
-        "rev": "3cd393a7f67c96cf724e3c41131163b37a61e1af",
+        "rev": "909cf0dc013891ce56ac25310151f6c376333182",
         "type": "github"
       },
       "original": {

@@ -12,8 +12,9 @@ parsing/printing machinery can be built relatively easily now that we have
 problem), but for years there were three challenges that seemed
 insurmountable:
 
-1. Correct handling of comments. I worked on that last month and I am
-   convinced that I have learned enough to declare this challenge solved.
+1. Correct handling of comments. I [worked on that last
+   month][fixed-everything] and I am convinced that I have learned enough to
+   declare this challenge solved.
 2. Formatting operator chains or, more precisely, the uncomfortable question
    of inferring operator fixities with absolute precision.
 3. CPP support.
@@ -272,6 +273,7 @@ know if it works for you. The home of the project is [this GitHub
 repository][github-repo] and that's where you can report all the bugs you
 find! A [GitHub action][github-action] is also available.
 
+[fixed-everything]: /post/ormolu-one-refactor-that-fixed-everything.html
 [github-repo]: https://github.com/mrkkrp/tilia
 [github-action]: https://github.com/mrkkrp/setup-tilia
 [superc]: https://paulgazzillo.com/papers/pldi12.pdf

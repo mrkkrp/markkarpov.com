@@ -15,6 +15,9 @@ reproducible, and fast.
 
 ## Professional experience
 
+* 2026–present. **Senior principal engineer at [Yume AG][yume].** Yume is a
+  small senior team working on technical leadership, platform engineering,
+  and exploratory product development.
 * 2025–2026. **Senior principal scalable builds engineer at
   [Tweag][tweag].** The later part of my time at Tweag was dedicated to
   scalable build systems, Bazel in particular. I led about five different
@@ -69,6 +72,7 @@ I speak Russian (native), English (fluent), and French (fluent).
 * 2009–2014—Polzunov Altai State Technical University. Engineer degree in
   informational technology and measuring engineering.
 
+[yume]: https://yume.ag/
 [tweag]: https://tweag.io
 [bazel-coverity]: https://www.tweag.io/blog/2026-02-05-bazel-coverity-integration/
 [bazel-ctcpp]: https://www.tweag.io/blog/2025-03-06-ctc++-revisited/

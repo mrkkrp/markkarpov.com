@@ -15,6 +15,7 @@ import Data.Aeson
 import Data.Aeson.Key qualified as Key
 import Data.Aeson.Lens
 import Data.Char (isSpace)
+import Data.Either (partitionEithers)
 import Data.List (dropWhileEnd)
 import Data.List.NonEmpty (NonEmpty (..))
 import Data.Map.Strict (Map)
@@ -81,8 +82,9 @@ reportDiagnostics =
 --
 -- The order matters where two extensions look at the same inline: the one
 -- that comes first is entered first and sees the markup as it was written,
--- and what it delegates to is the rest of the list. 'addLinkRel' has to come
--- before 'Ext.linkTarget' for that reason, see its note.
+-- and what it delegates to is the rest of the list. 'addLinkRel' has to
+-- come before 'Ext.linkTarget' for that reason, and 'codeFileNames' before
+-- the extensions that render code blocks.
 renderExtensions :: RenderExtension
 renderExtensions =
   mconcat
@@ -92,6 +94,7 @@ renderExtensions =
       addLinkRel,
       Ext.linkTarget,
       Ext.mathJax (Just '$'),
+      codeFileNames,
       Ext.ghcSyntaxHighlighter,
       Ext.skylighting,
       Ext.lineHighlight,
@@ -113,6 +116,27 @@ addImageClasses = Render.inlineRender $ \old inline ->
   case inline of
     i@Image{} -> L.with (old i) [L.class_ "site-image"]
     other -> old other
+
+-- | Put the name of the file a code block comes from above the block, when
+-- its info string names one:
+--
+-- > ```haskell file=src/Main.hs
+--
+-- The name is taken out of the info string before the extensions after this
+-- one see it, so that they still recognize the language and a line
+-- specification such as @{2,4-6}@, which is why this has to come first.
+codeFileNames :: RenderExtension
+codeFileNames = Render.blockRender $ \old block ->
+  case block of
+    CodeBlock spn (Just info) txt
+      | ([file], rest) <- partitionEithers (fileOrWord <$> T.words info) ->
+          L.figure_ [L.class_ "code-file"] $ do
+            L.figcaption_ (L.toHtml file)
+            old (CodeBlock spn (nonEmpty (T.unwords rest)) txt)
+    other -> old other
+  where
+    fileOrWord w = maybe (Right w) Left (T.stripPrefix "file=" w)
+    nonEmpty t = if T.null t then Nothing else Just t
 
 -- | The marker that opts a bullet list out of its bullets. Writing
 --

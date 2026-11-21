@@ -240,6 +240,31 @@
     overflow-x: auto;
   }
 
+  /* A code block with the name of the file it comes from above it, the two
+     drawn as one box. */
+  .code-file {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .code-file figcaption {
+    padding: 0.375rem 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--color-ink-muted);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-surface-line);
+    border-bottom: none;
+    border-radius: 0.375rem 0.375rem 0 0;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .code-file pre {
+    margin: 0;
+    border-radius: 0 0 0.375rem 0.375rem;
+  }
+
   /* Inside a block, code has no pill background of its own. */
   pre code {
     padding: 0;

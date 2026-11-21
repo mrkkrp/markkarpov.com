@@ -103,8 +103,9 @@ controlSimulator control =
 ```
 
 This is a general theme I want to highlight. Tilia needs no
-hand-holding—whatever you have it will format. We will see more examples of
-this when we talk about formatting operator chains.
+hand-holding—whatever you have it will format (well, with really rare
+exceptions). We will see more examples of this when we talk about formatting
+operator chains.
 
 Finally, a stylistic change was also requested by Clash maintainers: when
 record fields are spelled out after a data constructor they asked to remove
@@ -146,9 +147,9 @@ remaining fraction of a percent:
   ```
 
   It does not parse. `quickcheck` and `yesod` also do things like this, but
-  not in the middle of a type signature. With more ad-hoc code, `lens`'s use
-  case can be made to work too. This is a question of where to draw the
-  line.
+  not in a way that fails to parse as Haskell. With more ad-hoc code,
+  `lens`'s use case can be made to work too. This is a question of where to
+  draw the line.
 
 ## The status of comment handling
 
@@ -269,7 +270,7 @@ we have Fourmolu.
 
 Let's take a moment to appreciate that project. Fourmolu evolved over the
 years in an organic and democratic fashion. Every single configuration
-option that is present in Fourmolu (and it has 26!) is there because someone
+option that is present in Fourmolu (and it has 27!) is there because someone
 really wanted it badly enough to take the trouble of implementing it. And
 then, others enabled those features in their `fourmolu.yaml` files because
 they thought that it was a good idea.
@@ -313,7 +314,7 @@ most Haskell code is still written with leading commas. This style is now
 supported in Tilia (its default is trailing commas). You can enable it by
 creating a `tilia.toml` file with this:
 
-```toml
+```toml file=tilia.toml
 leading-commas = true
 ```
 
@@ -327,19 +328,18 @@ selected by 40% of users, while 57% prefer trailing ones. 3% choose
 `leading-args` which I did not even know existed. Trailing arrows are
 Tilia's default, while leading ones can be enabled like this:
 
-```toml
+```toml file=tilia.toml
 leading-arrows = true
 ```
 
 ### Indentation step
 
 Despite this formatter's name, even though 4 space indentation is Fourmolu's
-default, it is by far not the most popular choice among its users. Only 28%
-of users choose 4 spaces, while 72% opt for 2. I will make no comment on
-which is better, only point out that the indentation step can be set in
-`tilia.toml` like this:
+default, it is not the most popular choice among its users. Only 28% of
+users choose 4 spaces, while 72% opt for 2. I will make no comment on which
+is better, only point out that the indentation step can now be configured:
 
-```toml
+```toml file=tilia.toml
 indentation = 4 # 2 is the default
 ```
 
@@ -354,31 +354,29 @@ Tilia as well. That worked nicely, but when I applied my normal testing
 processes I also discovered a few cases where Fourmolu breaks code at that
 indentation step, e.g.:
 
-```
-$ cat Example.hs
-module Example where
-
+```haskell
 escape = do
   char '\\'
   do gap; return Nothing
     <|> do code <- escapeCode; return (Just code)
-$ fourmolu Example.hs
-Example.hs
-@@ -1,6 +1,6 @@
-  module Example where
-
-  escape = do
--   char '\\'
--   do gap; return Nothing
-+     char '\\'
-+     do gap; return Nothing
-      <|> do code <- escapeCode; return (Just code)
-
-  AST of input and AST of formatted code differ.
-    at Example.hs:(3,10)-(6,49)
-  Please, consider reporting the bug.
-  To format anyway, use --unsafe.
 ```
+
+this formats as
+
+```haskell
+escape = do
+    char '\\'
+    do gap; return Nothing
+    <|> do code <- escapeCode; return (Just code)
+```
+
+The statements moved two columns to the right, but the line with `<|>` did
+not, and now it starts at the column of the statements. In the input `<|>`
+chose between the two inner `do` blocks, both after the backslash. In the
+output it ends the outer `do` block and takes all of it as its left operand,
+so the second alternative no longer needs the backslash. Fourmolu's AST
+check catches this and refuses to write the result unless you pass
+`--unsafe`.
 
 I had to use my own judgement for what is right output for Tilia in those
 cases. If there is interest in fixing those in Fourmolu please reach out and
@@ -399,8 +397,11 @@ at least.
 Even without looking at Fourmolu I noticed that many single-line top-level
 declarations without Haddocks are groupped by their authors:
 
-```haskell
-TODO add an example, maybe a cluster of fixity declarations from some library
+```haskell file=src/Control/Lens/Cons.hs
+infixr 5 <|, `cons`
+infixl 5 |>, `snoc`
+infixr 4 <|~, |>~, <<|~, <|>~, <<<|~, <<|>~
+infix  4 <|=, |>=, <<|=, <|>=, <<<|=, <<|>=
 ```
 
 This is a consistent pattern and it is worth respecting. Sure enough, I
@@ -509,10 +510,10 @@ Then I also have a property test that runs every vendored example in the
 test suite with 5 different random column limits. This caught some early
 bugs, but now it is consistently green.
 
-The column limit can be set in `tilia.toml` like this:
+The default column limit of 80 can be overridden in the configuration file:
 
-```toml
-column-limit = 100 # 80 is the default
+```toml file=tilia.toml
+column-limit = 100
 ```
 
 ## Separate first- and third- party sections in imports
@@ -676,8 +677,9 @@ isSet tag x = go tag
 `TypeFamilies` comes last and turns `MonoLocalBinds` back on, so it is in
 force here, and `go`, which is not generalized under it, type checks.
 Fourmolu moves `NoMonoLocalBinds` to the end, where it wins, `go` gets
-generalized, and the module no longer compiles. Headers like this exist:
-two modules of `hledger-lib` write `NoMonoLocalBinds` above `TypeFamilies`.
+generalized, and the module no longer compiles. Headers like this exist: two
+modules of `hledger-lib` write `NoMonoLocalBinds` above `TypeFamilies`.
+
 The `OPTIONS_GHC` pragmas Fourmolu sorts by their text and removes repeated
 ones, so `-Wall`, `-Wno-unused-top-binds`, and `-Wall` again, written as
 three pragmas, lose the last `-Wall` and with it the warning. Pragmas are
@@ -688,15 +690,15 @@ compares normalized trees cannot be relied upon to find them.
 
 Getting the header right was a nightmare, but Tilia now does it. Options
 keep the order they are written in, repeated ones are kept, and `LANGUAGE`
-pragmas are sorted only where sorting leaves the same extensions in force;
-otherwise they keep their written order. On top of that, `--check-ast` does
-not trust any of this logic. It reads the flags of the header before and
-after formatting with GHC's own flag reader—`processArgs` from
-`GHC.Driver.CmdLine` run over GHC's table of flags, `flagsDynamic`, which is
-the code GHC itself reads `OPTIONS_GHC` pragmas with—and compares the
-extensions each side ends up switching on or off, the edition, and the Safe
-Haskell mode. The remaining options must come out the same and in the same
-order.
+pragmas are sorted, except that two pragmas whose order matters, such as
+`TypeFamilies` and a `NoMonoLocalBinds` under it, keep it, and the rest are
+sorted around them. On top of that, `--check-ast` does not trust any of this
+logic. It reads the flags of the header before and after formatting with
+GHC's own flag reader—`processArgs` from `GHC.Driver.CmdLine` run over GHC's
+table of flags, `flagsDynamic`, which is the code GHC itself reads
+`OPTIONS_GHC` pragmas with—and compares the extensions each side ends up
+switching on or off, the edition, and the Safe Haskell mode. The remaining
+options must come out the same and in the same order.
 
 ## HLS plugin
 

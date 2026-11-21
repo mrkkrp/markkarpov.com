@@ -37,7 +37,7 @@ around your use of CPP where verbatim preservation of CPP conditionals does
 not work or where CPP directives fall at particularly uncomfortable
 positions. So, you get something like this:
 
-```haskell
+```haskell file=clash-ffi/src/Clash/FFI/VPI/Control.hs
 controlSimulator :: Control -> IO ()
 {- FOURMOLU_DISABLE -}
 #if defined(VERILOG_2001)
@@ -76,7 +76,7 @@ As I explained in the announcement post, CPP is a first-class formattable
 construct for Tilia, therefore no magic comments are needed (the following
 snippet is the formatted output):
 
-```haskell
+```haskell file=clash-ffi/src/Clash/FFI/VPI/Control.hs
 controlSimulator :: Control -> IO ()
 
 #if defined(VERILOG_2001)
@@ -168,7 +168,7 @@ so important. Let me answer with an example. Servant is formatted with
 Fourmolu and it is notorious for having many operators, most interestingly
 on the type-level, so we can take an example from it:
 
-```haskell
+```haskell file=servant-foreign/test/Servant/ForeignSpec.hs
 type TestApi =
   "test"
     :> Header "header" [String]
@@ -218,7 +218,7 @@ It is much harder, but it is the correct thing to do. Was that complexity
 worth it? I think so. Tilia correctly rewrites the example snippet from
 above as:
 
-```haskell
+```haskell file=servant-foreign/test/Servant/ForeignSpec.hs
 type TestApi =
   "test"
     :> Header "header" [String]

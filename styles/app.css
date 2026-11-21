@@ -222,6 +222,21 @@
     font-size: 0.9em;
   }
 
+  /* Inline code stays on one line, so a span like `-Wall` does not wrap
+     after its hyphen. */
+  :not(pre) > code {
+    white-space: nowrap;
+  }
+
+  /* Below this width, long inline code would overflow the column, so it
+     wraps again, at any character if it must. */
+  @media (max-width: 374px) {
+    .content :not(pre) > code {
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+  }
+
   a > code {
     padding: 0;
     background-color: inherit;

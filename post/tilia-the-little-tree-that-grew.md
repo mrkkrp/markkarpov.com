@@ -38,7 +38,29 @@ not work or where CPP directives fall at particularly uncomfortable
 positions. So, you get something like this:
 
 ```haskell
-TODO guarded example from the fourmolu branch
+controlSimulator :: Control -> IO ()
+{- FOURMOLU_DISABLE -}
+#if defined(VERILOG_2001)
+foreign import ccall "vpi_user.h vpi_control"
+  c_vpi_control_end :: CInt -> CInt -> IO Bool
+
+foreign import ccall "vpi_user.h vpi_control"
+  c_vpi_control_restart :: CInt -> CInt -> CInt -> CInt -> IO Bool
+
+controlSimulator control = do
+  (c, s, r, d) <- send control
+
+  success <- case control of
+    Reset{} -> c_vpi_control_restart c s r d
+    _       -> c_vpi_control_end c d
+
+  Monad.unless success $
+    throwIO $ CouldNotControl control callStack
+#else
+controlSimulator control =
+  throwIO $ CouldNotControl control callStack
+#endif
+{- FOURMOLU_ENABLE -}
 ```
 
 There are three problems with this:
@@ -51,10 +73,33 @@ There are three problems with this:
    formattable.
 
 As I explained in the announcement post, CPP is a first-class formattable
-construct for Tilia, therefore no magic comments are needed:
+construct for Tilia, therefore no magic comments are needed (the following
+snippet is the formatted output):
 
 ```haskell
-TODO example of reformatted fragment wit CPP
+controlSimulator :: Control -> IO ()
+
+#if defined(VERILOG_2001)
+foreign import ccall "vpi_user.h vpi_control"
+  c_vpi_control_end :: CInt -> CInt -> IO Bool
+
+foreign import ccall "vpi_user.h vpi_control"
+  c_vpi_control_restart :: CInt -> CInt -> CInt -> CInt -> IO Bool
+
+controlSimulator control = do
+  (c, s, r, d) <- send control
+
+  success <- case control of
+    Reset{} -> c_vpi_control_restart c s r d
+    _ -> c_vpi_control_end c d
+
+  Monad.unless success
+    $ throwIO
+    $ CouldNotControl control callStack
+#else
+controlSimulator control =
+  throwIO $ CouldNotControl control callStack
+#endif
 ```
 
 This is a general theme I want to highlight. Tilia needs no
@@ -66,7 +111,8 @@ record fields are spelled out after a data constructor they asked to remove
 the space in front of the curly brace:
 
 ```haskell
-TODO example as per https://github.com/mrkkrp/tilia/issues/17
+f T {fieldOne, fieldTwo} n = fieldOne + fieldTwo + n
+   ^
 ```
 
 This is already Fourmolu's default, they said, and I accepted.
@@ -123,6 +169,27 @@ Fourmolu and it is notorious for having many operators, most interestingly
 on the type-level, so we can take an example from it:
 
 ```haskell
+type TestApi =
+  "test"
+    :> Header "header" [String]
+    :> QueryFlag "flag"
+    :> Get '[JSON] Int
+    :<|> "test"
+    :> QueryParam "param" Int
+    :> ReqBody '[JSON] [String]
+    :> Post '[JSON] NoContent
+    :<|> "test"
+    :> QueryParams "params" Int
+    :> ReqBody '[JSON] String
+    :> Put '[JSON] NoContent
+    :<|> "test"
+    :> Capture "id" Int
+    :> Delete '[JSON] NoContent
+    :<|> "test"
+    :> CaptureAll "ids" Int
+    :> Get '[JSON] [Int]
+    :<|> "test"
+    :> EmptyAPI
 ```
 
 Here, the result looks wrong. In an operator chain that spans multiple lines
@@ -152,6 +219,27 @@ worth it? I think so. Tilia correctly rewrites the example snippet from
 above as:
 
 ```haskell
+type TestApi =
+  "test"
+    :> Header "header" [String]
+    :> QueryFlag "flag"
+    :> Get '[JSON] Int
+    :<|> "test"
+      :> QueryParam "param" Int
+      :> ReqBody '[JSON] [String]
+      :> Post '[JSON] NoContent
+    :<|> "test"
+      :> QueryParams "params" Int
+      :> ReqBody '[JSON] String
+      :> Put '[JSON] NoContent
+    :<|> "test"
+      :> Capture "id" Int
+      :> Delete '[JSON] NoContent
+    :<|> "test"
+      :> CaptureAll "ids" Int
+      :> Get '[JSON] [Int]
+    :<|> "test"
+      :> EmptyAPI
 ```
 
 As it does hundreds of other cases I discovered during my comparative

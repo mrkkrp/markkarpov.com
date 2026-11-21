@@ -432,11 +432,76 @@ making it work with CPP”. First thing first, I looked at how this feature is
 implemented in Fourmolu. Because I wrote the underlying rendering engine, I
 already had some ideas what kind of challenges this could pose.
 
-TODO summarize how this works in Fourmolu, show some examples where
-idempotence is broken
+Fourmolu lays out every construct either on one line or across several, and
+takes that decision from the input: a construct written across several lines
+is printed across several lines, and one written on a single line stays on a
+single line. `column-limit` adds one more condition: a construct written on
+a single line is also printed across several lines when its span in the
+input is wider than the limit.
 
-TODO talk about how this feature is implemented in Tilia, talk about
-frangibility, etc.
+The difficulty with idempotence is that every construct that the limit broke
+on the first run is written across several lines, while many decisions of
+the renderer depend on how the parts of a construct were written, so the
+second run may lay the construct out differently. Take this line, with
+`column-limit: 80`:
+
+```haskell
+pipeline = filter isRelevant . map normalize . concatMap splitIntoWords . lines . Text.toLower $ inputText
+```
+
+Fourmolu 0.21.0.0 formats it as:
+
+```haskell
+pipeline =
+    filter isRelevant
+        . map normalize
+        . concatMap splitIntoWords
+        . lines
+        . Text.toLower $
+        inputText
+```
+
+Run it again and `$` moves:
+
+```haskell
+pipeline =
+    filter isRelevant
+        . map normalize
+        . concatMap splitIntoWords
+        . lines
+        . Text.toLower
+        $ inputText
+```
+
+Fourmolu puts `$` at the end of a line only when the expression to its left
+is written on one line. In the original input it is, so the first run puts
+`$` at the end, and only then does the limit break the expression to its
+left across five lines. In the second run that expression is written across
+five lines, so `$` goes to the start of the line. Fourmolu's issue tracker
+has more examples of the kind, such as [#400][fourmolu-400] and
+[#409][fourmolu-409].
+
+Tilia's engine works differently in a way that matters here. A renderer does
+not print anything, it builds a document in which line breaks are not
+decided yet. Parts of the document are grouped, and a group is laid out as a
+whole: flat, with every break in it printed as a space, or broken, with
+every break printed as a newline. The engine decides which when it prints
+the document.
+
+To this I added a third layout, *frangible*: flat where it fits within the
+column limit, broken where it does not. Three properties of the engine make
+breaking long lines idempotent:
+
+1. The decision is taken while printing, so it is made on the output: from
+   the column the group actually starts at, with its contents as they are
+   going to be printed. A group breaks only when it runs past the limit flat
+   and its first line ends sooner broken, so a group whose contents cannot
+   be shortened is left alone.
+2. A group the engine breaks comes out exactly as if it had been written
+   across several lines, so the next run reproduces it.
+3. Decisions are taken from the outside in. A group laid out flat keeps
+   every frangible group inside it flat, so the layout of an inner group
+   never depends on something decided after it.
 
 The feature is tested in several ways. First, it is always enabled, so it is
 exercised extensively during all normal Tilia testing and Hackage scans.
@@ -462,17 +527,176 @@ first-party, not only the current package that is being formatted.
 
 ## Layout improvements
 
-Next, I implemented a number of layout improvements.
+Next, I implemented a number of layout improvements. There are too many to
+list here, so I will just give one example.
 
-`let`/`in`
+In pure code a computation often goes in steps, each step using the results
+of the previous ones. A natural way to write it is a chain of `let`
+expressions, each ending its line with `in`:
 
-`do` that is correctly positioned right away
+```haskell file=clash-lib/src/Clash/Backend/VHDL.hs
+name' counted countMap fieldName
+  | counted HashMapS.! fieldName > 1 =
+      -- Seen this fieldname more than once, so we need to add a number
+      -- as a postfix:
+      let succ' n = Just (maybe (0 :: Int) (+1) n) in
+      let countMap' = HashMapS.alter succ' fieldName countMap in
+      -- Each field will get a distinct number:
+      let count = countMap' HashMapS.! fieldName in
+      (countMap', TextS.concat [fieldName, "_", showt count])
+```
 
-other examples?
+Why not a single `let` with three bindings? The bindings of one `let` are
+all in scope in each other, in any order. A chain reads like a `do` block in
+pure code: every binding can use only those above it, so the order of the
+steps is explicit, and each step is a natural place for a comment.
+
+Fourmolu treats every `let` as the body of the one before it, which is what
+it is, so the chain turns into a staircase, and the comment ends up after an
+`in`. This is how it looks on Clash's Fourmolu branch:
+
+```haskell file=clash-lib/src/Clash/Backend/VHDL.hs
+name' counted countMap fieldName
+  | counted HashMapS.! fieldName > 1 =
+      -- Seen this fieldname more than once, so we need to add a number
+      -- as a postfix:
+      let succ' n = Just (maybe (0 :: Int) (+ 1) n)
+       in let countMap' = HashMapS.alter succ' fieldName countMap
+           in -- Each field will get a distinct number:
+              let count = countMap' HashMapS.! fieldName
+               in (countMap', TextS.concat [fieldName, "_", showt count])
+```
+
+Every step goes further to the right, so a long chain drifts off the screen.
+Tilia recognizes a chain: a `let` whose `in` ends its line and whose body is
+another `let` keeps its line, and the next `let` goes under it. Only the
+last `let` is laid out as usual:
+
+```haskell file=clash-lib/src/Clash/Backend/VHDL.hs
+name' counted countMap fieldName
+  | counted HashMapS.! fieldName > 1 =
+      -- Seen this fieldname more than once, so we need to add a number
+      -- as a postfix:
+      let succ' n = Just (maybe (0 :: Int) (+ 1) n) in
+      let countMap' = HashMapS.alter succ' fieldName countMap in
+      -- Each field will get a distinct number:
+      let count = countMap' HashMapS.! fieldName
+       in (countMap', TextS.concat [fieldName, "_", showt count])
+```
+
+A chain written with `in` at the start of a line is laid out as usual, so
+the choice of style stays with the author.
 
 ## Correctness improvements
 
-TODO Here, it is really about preserving the meaning of the program we format.
+We all know that Haskell formatters perform an AST check: they parse both
+the input and the output, compare the two syntax trees, and refuse to write
+the result if the trees differ. This check is what lets us run a formatter
+over a whole code base without reading every line of the diff, and we have
+learned to trust it.
+
+But a formatter does more than lay out code. It also normalizes and sorts:
+it merges imports of the same module, sorts import lists and pragmas, and
+drops duplicates. These are changes to the syntax tree made on purpose, so
+how does the check let them through? It applies the same normalization to
+both sides before comparing them. A bug in the normalization therefore
+cannot show up in the check: the input goes through the same faulty logic as
+the output, and the two come out equal. This is the worst kind of bug—the
+formatter silently changes your program. This kind of correctness problems
+was my focus with Tilia lately. I will show two examples here.
+
+### Hiding imports
+
+Take this module:
+
+```haskell
+import Data.List hiding (insert)
+import Data.List hiding (union)
+
+main :: IO ()
+main = print (insert 2 [1, 3], union [1, 2] [2, 3])
+```
+
+The first import hides `insert` but brings `union` into scope, the second
+one does the opposite, so together they bring in all of `Data.List`.
+Fourmolu 0.21.0.0 merges the two into one:
+
+```haskell
+import Data.List hiding (
+    insert,
+    union,
+ )
+```
+
+This import hides both names and the module no longer compiles. Fourmolu
+reports success nonetheless, because its check merges the imports of the
+input in the same way before comparing. Tilia used to have the same bug.
+Now it merges hiding imports only when they hide the same names, and keeps
+the rest apart. No check that normalizes both sides can catch a mistake like
+this, Tilia's included, so the only defense is to get the normalization
+itself right.
+
+### Pragmas and options
+
+The header of a module is even trickier. GHC reads the `LANGUAGE` pragmas
+and the flags of the `OPTIONS_GHC` pragmas one after another, in the order
+they are written, and a later flag can undo an earlier one. Extensions imply
+other extensions: `TypeFamilies` turns on `MonoLocalBinds` and
+`RebindableSyntax` turns off `ImplicitPrelude`, so `NoMonoLocalBinds`
+written above `TypeFamilies` has no effect, while written below it, it wins.
+Some options accumulate rather than override, such as `-fplugin-opt`, and
+plugins run in the order they are given. An edition such as `GHC2024`
+replaces the language of the component, and when a header names two
+editions, the last one counts. Sorting all this is a minefield.
+
+Fourmolu knows about this. It sorts `LANGUAGE` pragmas in four classes:
+editions first, then extensions, then the ones that turn an extension off,
+and `ImplicitPrelude` and `CUSKs` last. This keeps the common `GADTs`
+followed by `NoMonoLocalBinds` working, but it goes wrong where a header is
+in alphabetical order, as many headers are:
+
+```haskell
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE NoMonoLocalBinds #-}
+{-# LANGUAGE TypeFamilies #-}
+
+module Tag where
+
+data Tag a where
+  TagBool :: Tag Bool
+  TagInt :: Tag Int
+
+isSet :: Tag a -> a -> Bool
+isSet tag x = go tag
+  where
+    go TagBool = x
+    go TagInt = x /= 0
+```
+
+`TypeFamilies` comes last and turns `MonoLocalBinds` back on, so it is in
+force here, and `go`, which is not generalized under it, type checks.
+Fourmolu moves `NoMonoLocalBinds` to the end, where it wins, `go` gets
+generalized, and the module no longer compiles. Headers like this exist:
+two modules of `hledger-lib` write `NoMonoLocalBinds` above `TypeFamilies`.
+The `OPTIONS_GHC` pragmas Fourmolu sorts by their text and removes repeated
+ones, so `-Wall`, `-Wno-unused-top-binds`, and `-Wall` again, written as
+three pragmas, lose the last `-Wall` and with it the warning. Pragmas are
+not part of the syntax tree, so the check does not see any of this unless
+the output happens to parse differently. These are corner cases, and I have
+no doubt they can be fixed in Fourmolu too. My point is that a check that
+compares normalized trees cannot be relied upon to find them.
+
+Getting the header right was a nightmare, but Tilia now does it. Options
+keep the order they are written in, repeated ones are kept, and `LANGUAGE`
+pragmas are sorted only where sorting leaves the same extensions in force;
+otherwise they keep their written order. On top of that, `--check-ast` does
+not trust any of this logic. It reads the flags of the header before and
+after formatting with GHC's own flag reader—`processArgs` from
+`GHC.Driver.CmdLine` run over GHC's table of flags, `flagsDynamic`, which is
+the code GHC itself reads `OPTIONS_GHC` pragmas with—and compares the
+extensions each side ends up switching on or off, the edition, and the Safe
+Haskell mode. The remaining options must come out the same and in the same
+order.
 
 ## HLS plugin
 
@@ -484,6 +708,17 @@ out fixities on its own. This is the first HLS formatting plugin to take
 advantage of this kind of information. I am thankful to [@fendor][fendor]
 for nudging me in this direction, since at first I did not recognize this
 opportunity myself.
+
+Everything Tilia needs is already in HLS's memory, so formatting is fast.
+Here is how long a formatting request takes in the same build of HLS:
+
+| Module                                      | Lines |  Tilia | Fourmolu
+|---------------------------------------------|------:|-------:|--------:
+| `Control.Monad.Accum` (`mtl`)               |   328 |  14 ms |    41 ms
+| `Text.Megaparsec.Char.Lexer` (`megaparsec`) |   552 |  26 ms |    66 ms
+| `Control.Monad.Catch` (`exceptions`)        |   925 | 130 ms |   190 ms
+| `Control.Lens.Lens` (`lens`)                | 1,523 |  83 ms |   460 ms
+| `Data.Vector.Generic` (`vector`)            | 2,740 | 350 ms | 1,000 ms
 
 While other formatters could (with some work) also source fixities from HLS
 (although they would need to introduce support for fixity namespaces first),
@@ -515,5 +750,7 @@ as `ghc-lib-parser` allows.
 [fourmolu-pr]: https://github.com/clash-lang/clash-compiler/pull/2735
 [clash-compiler]: https://github.com/clash-lang/clash-compiler
 [fourmolu-column-limit]: https://fourmolu.github.io/config/column-limit/
+[fourmolu-400]: https://github.com/fourmolu/fourmolu/issues/400
+[fourmolu-409]: https://github.com/fourmolu/fourmolu/issues/409
 [hls-plugin]: https://github.com/haskell/haskell-language-server/tree/master/plugins/hls-tilia-plugin
 [fendor]: https://github.com/fendor

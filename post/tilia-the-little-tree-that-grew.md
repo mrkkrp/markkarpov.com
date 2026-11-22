@@ -7,13 +7,13 @@ tag: haskell
 ---
 
 A couple months ago I [announced][tilia-announcement] a new formatter for
-Haskell—[Tilia][tilia-repo]. The announcement post talked mostly about
-technical implementation details which I feel were indeed appreciated by
-some, but many more remained puzzled as to what this new formatter brings to
-the table—I think this was the top Reddit comment, for example. Shortly
-after the announcement someone opened [an issue][comparison-issue] on
-Tilia's issue tracker asking for comparison with other formatters. I also
-received quite a few questions by email asking about Tilia and the future of
+Haskell—[Tilia][tilia-repo]. The announcement post talked about high-level
+design decisions I made and I feel it was indeed appreciated by some, but
+many more remained puzzled as to what this new formatter brings to the
+table—I think this was the top Reddit comment, for example. Shortly after
+the announcement someone opened [an issue][comparison-issue] on Tilia's
+issue tracker asking for comparison with other formatters. I also received
+quite a few questions by email asking about Tilia and the future of
 formatting Haskell in general. All this convinced me that a follow-up post
 is in order, this time a much more practical one, ideally with examples. I
 held off on writing it though, because I was not yet completely happy with
@@ -103,9 +103,9 @@ controlSimulator control =
 ```
 
 This is a general theme I want to highlight. Tilia needs no
-hand-holding—whatever you have it will format (well, with really rare
-exceptions). We will see more examples of this when we talk about formatting
-operator chains.
+hand-holding—whatever you have it will format (well, with rare exceptions).
+We will see more examples of this when we talk about formatting operator
+chains.
 
 Finally, a stylistic change was also requested by Clash maintainers: when
 record fields are spelled out after a data constructor they asked to remove
@@ -122,11 +122,31 @@ This is already Fourmolu's default, they said, and I accepted.
 
 CPP handling was my primary focus after the initial release. The
 implementation went through several redesigns since then and now I can
-declare that it is robust. I know this because I can format more than 99% of
-Hackage with Tilia correctly and idempotently (based on a sample of Nk most
-popular packages, which is N GB of Haskell source code), including such
-non-trivial users of CPP as `QuickCheck`, `yesod`, and `lens`. This was not
-possible with any formatter before.
+declare that it is robust. Let's take a look at the high-level results of a
+pre-release Hackage scan with a 0.2.0.0 candidate:
+
+| Metric                                      | Value
+|---------------------------------------------|--------:
+| Packages attempted                          | 5,000
+| Modules attempted                           | 88,531
+| Total size of Haskell source code           | 636 MB
+| Modules formatted                           | 99.46%
+| Modules declined                            | 0.54%
+| Modules broken (AST check failed)           | 0.00%
+| Modules non-idempotent                      | 0.00%
+| Modules with comment defects                | 0.00%
+
+It was a long and winding road to hit these numbers in a way that keeps the
+rendering engine elegant, because once you start testing at this scale you
+discover plenty of edge cases and the temptation is to keep adding ad-hoc
+fixes. Such fixes may resolve one thing and break another. Therefore, my
+goal was to stay one step ahead in this game and introduce principled
+redesigns in order to ensure that the implementation can converge. Which I
+think it did.
+
+In practical terms, this means that Tilia formats pretty much anything,
+including such non-trivial users of CPP as `QuickCheck`, `yesod`, and
+`lens`. This was not possible with any formatter before.
 
 ![Tilia CLI formatting yesod, quickcheck, lens](/static/img/tilia-cli.png)
 
@@ -370,13 +390,8 @@ escape = do
     <|> do code <- escapeCode; return (Just code)
 ```
 
-The statements moved two columns to the right, but the line with `<|>` did
-not, and now it starts at the column of the statements. In the input `<|>`
-chose between the two inner `do` blocks, both after the backslash. In the
-output it ends the outer `do` block and takes all of it as its left operand,
-so the second alternative no longer needs the backslash. Fourmolu's AST
-check catches this and refuses to write the result unless you pass
-`--unsafe`.
+Which is a different program. Fourmolu's AST check catches this and refuses
+to write the result unless you pass `--unsafe`.
 
 I had to use my own judgement for what is right output for Tilia in those
 cases. If there is interest in fixing those in Fourmolu please reach out and
@@ -569,11 +584,6 @@ name' counted countMap fieldName
       (countMap', TextS.concat [fieldName, "_", showt count])
 ```
 
-Why not a single `let` with three bindings? The bindings of one `let` are
-all in scope in each other, in any order. A chain reads like a `do` block in
-pure code: every binding can use only those above it, so the order of the
-steps is explicit, and each step is a natural place for a comment.
-
 Fourmolu treats every `let` as the body of the one before it, which is what
 it is, so the chain turns into a staircase, and the comment ends up after an
 `in`. This is how it looks on Clash's Fourmolu branch:
@@ -653,11 +663,10 @@ import Data.List hiding (
 
 This import hides both names and the module no longer compiles. Fourmolu
 reports success nonetheless, because its check merges the imports of the
-input in the same way before comparing. Tilia used to have the same bug.
-Now it merges hiding imports only when they hide the same names, and keeps
-the rest apart. No check that normalizes both sides can catch a mistake like
-this, Tilia's included, so the only defense is to get the normalization
-itself right.
+input in the same way before comparing. Tilia used to have the same bug. Now
+it merges hiding imports only when they hide the same names, and keeps the
+rest apart. No check that normalizes both sides can catch a mistake like
+this, so the only defense is to get the normalization itself right.
 
 ### Pragmas and options
 
@@ -708,19 +717,15 @@ three pragmas, lose the last `-Wall` and with it the warning. Pragmas are
 not part of the syntax tree, so the check does not see any of this unless
 the output happens to parse differently. These are corner cases, and I have
 no doubt they can be fixed in Fourmolu too. My point is that a check that
-compares normalized trees cannot be relied upon to find them.
+compares normalized trees cannot find them.
 
-Getting the header right was a nightmare, but Tilia now does it. Options
-keep the order they are written in, repeated ones are kept, and `LANGUAGE`
-pragmas are sorted, except that two pragmas whose order matters, such as
-`TypeFamilies` and a `NoMonoLocalBinds` under it, keep it, and the rest are
-sorted around them. On top of that, `--check-ast` does not trust any of this
-logic. It reads the flags of the header before and after formatting with
-GHC's own flag reader—`processArgs` from `GHC.Driver.CmdLine` run over GHC's
-table of flags, `flagsDynamic`, which is the code GHC itself reads
-`OPTIONS_GHC` pragmas with—and compares the extensions each side ends up
-switching on or off, the edition, and the Safe Haskell mode. The remaining
-options must come out the same and in the same order.
+Getting the header right was a nightmare, but Tilia now does it. Even
+better, `--check-ast` does not trust any of this logic. It reads the flags
+of the header before and after formatting with GHC's own flag
+reader—`processArgs` from `GHC.Driver.CmdLine`. It is run over GHC's table
+of flags, `flagsDynamic`, which is the code GHC itself uses to read
+`OPTIONS_GHC` pragmas. The extensions each side ends up switching on or off,
+the edition, the options, and the Safe Haskell mode are verified this way.
 
 ## HLS plugin
 
@@ -748,7 +753,8 @@ While other formatters could (with some work) also source fixities from HLS
 (although they would need to introduce support for fixity namespaces first),
 the technical challenge for those tools is in achieving matching precision
 outside of HLS, which is what was discussed above in the section about
-fixities.
+fixities. It would not help with performance either—it is already a lookup
+in a hardcoded dictionary in the case of Fourmolu.
 
 ## Conclusion
 

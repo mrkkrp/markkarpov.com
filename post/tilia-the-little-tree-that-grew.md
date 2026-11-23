@@ -171,6 +171,14 @@ remaining fraction of a percent:
   `lens`'s use case can be made to work too. This is a question of where to
   draw the line.
 
+## The status of comment handling
+
+Comment handling in Tilia has reached absolute fidelity—no comments move in
+unexpected ways or disappear. Once again, this conclusion is based on the
+results from extensive Hackage scans which cover several thousands packages,
+manual reviews of selected fragments, as well as AI-assisted audits and
+adversary probing.
+
 ## Tilia's fixity inference in practice
 
 One question I received through emails is why knowing operator fixities is

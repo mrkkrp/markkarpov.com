@@ -177,7 +177,10 @@ Comment handling in Tilia has reached absolute fidelity—no comments move in
 unexpected ways or disappear. Once again, this conclusion is based on the
 results from extensive Hackage scans which cover several thousands packages,
 manual reviews of selected fragments, as well as AI-assisted audits and
-adversary probing.
+adversary probing. I worked on the problem of comment placement in August,
+for a different formatter. As nice as that change was, it did not fix *quite
+everything*, so I kept iterating on this, now in Tilia, until I got it
+perfect.
 
 ## Tilia's fixity inference in practice
 

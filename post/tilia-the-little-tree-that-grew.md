@@ -748,10 +748,12 @@ in a hardcoded dictionary in the case of Fourmolu.
 
 ## Conclusion
 
-Tilia is now much more robust and is extensively tested. Comments, fixities,
-and CPP are all solved. With these problems out of the way, the direction I
-am taking now is towards eliminating friction between what Tilia outputs and
-what people tend to write. This requires a balance: adding a single Boolean
+Tilia's new formatting engine overcomes many difficulties in formatting
+Haskell that until recently seemed unsolvable (including to me). It is now
+much more robust and is extensively tested. Comments, fixities, and CPP are
+all solved. With these problems out of the way, the direction I am taking
+now is towards eliminating friction between what Tilia outputs and what
+people tend to write. This requires a balance: adding a single Boolean
 configuration switch doubles the space Tilia needs to test. Leading commas,
 leading arrows, and indentation step seem to be worth it, time will tell
 what else is.

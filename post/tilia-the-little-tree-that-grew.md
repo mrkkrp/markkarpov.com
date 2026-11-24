@@ -7,18 +7,19 @@ tag: haskell
 ---
 
 A couple months ago I [announced][tilia-announcement] a new formatter for
-Haskell—[Tilia][tilia-repo]. The announcement post talked about high-level
-design decisions I made and I feel it was indeed appreciated by some, but
-many more remained puzzled as to what this new formatter brings to the
-table—I think this was the top Reddit comment, for example. Shortly after
-the announcement someone opened [an issue][comparison-issue] on Tilia's
-issue tracker asking for comparison with other formatters. I also received a
-few questions by email asking about Tilia and the future of formatting
-Haskell in general. All this convinced me that a follow-up post is in order,
-this time a much more practical one, ideally with examples. I held off on
-writing it though, because I was not yet completely happy with Tilia and
-wanted to do more work before I'd write about it again. That work has
-largely been done now and I have a few exciting updates to share.
+Haskell I wrote from scratch—[Tilia][tilia-repo]. The announcement post
+talked about high-level design decisions I made and I feel it was indeed
+appreciated by some, but many more remained puzzled as to what this new
+formatter brings to the table—I think this was the top Reddit comment, for
+example. Shortly after the announcement someone opened [an
+issue][comparison-issue] on Tilia's issue tracker asking for comparison with
+other formatters. I also received a few questions by email asking about
+Tilia and the future of formatting Haskell in general. All this convinced me
+that a follow-up post is in order, this time a much more practical one,
+ideally with examples. I held off on writing it though, because I was not
+yet completely happy with Tilia and wanted to do more work before I'd write
+about it again. That work has largely been done now and I have a few
+exciting updates to share.
 
 ## Case study: Clash compiler
 
@@ -170,17 +171,6 @@ remaining fraction of a percent:
   not in a way that fails to parse as Haskell. With more ad-hoc code,
   `lens`'s use case can be made to work too. This is a question of where to
   draw the line.
-
-## The status of comment handling
-
-Comment handling in Tilia has reached absolute fidelity—no comments move in
-unexpected ways or disappear. Once again, this conclusion is based on the
-results from extensive Hackage scans which cover several thousands packages,
-manual reviews of selected fragments, as well as AI-assisted audits and
-adversary probing. I worked on the problem of comment placement in August,
-for a different formatter. As nice as that change was, it did not fix *quite
-everything*, so I kept iterating on this, now in Tilia, until I got it
-perfect.
 
 ## Tilia's fixity inference in practice
 

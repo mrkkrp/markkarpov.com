@@ -103,11 +103,6 @@ controlSimulator control =
 #endif
 ```
 
-This is a general theme I want to highlight. Tilia needs no
-hand-holding—whatever you have it will format (well, with rare exceptions).
-We will see more examples of this when we talk about formatting operator
-chains.
-
 Finally, a stylistic change was also requested by Clash maintainers: when
 record fields are spelled out after a data constructor they asked to remove
 the space in front of the curly brace:
@@ -136,14 +131,6 @@ pre-release Hackage scan with a 0.2.0.0 candidate:
 | Modules broken (AST check failed)           | 0.00%
 | Modules non-idempotent                      | 0.00%
 | Modules with comment defects                | 0.00%
-
-It was a long and winding road to hit these numbers in a way that keeps the
-rendering engine elegant, because once you start testing at this scale you
-discover plenty of edge cases and the temptation is to keep adding ad-hoc
-fixes. Such fixes may resolve one thing and break another. Therefore, my
-goal was to stay one step ahead in this game and introduce principled
-redesigns in order to ensure that the implementation can converge. Which I
-think it did.
 
 In practical terms, this means that Tilia formats pretty much anything,
 including such non-trivial users of CPP as `QuickCheck`, `yesod`, and
